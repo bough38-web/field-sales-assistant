@@ -4,8 +4,11 @@ __pycache__/
 .env
 .venv/
 env/
-data/
+# data/  <-- Commented out to allow data folder
 output/
 temp_extracted_data/
 *.csv
 *.xlsx
+!data/*.xlsx
+!data/*.zip
+

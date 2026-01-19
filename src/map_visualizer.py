@@ -222,10 +222,10 @@ def render_folium_map(map_df):
     # [DEBUG] Visible Debug Info Removed
     display_df = valid_rows
     
-    # 2. Limit (Reduced to 100 for debugging)
-    limit = 100
+    # 2. Limit (Performance)
+    limit = 2000
     if len(display_df) > limit:
-         st.warning(f"⚠️ 디버깅을 위해 상위 {limit}개만 표시합니다.")
+         st.warning(f"⚠️ 성능을 위해 상위 {limit:,}개만 지도에 표시합니다.")
          display_df = display_df.head(limit)
     
     # 3. Center

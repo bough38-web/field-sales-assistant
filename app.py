@@ -1,9 +1,16 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import utils
 import os
+import glob
+import unicodedata
+import streamlit.components.v1 as components
 from datetime import datetime
+
+# Import modularized components
+from src import utils
+from src import data_loader
+from src import map_visualizer
 
 # --- Configuration & Theme ---
 st.set_page_config(
@@ -12,6 +19,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# [FIX] Force Streamlit Native Theme for Altair (High Contrast)
+try:
+    alt.themes.enable('streamlit')
+except:
+    pass # fallback
 
 # Custom CSS for Premium & Mobile Feel
 st.markdown("""
@@ -149,12 +162,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-    
 # State Update Callbacks
 def update_branch_state(name):
-    st.session_state.sb_branch = name
+    # [FIX] Force NFC to match selectbox options strictly
+    normalized_name = unicodedata.normalize('NFC', name)
+    st.session_state.sb_branch = normalized_name
     st.session_state.sb_manager = "전체"
-    st.session_state.dash_branch = name
+    st.session_state.dash_branch = normalized_name
     
 def update_manager_state(name):
     st.session_state.sb_manager = name
@@ -168,39 +182,123 @@ def update_branch_with_status(name, status):
 def update_manager_with_status(name, status):
     st.session_state.sb_manager = name
     st.session_state.sb_status = status
-    
+
 # --- Sidebar Filters ---
 with st.sidebar:
     st.header("⚙️ 설정 & 데이터")
     
-    # Check Local Data
-    local_zip, local_dist = utils.get_local_data_paths()
-    use_local = False
-    
-    if local_zip and local_dist:
-        st.success("✅ 로컬 데이터 자동 감지됨")
-        use_local = st.toggle("자동 감지된 데이터 사용", value=True)
-        if use_local:
-            st.caption(f"ZIP: {os.path.basename(local_zip)}")
-            st.caption(f"Dist: {os.path.basename(local_dist)}")
-    
-    if not use_local:
-        uploaded_zip = st.file_uploader("인허가 데이터 (ZIP)", type="zip")
-        uploaded_dist = st.file_uploader("영업구역 데이터 (Excel)", type="xlsx")
-    else:
-        uploaded_zip = local_zip
-        uploaded_dist = local_dist
+    st.sidebar.markdown("---")
+    with st.sidebar.expander("📂 데이터 소스 및 API 설정", expanded=False):
+        st.subheader("데이터 소스 선택")
+        
+        data_source = st.radio(
+            "데이터 출처", 
+            ["파일 업로드 (File)", "OpenAPI 연동 (Auto)"],
+            index=0
+        )
+        
+        # [FIX] Enhanced File Selection with 20260119 Priority
+        local_zips = sorted(glob.glob(os.path.join("data", "*.zip")), key=os.path.getmtime, reverse=True)
+        local_excels = sorted(glob.glob(os.path.join("data", "*.xlsx")), key=os.path.getmtime, reverse=True)
+        
+        # Force Priority for 20260119
+        priority_file_match = [f for f in local_excels if '20260119' in f]
+        if priority_file_match:
+            # Move to front
+            for p in priority_file_match:
+                if p in local_excels: local_excels.remove(p)
+            local_excels = priority_file_match + local_excels
+            
+        uploaded_dist = None
+        use_local_dist = False
 
-    st.markdown("---")
-    
-    # --- Theme Configuration ---
-    st.sidebar.subheader("🎨 테마 설정")
-    theme_mode = st.sidebar.selectbox(
-        "스타일 테마 선택", 
-        ["기본 (Default)", "모던 다크 (Modern Dark)", "웜 페이퍼 (Warm Paper)", "고대비 (High Contrast)", "코퍼레이트 블루 (Corporate Blue)"],
-        index=0,
-        label_visibility="collapsed"
-    )
+        if local_excels:
+            use_local_dist = st.toggle("영업구역(Excel) 자동 로드", value=True)
+            if use_local_dist:
+                # Let user choose if multiple
+                file_opts = [os.path.basename(f) for f in local_excels]
+                sel_file_idx = 0
+                
+                # Try to default to the 20260119 one if present in opts
+                for i, fname in enumerate(file_opts):
+                    if '20260119' in fname:
+                        sel_file_idx = i
+                        break
+                        
+                sel_file = st.selectbox("사용할 영업구역 파일", file_opts, index=sel_file_idx)
+                uploaded_dist = os.path.join("data", sel_file)
+                
+                if '20260119' in sel_file:
+                     st.success(f"✅ **[최신]** 로드된 파일: {sel_file}")
+                else:
+                     st.warning(f"⚠️ 로드된 파일: {sel_file} (20260119 파일 권장)")
+        
+        if not use_local_dist:
+            uploaded_dist = st.file_uploader("영업구역 데이터 (Excel)", type="xlsx", key="dist_uploader")
+
+        uploaded_zip = None
+        
+        if data_source == "파일 업로드 (File)":
+             if local_zips:
+                 use_local_zip = st.toggle("인허가(Zip) 자동 로드", value=True)
+                 if use_local_zip:
+                     # Let user choose zip if multiple
+                     zip_opts = [os.path.basename(f) for f in local_zips]
+                     sel_zip = st.selectbox("사용할 인허가 파일 (ZIP)", zip_opts, index=0)
+                     uploaded_zip = os.path.join("data", sel_zip)
+                     st.caption(f"ZIP: {sel_zip}")
+                 else:
+                     uploaded_zip = st.file_uploader("인허가 데이터 (ZIP)", type="zip")
+             else:
+                  uploaded_zip = st.file_uploader("인허가 데이터 (ZIP)", type="zip")
+                 
+        else: # OpenAPI
+            st.info("🌐 지방행정 인허가 데이터 (LocalData)")
+            
+            default_auth_key = ""
+            key_file_path = os.path.join(os.path.dirname(__file__), "오픈API", "api_key.txt")
+            if os.path.exists(key_file_path):
+                 try:
+                     with open(key_file_path, "r", encoding="utf-8") as f:
+                         default_auth_key = f.read().strip()
+                 except: pass
+                     
+            api_auth_key = st.text_input("인증키 (AuthKey)", value=default_auth_key, type="password", help="공공데이터포털(data.go.kr)에서 발급받은 인증키")
+            api_local_code = st.text_input("지역코드 (LocalCode)", value="3220000", help="예: 3220000 (강남구)")
+            
+            c_d1, c_d2 = st.columns(2)
+            today = datetime.date.today()
+            api_start_date = c_d1.date_input("시작일", value=today - datetime.timedelta(days=30))
+            api_end_date = c_d2.date_input("종료일", value=today)
+            
+            fetch_btn = st.button("데이터 가져오기 (Fetch)")
+            
+            if fetch_btn and api_auth_key:
+                with st.spinner("🌐 API 데이터 조회 중..."):
+                    s_date = api_start_date.strftime("%Y%m%d")
+                    e_date = api_end_date.strftime("%Y%m%d")
+                    api_df, api_error = data_loader.fetch_openapi_data(api_auth_key, api_local_code, s_date, e_date)
+                    
+                    if api_error:
+                        st.error(f"실패: {api_error}")
+                    else:
+                        st.success(f"성공! {len(api_df)}개 데이터 수신 완료")
+                        st.session_state['api_fetched_df'] = api_df
+            
+            if 'api_fetched_df' in st.session_state:
+                api_df = st.session_state['api_fetched_df']
+                st.caption(f"✅ 수신된 데이터: {len(api_df)}건")
+
+
+
+
+    with st.sidebar.expander("🎨 테마 설정", expanded=False):
+        theme_mode = st.selectbox(
+            "스타일 테마 선택", 
+            ["기본 (Default)", "모던 다크 (Modern Dark)", "웜 페이퍼 (Warm Paper)", "고대비 (High Contrast)", "코퍼레이트 블루 (Corporate Blue)"],
+            index=0,
+            label_visibility="collapsed"
+        )
 
     def apply_theme(theme):
         css = ""
@@ -248,24 +346,35 @@ with st.sidebar:
         else: # Default
              css = """
             <style>
-                div[data-testid="metric-container"] { background-color: #ffffff; border: 1px solid #f0f0f0; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+                [data-testid="stAppViewContainer"] { background-color: #FAFAFA; color: #333333; }
+                [data-testid="stSidebar"] { background-color: #FFFFFF; border-right: 1px solid #E0E0E0; }
+                
+                /* REVERTED: Aggressive CSS for High Contrast */
+                [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
+                [data-testid="stSidebar"] span, [data-testid="stSidebar"] label, [data-testid="stSidebar"] p { 
+                    color: #000000 !important; 
+                    font-weight: 600 !important; 
+                }
+                .stMarkdown, .stText, h1, h2, h3, h4, h5, h6 { color: #333333 !important; }
+                div[data-testid="metric-container"] { background-color: #ffffff; border: 1px solid #eee; color: #333; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+                .stButton button { background-color: #2E7D32 !important; color: #fff !important; }
             </style>
-             """
-        
+            """
         st.markdown(css, unsafe_allow_html=True)
 
     apply_theme(theme_mode)
     
     st.sidebar.markdown("---")
 
-    # Kakao API Key (Global Sidebar)
-    st.warning("🔑 카카오 지도 설정")
-    kakao_key = st.text_input("카카오 Javascript 키 입력", type="password", key="kakao_api_key_v2")
-    
-    if kakao_key:
-        st.success("카카오 지도가 활성화되었습니다.")
-    else:
-        st.caption("키 미입력 시 오픈스트리트맵(OSM)으로 표시됩니다.")
+    with st.sidebar.expander("🔑 카카오 지도 설정", expanded=False):
+        st.warning("카카오 자바스크립트 키 필요")
+        kakao_key = st.text_input("키 입력", type="password", key="kakao_api_key_v2")
+        if kakao_key: kakao_key = kakao_key.strip()
+        
+        if kakao_key:
+            st.success("✅ 활성화됨")
+        else:
+            st.caption("미입력 시: 기본 지도 사용")
         
     st.sidebar.markdown("---")
     st.caption("Developed by Antigravity")
@@ -274,64 +383,176 @@ with st.sidebar:
 
 st.title("💼 영업기회 파이프라인")
 
-if uploaded_zip and uploaded_dist:
-    # Load Data
-    with st.spinner("🚀 데이터를 분석하고 매칭중입니다..."):
-        raw_df, error = utils.load_and_process_data(uploaded_zip, uploaded_dist)
+raw_df = None
+error = None
+
+if uploaded_dist:
+    if data_source == "파일 업로드 (File)" and uploaded_zip:
+        with st.spinner("🚀 파일 분석 및 매칭중..."):
+             raw_df, error = data_loader.load_and_process_data(uploaded_zip, uploaded_dist)
+             
+    elif data_source == "OpenAPI 연동 (Auto)" and api_df is not None:
+        with st.spinner("🌐 API 데이터 매칭중..."):
+             raw_df, error = data_loader.process_api_data(api_df, uploaded_dist)
+
+if error:
+    st.error(f"오류 발생: {error}")
+
+if raw_df is not None:
     
-    if error:
-        st.error(f"데이터 로드 실패: {error}")
-        st.stop()
-        
+    # [FIX] Global NFC Normalization to prevent Mac/Windows mismatch
+    # This ensures all subsequent filters and buttons work with consistent strings.
+    for col in ['관리지사', 'SP담당', '사업장명', '소재지전체주소', '영업상태명', '업태구분명']:
+        if col in raw_df.columns:
+            # [FIX] NFC + Strip to ensure exact matching
+            raw_df[col] = raw_df[col].astype(str).apply(lambda x: unicodedata.normalize('NFC', x).strip() if x else x)
+            
+    # [REFACTOR] Centralized Branch List Calculation
+    # Calculate ONCE, use EVERYWHERE
+    custom_branch_order = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사']
+    custom_branch_order = [unicodedata.normalize('NFC', b) for b in custom_branch_order]
+    
+    current_branches_raw = [unicodedata.normalize('NFC', str(b)) for b in raw_df['관리지사'].unique() if pd.notna(b)]
+    
+    # Intersection while preserving order
+    global_branch_opts = [b for b in custom_branch_order if b in current_branches_raw]
+    others = [b for b in current_branches_raw if b not in custom_branch_order]
+    global_branch_opts.extend(others)
+    
     # --- Apply Global Filters (Sidebar) ---
     with st.sidebar:
+        st.header("⚙️ 설정")
+        c_mode1, c_mode2 = st.columns(2)
+        with c_mode1:
+             edit_mode = st.toggle("🛠️ 수정 모드", value=False)
+        with c_mode2:
+             custom_view_mode = st.toggle("👮 관리자 뷰", value=False)
+        
+        # [SECURITY] Unified Admin Password Gate
+        admin_auth = False
+        if edit_mode or custom_view_mode:
+            admin_pw = st.text_input("🔒 관리자 암호", type="password", key="admin_pw_input", help="기본 암호: admin1234")
+            if admin_pw == "admin1234":
+                admin_auth = True
+                st.success("✅ 인증됨")
+            elif admin_pw:
+                st.error("❌ 암호 오류")
+        
+        # [FEATURE] Custom Dashboard View Controls
+        custom_view_managers = []
+        if custom_view_mode and admin_auth:
+            st.info("👮 대시보드 강제 지정 모드")
+            all_mgrs_raw = sorted(raw_df['SP담당'].dropna().unique())
+            custom_view_managers = st.multiselect(
+                "노출할 담당자 지정 (복수)", 
+                all_mgrs_raw,
+                placeholder="담당자 선택..."
+            )
+            
+            all_branches_raw = sorted(raw_df['관리지사'].dropna().unique())
+            exclude_branches = st.multiselect(
+                "제외할 지사 지정 (복수)",
+                all_branches_raw,
+                placeholder="제외할 지사 선택..."
+            )
+            
+            if not custom_view_managers and not exclude_branches:
+                st.warning("⚠️ 조건을 선택하지 않으면 전체 데이터가 보입니다.")
+        
+        st.divider()
+        
         st.header("🔍 공통 필터")
         
-        # Temp DF for cascading options
         filter_df = raw_df.copy()
         
         # 1. Branch
-        # Define custom_branch_order and sorted_branches here to be available for sidebar filters
         custom_branch_order = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사']
-        current_branches_in_raw = list(raw_df['관리지사'].unique())
+        # [FIX] Normalize Hardcoded List
+        custom_branch_order = [unicodedata.normalize('NFC', b) for b in custom_branch_order]
+        
+        current_branches_in_raw = [unicodedata.normalize('NFC', str(b)) for b in raw_df['관리지사'].unique() if pd.notna(b)]
+        
         sorted_branches_for_filter = [b for b in custom_branch_order if b in current_branches_in_raw]
         others_for_filter = [b for b in current_branches_in_raw if b not in custom_branch_order]
         sorted_branches_for_filter.extend(others_for_filter)
+        
+        # [FIX] Force NFC on Options to ensure match with session_state
+        sorted_branches_for_filter = [unicodedata.normalize('NFC', b) for b in sorted_branches_for_filter]
 
         st.markdown("##### 🏢 지사 선택")
         branch_opts = ["전체"] + sorted_branches_for_filter
         if 'sb_branch' not in st.session_state: st.session_state.sb_branch = "전체"
         
+        # [FIX] Force NFC on session state value (redundant safety)
+        if st.session_state.sb_branch != "전체":
+             st.session_state.sb_branch = unicodedata.normalize('NFC', st.session_state.sb_branch)
+        
+        # [FIX] Callback to reset manager when branch changes
+        def reset_manager_filter():
+            st.session_state.sb_manager = "전체"
+            
         sel_branch = st.selectbox(
             "관리지사", 
             branch_opts, 
-            index=branch_opts.index(st.session_state.get('sb_branch', "전체")) if st.session_state.get('sb_branch') in branch_opts else 0,
-            key="sb_branch"
+            key="sb_branch",
+            on_change=reset_manager_filter
         )
+            
+
         
         if sel_branch != "전체":
             filter_df = filter_df[filter_df['관리지사'] == sel_branch]
         
-        # 2. Manager (Filtered by Branch)
-        st.markdown("##### 🧑‍💻 담당자 선택")
-        manager_opts = ["전체"] + sorted(list(filter_df['SP담당'].dropna().unique()))
+        # 2. Manager
+        has_area_code = '영업구역 수정' in filter_df.columns
+        
+        if has_area_code:
+            st.markdown("##### 🧑‍💻 영업구역 (담당자) 선택")
+            temp_df = filter_df[['영업구역 수정', 'SP담당']].dropna(subset=['영업구역 수정']).copy()
+            temp_df['label'] = temp_df['영업구역 수정'].astype(str) + " (" + temp_df['SP담당'].astype(str) + ")"
+            temp_df = temp_df.sort_values('영업구역 수정')
+            manager_opts = ["전체"] + list(temp_df['label'].unique())
+            label_to_code = dict(zip(temp_df['label'], temp_df['영업구역 수정']))
+        else:
+            st.markdown("##### 🧑‍💻 담당자 선택")
+            manager_opts = ["전체"] + sorted(list(filter_df['SP담당'].dropna().unique()))
+            
         if 'sb_manager' not in st.session_state: st.session_state.sb_manager = "전체"
         
-        sel_manager = st.selectbox(
-            "영업담당", 
+        sel_manager_label = st.selectbox(
+            "영업구역/담당", 
             manager_opts, 
             index=manager_opts.index(st.session_state.get('sb_manager', "전체")) if st.session_state.get('sb_manager') in manager_opts else 0,
             key="sb_manager"
         )
         
-        if sel_manager != "전체":
-            filter_df = filter_df[filter_df['SP담당'] == sel_manager]
-            
-        # 3. Business Type (Filtered by Branch & Manager)
-        # Handle case where column might be missing or different name provided by utils
-        type_col = '업태구분명' if '업태구분명' in raw_df.columns else raw_df.columns[0] # Fallback
+        sel_manager = "전체" 
+        selected_area_code = None 
         
-        # Get available types based on previous filters
+        if sel_manager_label != "전체":
+            if has_area_code:
+                selected_area_code = label_to_code.get(sel_manager_label)
+                if selected_area_code:
+                    filter_df = filter_df[filter_df['영업구역 수정'] == selected_area_code]
+                    sel_manager = filter_df['SP담당'].iloc[0] if not filter_df.empty else "전체"
+            else:
+                filter_df = filter_df[filter_df['SP담당'] == sel_manager_label]
+                sel_manager = sel_manager_label
+
+        # [FIX] Normalize for robust filtering downstream
+        if sel_manager != "전체":
+            sel_manager = unicodedata.normalize('NFC', sel_manager)
+            
+        # 3. Type
+        type_col = '업태구분명' if '업태구분명' in raw_df.columns else raw_df.columns[0]
+        
+        st.markdown("##### 🏥 병원/의원 필터")
+        c_h1, c_h2 = st.columns(2)
+        with c_h1:
+             only_hospitals = st.toggle("🏥 병원 관련만 보기", value=False)
+        with c_h2:
+             only_large_area = st.toggle("🏗️ 100평 이상만 보기", value=False)
+        
         try:
             available_types = sorted(list(filter_df[type_col].dropna().unique()))
         except:
@@ -340,7 +561,6 @@ if uploaded_zip and uploaded_dist:
         if not available_types and not filter_df.empty:
              available_types = sorted(list(raw_df[type_col].dropna().unique()))
              
-        # Expander for Business Type
         with st.expander("📂 업태(업종) 필터 (펼치기/접기)", expanded=False):
             sel_types = st.multiselect(
                 "업태를 선택하세요 (복수 선택 가능)", 
@@ -349,30 +569,37 @@ if uploaded_zip and uploaded_dist:
                 label_visibility="collapsed"
             )
             
-        # 4. Date Filters (YYYY-MM)
+        # 4. Date
         st.markdown("##### 📅 날짜 필터 (연-월)")
         
-        # Helper to get YYYY-MM options
         def get_ym_options(column):
             if column not in raw_df.columns: return []
             dates = raw_df[column].dropna()
             if dates.empty: return []
-            yms = sorted(dates.dt.strftime('%Y-%m').unique(), reverse=True)
-            return ["전체"] + yms
-            
-        # Permit Date
-        permit_opts = get_ym_options('인허가일자')
-        sel_permit_ym = st.selectbox("인허가일자 (영업/정상)", permit_opts, index=0) if permit_opts else "전체"
+            return sorted(dates.dt.strftime('%Y-%m').unique(), reverse=True)
+
+        permit_ym_opts = ["전체"] + get_ym_options('인허가일자')
+        if 'sb_permit_ym' not in st.session_state: st.session_state.sb_permit_ym = "전체"
+        sel_permit_ym = st.selectbox(
+            "인허가일자 (월별)", 
+            permit_ym_opts,
+            index=permit_ym_opts.index(st.session_state.get('sb_permit_ym', "전체")) if st.session_state.get('sb_permit_ym') in permit_ym_opts else 0,
+            key="sb_permit_ym"
+        )
         
-        # Closure Date
-        close_opts = get_ym_options('폐업일자')
-        sel_close_ym = st.selectbox("폐업일자 (폐업)", close_opts, index=0) if close_opts else "전체"
-            
-        # 4. Business Status (Global)
+        close_ym_opts = ["전체"] + get_ym_options('폐업일자')
+        if 'sb_close_ym' not in st.session_state: st.session_state.sb_close_ym = "전체"
+        sel_close_ym = st.selectbox(
+            "폐업일자 (월별)", 
+            close_ym_opts,
+            index=close_ym_opts.index(st.session_state.get('sb_close_ym', "전체")) if st.session_state.get('sb_close_ym') in close_ym_opts else 0,
+            key="sb_close_ym"
+        )
+        
+        # 5. Status
         st.markdown("##### 영업상태")
         status_opts = ["전체"] + sorted(list(raw_df['영업상태명'].unique()))
         
-        # Sync with session state
         if 'sb_status' not in st.session_state: st.session_state.sb_status = "전체"
         
         sel_status = st.selectbox(
@@ -382,78 +609,188 @@ if uploaded_zip and uploaded_dist:
             key="sb_status"
         )
         
-        # 5. Optional Filters
-        st.markdown("##### 기타 필터")
-        only_with_phone = st.checkbox("📞 연락처(전화번호) 있는 업체만 보기", value=False)
+        st.markdown("##### 📞 전화번호 필터")
+        only_with_phone = st.toggle("전화번호 있는 것만 보기", value=False)
         
-    # Filter Data Globally
+    # Data Filtering
     base_df = raw_df.copy()
-    # Exclude Unassigned (User Request)
     base_df = base_df[base_df['관리지사'] != '미지정']
     
-    if sel_branch != "전체":
-        base_df = base_df[base_df['관리지사'] == sel_branch]
-    if sel_manager != "전체":
-        base_df = base_df[base_df['SP담당'] == sel_manager]
+    # [FEATURE] Admin Custom Dashboard Override
+    if custom_view_mode and admin_auth and (custom_view_managers or exclude_branches):
+        if custom_view_managers:
+            base_df = base_df[base_df['SP담당'].isin(custom_view_managers)]
+            
+        if exclude_branches:
+            base_df = base_df[~base_df['관리지사'].isin(exclude_branches)]
+            
+        msg = "👮 관리자 지정 뷰: "
+        if custom_view_managers: msg += f"담당자 {len(custom_view_managers)}명 포함"
+        if custom_view_managers and exclude_branches: msg += " & "
+        if exclude_branches: msg += f"지사 {len(exclude_branches)}곳 제외"
+        st.toast(msg)
         
-    # Apply Type Filter
+    else:
+        # Standard Sidebar Filters
+        # [FIX] Source of Truth is Session State (for Immediate Button Response)
+        current_branch_filter = st.session_state.get('sb_branch', "전체")
+        
+        if current_branch_filter != "전체":
+            # [FIX] Normalize comparison for Mac/Excel compatibility
+            norm_sel_branch = unicodedata.normalize('NFC', current_branch_filter)
+            base_df = base_df[base_df['관리지사'] == norm_sel_branch]
+            
+        if selected_area_code:
+            base_df = base_df[base_df['영업구역 수정'] == selected_area_code]
+        elif sel_manager != "전체": 
+            norm_sel_manager = unicodedata.normalize('NFC', sel_manager)
+            base_df = base_df[base_df['SP담당'] == norm_sel_manager]
+            
+    # Common Filters (Applied to both modes)
+    if only_hospitals:
+        mask = base_df[type_col].astype(str).str.contains('병원|의원', na=False)
+        if '개방서비스명' in base_df.columns:
+            mask = mask | base_df['개방서비스명'].astype(str).str.contains('병원|의원', na=False)
+        base_df = base_df[mask]
+        
+    if only_large_area:
+        if '소재지면적' in base_df.columns:
+             base_df['temp_area'] = pd.to_numeric(base_df['소재지면적'], errors='coerce').fillna(0)
+             base_df = base_df[base_df['temp_area'] >= 330.58]
+    
     if sel_types:
         base_df = base_df[base_df[type_col].isin(sel_types)]
         
-    # Apply Date Filters
     if sel_permit_ym != "전체":
-        # Filter by YYYY-MM
         base_df = base_df[base_df['인허가일자'].dt.strftime('%Y-%m') == sel_permit_ym]
         
     if sel_close_ym != "전체":
         base_df = base_df[base_df['폐업일자'].dt.strftime('%Y-%m') == sel_close_ym]
         
-    # Apply Phone Filter
     if only_with_phone:
         base_df = base_df[base_df['소재지전화'].notna() & (base_df['소재지전화'] != "")]
         
-    # Apply Status Filter
     df = base_df.copy()
     if sel_status != "전체":
         df = df[df['영업상태명'] == sel_status]
+
+    # Edit Mode
+    # Edit Mode
+    if edit_mode:
+        if not admin_auth:
+             st.warning("🔒 관리자 권한이 필요합니다. 사이드바 설정 메뉴에서 암호를 입력해주세요.")
+             st.stop()
+             
+        # Authorized Logic
+        st.title("🛠️ 영업구역 및 담당자 수정")
+        st.info("💡 '관리지사'와 '영업구역(코드)'을 수정할 수 있습니다. 수정을 완료한 후 **[💾 수정본 다운로드]** 버튼을 눌러 저장하세요.")
         
-    # --- Dashboard UI ---
-    
-    # 1. Define Sort Order (User Preference)
-    # 1. Define Sort Order (User Preference)
+        # [FEATURE] Enhanced Filters
+        st.markdown("##### 🛠️ 편의 도구: 수정 대상 필터링")
+        
+        # 1. Scope Override
+        ignore_global = st.checkbox("🔓 Sidebar 공통 필터 무시 (전체 데이터 불러오기)", value=False, help="체크 시 사이드바의 필터를 무시하고 전체 데이터를 대상으로 검색합니다.")
+        
+        if ignore_global:
+            edit_target_df = raw_df.copy()
+        else:
+            edit_target_df = df.copy()
+            
+        c_e1, c_e2 = st.columns(2)
+        
+        # 2. Branch Filter
+        with c_e1:
+             all_branches_edit = sorted(edit_target_df['관리지사'].dropna().unique())
+             sel_edit_branches = st.multiselect("1. 수정할 지사 선택 (복수 가능)", all_branches_edit, placeholder="전체 (미선택 시)")
+             
+        if sel_edit_branches:
+            edit_target_df = edit_target_df[edit_target_df['관리지사'].isin(sel_edit_branches)]
+            
+        # 3. Manager Filter (Dynamic based on Branch)
+        with c_e2:
+             all_managers_edit = sorted(edit_target_df['SP담당'].dropna().unique())
+             sel_edit_managers = st.multiselect("2. 수정할 담당자 선택 (복수 가능)", all_managers_edit, placeholder="전체 (미선택 시)")
+             
+        if sel_edit_managers:
+            edit_target_df = edit_target_df[edit_target_df['SP담당'].isin(sel_edit_managers)]
+            
+        branche_opts = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사']
+        
+        column_config = {
+             "관리지사": st.column_config.SelectboxColumn("관리지사 (선택)", options=branche_opts, required=True, width="medium"),
+             "영업구역 수정": st.column_config.TextColumn("영업구역 (Code)", width="medium", help="영업구역 코드 (예: G000407)"),
+             "SP담당": st.column_config.TextColumn("SP실명 (담당자)", disabled=True, width="medium"),
+             "사업장명": st.column_config.TextColumn("사업장명", disabled=True),
+             "소재지전체주소": st.column_config.TextColumn("주소", disabled=True),
+        }
+        
+        available_cols = edit_target_df.columns.tolist()
+        base_cols = ['사업장명', '영업상태명', '관리지사']
+        if '영업구역 수정' in available_cols:
+            base_cols.append('영업구역 수정')
+            
+        base_cols.append('SP담당')
+        base_cols.extend(['소재지전체주소', '업태구분명'])
+        
+        cols_to_show = [c for c in base_cols if c in available_cols]
+        
+        editable_cols = ['관리지사', '영업구역 수정']
+        disabled_cols = [c for c in cols_to_show if c not in editable_cols]
+        
+        edited_df = st.data_editor(
+            edit_target_df[cols_to_show],
+            column_config=column_config,
+            use_container_width=True,
+            num_rows="fixed",
+            hide_index=True,
+            height=600,
+            disabled=disabled_cols
+        )
+        
+        st.success(f"총 {len(edited_df)}건의 데이터가 표시되었습니다.")
+        
+        csv_edit = edited_df.to_csv(index=False, encoding='cp949').encode('cp949')
+        st.download_button(
+            label="💾 수정된 데이터 다운로드 (CSV)",
+            data=csv_edit,
+            file_name="영업기회_수정본.csv",
+            mime="text/csv",
+            type="primary"
+        )
+        
+        st.stop() 
+        
+    # Dashboard
     custom_branch_order = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사']
+    # [FIX] Normalize constants
+    custom_branch_order = [unicodedata.normalize('NFC', b) for b in custom_branch_order]
     
-    # Sort branches for display
     try:
         current_branches = list(base_df['관리지사'].unique())
-        # Filter customs that exist in current data
         sorted_branches = [b for b in custom_branch_order if b in current_branches]
-        # Append any others not in the custom list
         others = [b for b in current_branches if b not in custom_branch_order]
         sorted_branches.extend(others)
     except:
         sorted_branches = []
     
-    # 2. Level 1: Branch Dashboard
-    st.markdown("### 🏢 지사별 현황 (클릭하여 상세 조회)")
-    
-    # 2. Level 1: Branch Dashboard
     st.markdown("### 🏢 지사별 현황")
     
-    # Initialize State
     if 'dash_branch' not in st.session_state:
         st.session_state.dash_branch = sorted_branches[0] if sorted_branches else None
         
-    # Branch Buttons (Cleaner Selector)
-    # Create rows of buttons if many branches
     b_rows = [sorted_branches[i:i+8] for i in range(0, len(sorted_branches), 8)]
     for row in b_rows:
         cols = st.columns(len(row))
         for idx, btn_name in enumerate(row):
             with cols[idx]:
-                # Style button to look selected
-                # Use sel_branch from Global Filter
-                type_ = "primary" if sel_branch == btn_name else "secondary"
+                # [FIX] Normalize comparison (use calculated source)
+                # We defer calculation of raw_dashboard_branch to below (hack for layout order), 
+                # OR we accept that buttons might flicker if we don't move the logic up.
+                # Actually, best is to use sel_branch directly here as well:
+                current_active_btn = sel_branch if sel_branch != "전체" else st.session_state.get('sb_branch', "전체")
+                current_active_btn = unicodedata.normalize('NFC', current_active_btn)
+                
+                type_ = "primary" if current_active_btn == btn_name else "secondary"
                 st.button(
                     btn_name, 
                     key=f"btn_{btn_name}", 
@@ -463,38 +800,36 @@ if uploaded_zip and uploaded_dist:
                     args=(btn_name,)
                 )
 
-    sel_dashboard_branch = sel_branch # Use global filter result
+
     
-    # Grid of Branch Stats
+    # [FIX] Source of Truth: Prioritize Widget (sel_branch) if active, else Session State
+    if sel_branch != "전체":
+        raw_dashboard_branch = sel_branch
+    else:
+        raw_dashboard_branch = st.session_state.get('sb_branch', "전체")
+    sel_dashboard_branch = unicodedata.normalize('NFC', raw_dashboard_branch)
+
     cols = st.columns(len(sorted_branches) if sorted_branches else 1)
     for i, col in enumerate(cols):
         if i < len(sorted_branches):
             b_name = sorted_branches[i]
+            # b_name is already normalized
             b_df = base_df[base_df['관리지사'] == b_name]
             b_total = len(b_df)
-            # Counts
             count_active = len(b_df[b_df['영업상태명'] == '영업/정상'])
             count_closed = len(b_df[b_df['영업상태명'] == '폐업'])
             count_others = b_total - count_active - count_closed
             
-            # Highlight selected
             bg_color = "#e8f5e9" if b_name == sel_dashboard_branch else "#ffffff"
             border_color = "#2E7D32" if b_name == sel_dashboard_branch else "#e0e0e0"
             
-            # Status Text
             status_text = f"<span style='color:#2E7D32'>영업 {count_active}</span> / <span style='color:#d32f2f'>폐업 {count_closed}</span>"
             if count_others > 0: status_text += f" / <span style='color:#757575'>기타 {count_others}</span>"
             
             with col:
-                st.markdown(f"""
-                <div style="background-color: {bg_color}; border: 2px solid {border_color}; border-radius: 8px; padding: 10px; text-align: center;">
-                    <div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px; color:#333;">{b_name}</div>
-                    <div style="font-size:1.2rem; font-weight:bold; color:#000;">{b_total:,}</div>
-                    <div style="font-size:0.8rem; margin-top:4px;">{status_text}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                branch_html = f'<div style="background-color: {bg_color}; border: 2px solid {border_color}; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px; color:#333;">{b_name}</div><div style="font-size:1.2rem; font-weight:bold; color:#000;">{b_total:,}</div><div style="font-size:0.8rem; margin-top:4px;">{status_text}</div></div>'
+                st.markdown(branch_html, unsafe_allow_html=True)
                 
-                # Active/Closed Buttons for Branch
                 b_c1, b_c2 = st.columns(2)
                 with b_c1:
                     st.button("영업", key=f"btn_br_active_{b_name}", on_click=update_branch_with_status, args=(b_name, '영업/정상'), use_container_width=True)
@@ -503,69 +838,116 @@ if uploaded_zip and uploaded_dist:
     
     st.markdown("---")
     
-    # 3. Level 2: Manager Status (Drill Down)
     if not base_df.empty:
-        # Title logic
-        current_br_name = sel_dashboard_branch if sel_dashboard_branch and sel_dashboard_branch != "전체" else "전체"
+
+        # [FIX] Force Source of Truth for Header Text
+        if sel_branch != "전체":
+            current_br_name = sel_branch
+        else:
+            current_br_name = sel_dashboard_branch if sel_dashboard_branch and sel_dashboard_branch != "전체" else "전체"
+        
+        # [FIX] Strict Normalization for Manager Section
+        current_br_name = unicodedata.normalize('NFC', current_br_name)
+        
         st.markdown(f"### 👤 {current_br_name} 영업담당 현황")
         
-        # Manager Data logic
-        # base_df is already filtered by sidebar selection (sel_branch)
-        # So generally mgr_df = base_df is correct. 
-        # But just in case of any disconnect, we can keep the filter if specific branch is named.
         if current_br_name != "전체":
-             mgr_df = base_df[base_df['관리지사'] == current_br_name]
-        else:
-             mgr_df = base_df
+             # [FIX] Decouple from base_df to ensure Header-Content Match
+             # We go back to raw_df and filter explicitly for the request branch.
+             # This bypasses any Sidebar lag that might have filtered base_df to the wrong branch. (e.g. Gangbuk)
              
-        managers = sorted(mgr_df['SP담당'].dropna().unique())
+             # 1. Start with Raw
+             mgr_df = raw_df[raw_df['관리지사'].astype(str).apply(lambda x: unicodedata.normalize('NFC', x)) == current_br_name].copy()
+             
+             # 2. Re-apply Common Filters (Date, Type, Status) if they exist
+             # This ensures the manager view is still relevant, just correctly branched.
+             if sel_permit_ym != "전체":
+                 mgr_df = mgr_df[mgr_df['인허가일자'].dt.strftime('%Y-%m') == sel_permit_ym]
+             if sel_close_ym != "전체":
+                 mgr_df = mgr_df[mgr_df['폐업일자'].dt.strftime('%Y-%m') == sel_close_ym]
+             if sel_status != "전체":
+                 mgr_df = mgr_df[mgr_df['영업상태명'] == sel_status]
+             if only_hospitals:
+                 mask = mgr_df[type_col].astype(str).str.contains('병원|의원', na=False)
+                 if '개방서비스명' in mgr_df.columns:
+                     mask = mask | mgr_df['개방서비스명'].astype(str).str.contains('병원|의원', na=False)
+                 mgr_df = mgr_df[mask]
+        else:
+             mgr_df = base_df.copy()
+             
+        manager_items = [] 
+        
+        if '영업구역 수정' in mgr_df.columns:
+            # [FIX] Do NOT dropna. Keep managers even if they lack a code.
+            # [FIX] Exclude 'Unassigned' or NaN names explicitly to prevent ghost cards
+            temp_g = mgr_df[['영업구역 수정', 'SP담당']].drop_duplicates()
+            temp_g = temp_g.dropna(subset=['SP담당'])
+            temp_g = temp_g[temp_g['SP담당'] != '미지정']
+            
+            temp_g['영업구역 수정'] = temp_g['영업구역 수정'].fillna('')
+            
+            # [UX] Sort by Name first to match Sidebar order, then Code.
+            # This makes it easier to find people.
+            temp_g = temp_g.sort_values(by=['SP담당', '영업구역 수정'])
+            
+            for _, r in temp_g.iterrows():
+                code = r['영업구역 수정']
+                name = r['SP담당']
+                # If code exists, show it. If not, just show Name.
+                if code:
+                    label = f"{code} ({name})"
+                else:
+                    label = name
+                    
+                manager_items.append({'label': label, 'code': code if code else None, 'name': name})
+                
+        else:
+            unique_names = sorted(mgr_df['SP담당'].dropna().unique())
+            for name in unique_names:
+                manager_items.append({'label': name, 'code': None, 'name': name})
         
         m_cols = st.columns(8)
-        for i, mgr in enumerate(managers):
+        for i, item in enumerate(manager_items):
             col_idx = i % 8
-            m_sub_df = mgr_df[mgr_df['SP담당'] == mgr]
+            
+            if item['code']:
+                m_sub_df = mgr_df[mgr_df['영업구역 수정'] == item['code']]
+                target_val = item['code']
+                use_code_filter = True
+            else:
+                m_sub_df = mgr_df[mgr_df['SP담당'] == item['name']]
+                target_val = item['name']
+                use_code_filter = False
+                
+            mgr_label = item['label']
             m_total = len(m_sub_df)
-            # Counts
+            
             m_active = len(m_sub_df[m_sub_df['영업상태명'] == '영업/정상'])
             m_closed = len(m_sub_df[m_sub_df['영업상태명'] == '폐업'])
-            
             with m_cols[col_idx]:
-                 # Interactive Manager Card
-                 is_selected = (sel_manager == mgr)
-                 border_color_mgr = "#2E7D32" if is_selected else "#e0e0e0"
-                 bg_color_mgr = "#e8f5e9" if is_selected else "#ffffff"
+                  current_sb_manager = st.session_state.get('sb_manager', "전체")
+                  is_selected = (current_sb_manager == mgr_label)
+                  
+                  border_color_mgr = "#2E7D32" if is_selected else "#e0e0e0"
+                  bg_color_mgr = "#e8f5e9" if is_selected else "#ffffff"
+                  
+                  unique_key_suffix = item['code'] if item['code'] else item['name']
 
-                 st.markdown(f"""
-                <div class="metric-card" style="margin-bottom:4px; padding: 10px 5px; text-align: center; border: 2px solid {border_color_mgr}; background-color: {bg_color_mgr};">
-                    <div class="metric-label" style="color:#555; font-size: 0.85rem; font-weight:bold; margin-bottom:4px;">{mgr}</div>
-                    <div class="metric-value" style="color:#333; font-size: 1.1rem; font-weight:bold;">{m_total:,}</div>
-                     <div class="metric-sub" style="font-size:0.75rem; margin-top:4px;">
-                        <span style='color:#2E7D32'>영업 {m_active}</span> / <span style='color:#d32f2f'>폐업 {m_closed}</span>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                 
-                 # Active/Closed Buttons for Manager
-                 m_c1, m_c2 = st.columns(2)
-                 with m_c1:
-                     st.button("영업", key=f"btn_mgr_active_{mgr}", on_click=update_manager_with_status, args=(mgr, '영업/정상'), use_container_width=True)
-                 with m_c2:
-                     st.button("폐업", key=f"btn_mgr_closed_{mgr}", on_click=update_manager_with_status, args=(mgr, '폐업'), use_container_width=True)
+                  manager_card_html = f'<div class="metric-card" style="margin-bottom:4px; padding: 10px 5px; text-align: center; border: 2px solid {border_color_mgr}; background-color: {bg_color_mgr};"><div class="metric-label" style="color:#555; font-size: 0.85rem; font-weight:bold; margin-bottom:4px;">{mgr_label}</div><div class="metric-value" style="color:#333; font-size: 1.1rem; font-weight:bold;">{m_total:,}</div><div class="metric-sub" style="font-size:0.75rem; margin-top:4px;"><span style="color:#2E7D32">영업 {m_active}</span> / <span style="color:#d32f2f">폐업 {m_closed}</span></div></div>'
+                  st.markdown(manager_card_html, unsafe_allow_html=True)
+                  
+                  m_c1, m_c2 = st.columns(2)
+                  with m_c1:
+                      st.button("영업", key=f"btn_mgr_active_{unique_key_suffix}", on_click=update_manager_with_status, args=(mgr_label, '영업/정상'), use_container_width=True)
+                  with m_c2:
+                      st.button("폐업", key=f"btn_mgr_closed_{unique_key_suffix}", on_click=update_manager_with_status, args=(mgr_label, '폐업'), use_container_width=True)
 
     st.markdown("---")
 
-    # Tabs
     tab1, tab_stats, tab2, tab3 = st.tabs(["🗺️ 지도 & 분석", "📈 상세통계", "📱 모바일 리스트", "📋 데이터 그리드"])
 
-    # --- Tab 1: Map & Analytics ---
     with tab1:
         st.subheader("🗺️ 지역별 영업기회 분석")
-        
-        # (Kakao Key input moved to Global Sidebar)
-        
-        # 1. Filters Setup
-        # 1. Filters Setup
-        # (Status filter is now Global)
         
         c_f1, c_f2 = st.columns(2)
         with c_f1:
@@ -575,315 +957,35 @@ if uploaded_zip and uploaded_dist:
             map_sales_opts = ["전체"] + sorted(list(df['SP담당'].unique()))
             sel_map_sales = st.selectbox("담당자", map_sales_opts, key="map_sales")
             
-        # 2. Prepare Data
-        # Filter again if local filters are used (Branch/Manager conflict with Sidebar? Yes, user might want to drill down further in map tab)
-        # But base df is already filtered by Global Sidebar
         map_df = df.dropna(subset=['lat', 'lon']).copy()
         
         if sel_map_region != "전체": map_df = map_df[map_df['관리지사'] == sel_map_region]
         if sel_map_sales != "전체": map_df = map_df[map_df['SP담당'] == sel_map_sales]
             
         st.markdown(f"**📍 조회된 업체**: {len(map_df):,} 개")
+        
+        # [FEATURE] Visible Filter Summary for Verification
+        filter_summary = []
+        if sel_map_region != "전체": filter_summary.append(f"지사:{sel_map_region}")
+        if sel_map_sales != "전체": filter_summary.append(f"담당:{sel_map_sales}")
+        if sel_status != "전체": filter_summary.append(f"상태:{sel_status}")
+        
+        if filter_summary:
+            st.caption(f"ℹ️ 적용된 필터: {', '.join(filter_summary)}")
+            
         st.markdown("---")
         
-        # 3. Layout: Map and Analysis
         col_map, col_chart = st.columns([1.8, 1])
         
         with col_map:
             st.markdown("#### 🗺️ 지도")
             if not map_df.empty:
-                # KAKAO MAP COMPONENT
                 if kakao_key:
-                    # Limit for performance
-                    limit = 3000
-                    if len(map_df) > limit:
-                        st.warning(f"⚠️ 데이터가 많아 상위 {limit:,}개만 지도에 표시합니다.")
-                        display_df = map_df.head(limit)
-                    else:
-                        display_df = map_df
-                        
-                    # Prepare JSON
-                    display_df = display_df.copy()
-                    display_df['title'] = display_df['사업장명']
-                    display_df['addr'] = display_df['소재지전체주소'].fillna('')
-                    display_df['tel'] = display_df['소재지전화'].fillna('')
-                    display_df['status'] = display_df['영업상태명']
-                    
-                    # Add Clousre Date
-                    def format_close_date(d):
-                        if pd.isna(d): return ''
-                        s = str(d).replace('.0', '').strip()[:10] # YYYY-MM-DD
-                        return s
-                    
-                    if '폐업일자' in display_df.columns:
-                        display_df['close_date'] = display_df['폐업일자'].apply(format_close_date)
-                    else:
-                        display_df['close_date'] = ''
-                        
-                    if '인허가일자' in display_df.columns:
-                        display_df['permit_date'] = display_df['인허가일자'].apply(format_close_date) # Same format YYYY-MM-DD
-                    else:
-                        display_df['permit_date'] = ''
-                    
-                    map_data = display_df[['lat', 'lon', 'title', 'status', 'addr', 'tel', 'close_date', 'permit_date']].to_dict(orient='records')
-                    
-                    import json
-                    json_data = json.dumps(map_data)
-                    
-                    import streamlit.components.v1 as components
-                    st.markdown("""
-                    <div style="background-color: #e3f2fd; border-left: 5px solid #2196F3; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
-                        <small><b>💡 지도 표시 문제 해결:</b> 지도가 보이지 않거나 백지 상태라면? <br>
-                        1. <a href="https://developers.kakao.com/console/app" target="_blank">Kakao Developers</a> > 내 애플리케이션 > [플랫폼] > [Web] 수정 <br>
-                        2. <b>사이트 도메인</b>에 현재 주소를 반드시 등록해야 합니다.<br>
-                        (로컬 실행 시: <code>http://localhost:8501</code> 또는 <code>http://127.0.0.1:8501</code>)
-                        </small>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    html_content = f"""
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="utf-8"/>
-                        <style>
-                            html, body {{ width:100%; height:100%; margin:0; padding:0; overflow:hidden; }} 
-                            #map {{ width: 100%; height: 500px; border: 1px solid #ddd; background-color: #f8f9fa; }}
-                            #error-msg {{ 
-                                display: none; 
-                                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                                text-align: center; color: #d32f2f; background: rgba(255,255,255,0.9); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 1px solid #ef9a9a;
-                            }}
-                            .retry-btn {{
-                                margin-top: 15px;
-                                padding: 8px 16px;
-                                background-color: #2196F3;
-                                color: white;
-                                border: none;
-                                border-radius: 4px;
-                                cursor: pointer;
-                            }}
-                        </style>
-                    </head>
-                    <body>
-                        <div id="map"></div>
-                        <div id="error-msg">
-                            <h3 style="margin-top:0;">⚠️ 지도를 불러오지 못했습니다</h3>
-                            <p id="error-desc" style="font-size:14px; line-height:1.6;">
-                                Kakao Maps SDK 스크립트 로드에 실패했습니다.<br>
-                                가장 흔한 원인은 <b>'사이트 도메인 미등록'</b> 입니다.
-                            </p>
-                            <div style="background:#fff3e0; padding:10px; border-radius:4px; font-size:12px; text-align:left; margin:10px 0;">
-                                <b>확인 사항:</b><br>
-                                1. Kakao Developers > 내 앱 > 플랫폼 > Web<br>
-                                2. 사이트 도메인에 <code>http://localhost:8501</code> 등록 확인<br>
-                                3. API 키({kakao_key[:4]}...)가 올바른지 확인
-                            </div>
-                            <small id="debug-info" style="color:#666; display:block; margin-top:5px;"></small>
-                            <button class="retry-btn" onclick="location.reload()">새로고침</button>
-                        </div>
-                        
-                        <!-- Force HTTPS protocol and add onerror handler -->
-                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_key}&libraries=services,clusterer,drawing&autoload=false"
-                                onerror="handleScriptError()"></script>
-                        
-                        <script>
-                            function handleScriptError() {{
-                                var errorBox = document.getElementById('error-msg');
-                                var debugBox = document.getElementById('debug-info');
-                                errorBox.style.display = 'block';
-                                debugBox.innerText = "Debug: Script failed to load (Network/403/Block).";
-                            }}
-
-                            // Global Error Handling
-                            window.onerror = function(msg, url, lineNo, columnNo, error) {{
-                                var errorBox = document.getElementById('error-msg');
-                                var debugBox = document.getElementById('debug-info');
-                                errorBox.style.display = 'block';
-                                debugBox.innerText = "Error: " + msg;
-                                return false; // Let default handler run if needed
-                            }};
-
-                            // Check immediate availability
-                            if (typeof kakao === 'undefined') {{
-                                setTimeout(function() {{
-                                    if (typeof kakao === 'undefined') {{
-                                        handleScriptError();
-                                        document.getElementById('debug-info').innerText += " (kakao undefined)";
-                                    }}
-                                }}, 1000);
-                            }}
-
-                            // Only proceed if kakao exists or loads
-                            if (typeof kakao !== 'undefined') {{
-                                kakao.maps.load(initMap);
-                            }} else {{
-                                // Wait for it potentially
-                                var checkInterval = setInterval(function() {{
-                                    if (typeof kakao !== 'undefined') {{
-                                        clearInterval(checkInterval);
-                                        kakao.maps.load(initMap);
-                                    }}
-                                }}, 200);
-                                // Timeout after 3s
-                                setTimeout(function(){{ clearInterval(checkInterval); }}, 3000);
-                            }}
-
-                            function initMap() {{
-                                try {{
-                                    var container = document.getElementById('map');
-                                    var options = {{
-                                        center: new kakao.maps.LatLng({display_df['lat'].mean()}, {display_df['lon'].mean()}),
-                                        level: 9
-                                    }};
-                                    var map = new kakao.maps.Map(container, options);
-                                    
-                                    var clusterer = new kakao.maps.MarkerClusterer({{
-                                        map: map,
-                                        averageCenter: true, 
-                                        minLevel: 10 
-                                    }});
-                                    
-                                    var data = {json_data};
-                                    var markers = [];
-                                    
-                                    // Marker Images
-                                    var imgSize = new kakao.maps.Size(35, 35); 
-                                    var activeImgSrc = "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
-                                    var otherImgSrc = "https://maps.google.com/mapfiles/ms/icons/red-dot.png"; // or grey
-
-                                    data.forEach(function(item) {{
-                                        // Choose Image
-                                        var imgSrc = (item.status === '영업/정상') ? activeImgSrc : otherImgSrc;
-                                        var markerImage = new kakao.maps.MarkerImage(imgSrc, imgSize);
-
-                                        var marker = new kakao.maps.Marker({{
-                                            position: new kakao.maps.LatLng(item.lat, item.lon),
-                                            title: item.title,
-                                            image: markerImage
-                                        }});
-                                        
-                                        var closeInfo = '';
-                                        if (item.close_date && item.close_date !== 'NaT' && item.close_date.length > 5) {{
-                                            closeInfo = '<span style="color:#d32f2f; font-size:11px;">(폐업: ' + item.close_date + ')</span><br>';
-                                        }}
-                                        
-                                        var permitInfo = '';
-                                        if (item.permit_date && item.permit_date !== 'NaT' && item.permit_date.length > 5) {{
-                                            permitInfo = '<span style="color:#1565C0; font-size:11px;">(인허가: ' + item.permit_date + ')</span><br>';
-                                        }}
-
-                                        
-                                        var content = '<div style="padding:12px;font-size:12px;width:240px;line-height:1.6;font-family:sans-serif;">' + 
-                                                      '<b style="font-size:14px; color:#333;">' + item.title + '</b>&nbsp;' +
-                                                      '<span style="background-color:#e8f5e9; color:#2E7D32; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px;">' + item.status + '</span><br>' + 
-                                                      permitInfo + closeInfo +
-                                                      '<span style="color:#666;">📍 ' + item.addr + '</span><br>' + 
-                                                      '<a href="tel:' + item.tel + '" style="text-decoration:none; color:#1976D2; font-weight:bold;">📞 ' + (item.tel ? item.tel : '번호없음') + '</a>' + 
-                                                      '</div>';
-                                                      
-                                        var infowindow = new kakao.maps.InfoWindow({{
-                                            content: content,
-                                            removable: true
-                                        }});
-                                        
-                                        kakao.maps.event.addListener(marker, 'click', function() {{
-                                            infowindow.open(map, marker);
-                                        }});
-                                        
-                                        markers.push(marker);
-                                    }});
-                                    
-                                    clusterer.addMarkers(markers);
-                                    
-                                    // Controls
-                                    var zoomControl = new kakao.maps.ZoomControl();
-                                    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-                                    var mapTypeControl = new kakao.maps.MapTypeControl();
-                                    map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
-                                    
-                                }} catch (err) {{
-                                    var errorBox = document.getElementById('error-msg');
-                                    var debugBox = document.getElementById('debug-info');
-                                    errorBox.style.display = 'block';
-                                    debugBox.innerText = "Load Error: " + err.message;
-                                }}
-                            }}
-                        </script>
-                    </body>
-                    </html>
-                    """
-                    components.html(html_content, height=520)
-                
+                    map_visualizer.render_kakao_map(map_df, kakao_key)
                 else:
-                    # Fallback to PyDeck
-                    import pydeck as pdk
-                    view_state = pdk.ViewState(
-                        latitude=map_df['lat'].mean(),
-                        longitude=map_df['lon'].mean(),
-                        zoom=10,
-                        pitch=0,
-                    )
-                    
-                    def get_color(status):
-                        if status == "영업/정상": return [46, 125, 50, 160] # Green
-                        return [198, 40, 40, 160] # Red
-                    
-                    map_df['color'] = map_df['영업상태명'].apply(get_color)
-                    map_df['display_tel'] = map_df['소재지전화'].fillna('번호없음')
-                    map_df['display_addr'] = map_df['소재지전체주소'].fillna('-')
-                    
-                    def format_date(d):
-                        if pd.isna(d): return "-"
-                        s = str(d).replace('.0', '').strip()
-                        if len(s) == 8: return f"{s[:4]}-{s[4:6]}-{s[6:]}"
-                        return s
-                    
-                    if '인허가일자' in map_df.columns:
-                        map_df['display_license_date'] = map_df['인허가일자'].apply(format_date)
-                    else: map_df['display_license_date'] = '-'
-                    if '폐업일자' in map_df.columns:
-                        map_df['display_close_date'] = map_df['폐업일자'].apply(format_date)
-                    else: map_df['display_close_date'] = '-'
-
-                    # TileLayer (OSM)
-                    tile_layer = pdk.Layer(
-                        "TileLayer",
-                        data="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                        get_line_color=[0, 0, 0],
-                        min_zoom=0,
-                        max_zoom=19,
-                        picking_method_name="hover",
-                    )
-
-                    scatter_layer = pdk.Layer(
-                        "ScatterplotLayer",
-                        data=map_df,
-                        get_position='[lon, lat]',
-                        get_color='color',
-                        get_radius=100,
-                        pickable=True,
-                        auto_highlight=True,
-                    )
-                    
-                    tooltip = {
-                        "html": "<b>{사업장명}</b><br/>"
-                                "<span style='color: white; background-color: grey; padding: 2px; border-radius:3px;'>{영업상태명}</span><br/>"
-                                "📅 인허가: {display_license_date}<br/>"
-                                "📅 폐업일: {display_close_date}<br/>"
-                                "🏠 {display_addr}<br/>"
-                                "📞 {display_tel}",
-                        "style": {"backgroundColor": "steelblue", "color": "white", "zIndex": "999"}
-                    }
-                    
-                    r = pdk.Deck(
-                        map_style=None, 
-                        initial_view_state=view_state,
-                        layers=[tile_layer, scatter_layer],
-                        tooltip=tooltip
-                    )
-                    st.pydeck_chart(r, use_container_width=True)
-                    st.caption("ℹ️ '카카오 API 키'를 입력하시면 카카오 지도로 전환됩니다.")
+                    map_visualizer.render_folium_map(map_df)
+            else:
+                st.warning("표시할 데이터가 없습니다.")
 
         with col_chart:
             st.markdown("#### 📊 데이터 분석")
@@ -917,19 +1019,13 @@ if uploaded_zip and uploaded_dist:
                 else:
                     st.info("데이터 없음")
             
-    
-    # --- Tab Stats: Advanced Analytics ---
     with tab_stats:
         st.subheader("📈 다차원 상세 분석")
         
-        # Calculate Metrics
-        # 1. Business Age
         now = datetime.now()
         if '인허가일자' in df.columns:
-            # Drop NaT
             valid_dates = df.dropna(subset=['인허가일자']).copy()
             if not valid_dates.empty:
-                # Ensure datetime type
                 if not pd.api.types.is_datetime64_any_dtype(valid_dates['인허가일자']):
                      valid_dates['인허가일자'] = pd.to_datetime(valid_dates['인허가일자'], errors='coerce')
                 
@@ -937,16 +1033,10 @@ if uploaded_zip and uploaded_dist:
                 avg_age = valid_dates['business_years'].mean()
             else:
                 avg_age = 0
-                valid_dates = df.copy() # fallback
-                valid_dates['business_years'] = 0
         else:
             avg_age = 0
-            valid_dates = df.copy()
-            valid_dates['business_years'] = 0
             
-        # 2. Area Size
         if '평수' not in df.columns:
-             # Try to calc from 소재지면적 (m2) -> pyung
              if '소재지면적' in df.columns:
                  df['평수'] = pd.to_numeric(df['소재지면적'], errors='coerce').fillna(0) / 3.3058
              else:
@@ -954,8 +1044,6 @@ if uploaded_zip and uploaded_dist:
         
         avg_area = df['평수'].mean()
         
-        # 3. Top District
-        # Extract Dong
         def extract_dong(addr):
              if pd.isna(addr): return "미상"
              tokens = addr.split()
@@ -967,7 +1055,6 @@ if uploaded_zip and uploaded_dist:
         df['dong'] = df['소재지전체주소'].astype(str).apply(extract_dong)
         top_dong = df['dong'].value_counts().idxmax() if not df.empty else "-"
         
-        # Metrics Row
         m1, m2, m3, m4 = st.columns(4)
         with m1: st.metric("평균 업력 (운영기간)", f"{avg_age:.1f}년")
         with m2: st.metric("평균 매장 규모", f"{avg_area:.1f}평")
@@ -976,19 +1063,11 @@ if uploaded_zip and uploaded_dist:
         
         st.divider()
         
-        # New Charts: Branch & Manager
-        c3, c4 = st.columns(2)
-        
-        st.divider()
-        
-        # New Charts: Branch & Manager
         st.markdown("##### 🏢 지사별 업체 분포 (선택된 영업상태 기준)")
         
         if not df.empty:
             c3, c4 = st.columns([1,1])
             
-            # Data for charts (Dynamic DF)
-            # 1. Pie Chart: Branch Ratio
             pie_base = alt.Chart(df).encode(
                 theta=alt.Theta("count()", stack=True),
                 color=alt.Color("관리지사", legend=alt.Legend(title="지사")),
@@ -1002,18 +1081,13 @@ if uploaded_zip and uploaded_dist:
             pie_text = pie_base.mark_text(radius=140).encode(
                 text=alt.Text("count()", format=",.0f"),
                 order=alt.Order("count()", sort="descending"),
-                color=alt.value("black")  # Force black color
+                color=alt.value("black") 
             )
             
             with c3:
                 st.markdown("**지사별 점유율 (Pie)**")
                 st.altair_chart((pie + pie_text), use_container_width=True)
                 
-            # 2. Stacked Bar: Branch x Status
-            # We need to show "Active" vs "Closed" even if filtered, 
-            # BUT user asked for "Global chart filter... apply dynamically".
-            # So if user selected "Active", only Active bars show.
-            
             bar_base = alt.Chart(df).encode(
                 x=alt.X("관리지사", sort=custom_branch_order, title=None),
                 y=alt.Y("count()", title="업체 수"),
@@ -1022,9 +1096,6 @@ if uploaded_zip and uploaded_dist:
             )
             
             stacked_bar = bar_base.mark_bar(cornerRadiusTopLeft=5, cornerRadiusTopRight=5)
-            
-            # For stacked labels, it's tricky in Altair without transform
-            # We'll just show total labels at top of stack
             
             with c4:
                 st.markdown("**지사별 영업상태 누적 (Stacked)**")
@@ -1056,7 +1127,6 @@ if uploaded_zip and uploaded_dist:
         dong_counts = df['dong'].value_counts().reset_index()
         dong_counts.columns = ['행정구역', '업체수']
         
-        # Altair Horizontal Bar
         top20 = dong_counts.head(20)
         
         dong_chart = alt.Chart(top20).mark_bar(color="#7986CB").encode(
@@ -1071,32 +1141,25 @@ if uploaded_zip and uploaded_dist:
         
         st.altair_chart((dong_chart + dong_text), use_container_width=True)
 
-    # --- Tab 2: Mobile List ---
     with tab2:
         st.subheader("📱 영업 공략 리스트")
         
-        # 2. Local Filters (Keyword)
         keyword = st.text_input("검색", placeholder="업체명 또는 주소...")
             
-        # Filtering
         m_df = df.copy()
-        # Status filtered globally now
         
         if keyword: m_df = m_df[m_df['사업장명'].str.contains(keyword, na=False) | m_df['소재지전체주소'].str.contains(keyword, na=False)]
         
         st.caption(f"조회 결과: {len(m_df):,}건")
         
-        # Pagination
-        ITEMS_PER_PAGE = 24 # 6 rows * 4 cols
+        ITEMS_PER_PAGE = 24 
         if 'page' not in st.session_state: st.session_state.page = 0
         total_pages = max(1, (len(m_df)-1)//ITEMS_PER_PAGE + 1)
         
-        # Display Cards
         start = st.session_state.page * ITEMS_PER_PAGE
         end = start + ITEMS_PER_PAGE
         page_df = m_df.iloc[start:end]
         
-        # Navigation
         col_p, col_n = st.columns([1,1])
         with col_p:
             if st.button("Previous Pages") and st.session_state.page > 0:
@@ -1107,7 +1170,6 @@ if uploaded_zip and uploaded_dist:
                 st.session_state.page += 1
                 st.rerun()
                 
-        # Card Grid (4 per row)
         rows = [page_df.iloc[i:i+4] for i in range(0, len(page_df), 4)]
         
         for row_chunk in rows:
@@ -1116,7 +1178,6 @@ if uploaded_zip and uploaded_dist:
                 status_cls = "status-open" if row['영업상태명'] == '영업/정상' else "status-closed"
                 tel = row['소재지전화'] if pd.notna(row['소재지전화']) else ""
                 
-                # Date Formatting Helper
                 def fmt_date(d):
                     if pd.isna(d): return ""
                     try:
@@ -1134,30 +1195,10 @@ if uploaded_zip and uploaded_dist:
                     date_html += f"<span style='color:#d32f2f'>폐업: {close_date}</span>"
                 
                 with cols[idx]:
-                    # HTML Card (Compact)
-                    st.markdown(f"""
-                    <div class="card-container" style="min-height:120px; padding: 10px;">
-                        <div class="card-title" style="font-size:0.95rem; margin-bottom: 4px;">
-                            {row['사업장명']}
-                            <div class="card-badges">
-                                <span class="status-badge {status_cls}" style="padding: 1px 4px; font-size: 0.65rem;">{row['영업상태명']}</span>
-                            </div>
-                        </div>
-                        <div class="card-meta" style="font-size:0.75rem; margin-bottom: 4px;">
-                            {row['업태구분명']} | {row['평수']}평<br>
-                            {row['관리지사']} ({row['SP담당']})
-                        </div>
-                        <div class="card-meta" style="font-size:0.7rem; margin-bottom: 4px; font-weight:bold;">
-                            {date_html}
-                        </div>
-                        <div class="card-address" style="font-size:0.7rem; color:#888;">
-                            {row['소재지전체주소']}
-                            {f'<br>📞 {tel}' if tel else ''}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    tel_html = ('<br>📞 ' + tel) if tel else ''
+                    footer_html = f'<div class="card-container" style="min-height:120px; padding: 10px;"><div class="card-title" style="font-size:0.95rem; margin-bottom: 4px;">{row["사업장명"]}<div class="card-badges"><span class="status-badge {status_cls}" style="padding: 1px 4px; font-size: 0.65rem;">{row["영업상태명"]}</span></div></div><div class="card-meta" style="font-size:0.75rem; margin-bottom: 4px;">{row["업태구분명"]} | {row["평수"]}평<br>{row["관리지사"]} ({row["SP담당"]})</div><div class="card-meta" style="font-size:0.7rem; margin-bottom: 4px; font-weight:bold;">{date_html}</div><div class="card-address" style="font-size:0.7rem; color:#888;">{row["소재지전체주소"]}{tel_html}</div></div>'
+                    st.markdown(footer_html, unsafe_allow_html=True)
                     
-                    # Buttons in Card Column
                     b1, b2, b3 = st.columns([1,1,2])
                     with b1:
                         if tel: st.link_button("📞", f"tel:{tel}", use_container_width=True)
@@ -1167,46 +1208,34 @@ if uploaded_zip and uploaded_dist:
                     with b3:
                          st.link_button("🔍 검색", f"https://search.naver.com/search.naver?query={row['사업장명']}", use_container_width=True)
     
-    # --- Tab 3: Data Grid ---
     with tab3:
         st.markdown("### 📋 전체 데이터")
         
-        # 1. Custom Sort Order for Branch
-        # '중앙지사', '강북지사', ... etc (User provided order)
         custom_branch_order = [
             '중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', 
             '남양주지사', '강릉지사', '원주지사', '미지정'
         ]
         
-        # Create a categorical type for sorting
         df['관리지사'] = pd.Categorical(df['관리지사'], categories=custom_branch_order, ordered=True)
         
-        # Prepare Grid Data
         grid_df = df.copy()
         
-        # Format Dates strictly to YYYY-MM-DD string
         if '인허가일자' in grid_df.columns:
             grid_df['인허가일자'] = grid_df['인허가일자'].apply(lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else "")
             
         if '폐업일자' in grid_df.columns:
             grid_df['폐업일자'] = grid_df['폐업일자'].apply(lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else "")
 
-        # Sort by Branch (Custom) -> Manager -> Business Type
         grid_df = grid_df.sort_values(by=['관리지사', 'SP담당', '업태구분명'])
         
-        # 2. Select & Reorder Columns
         display_cols = [
             '관리지사', 'SP담당', '업태구분명', '사업장명', 
             '소재지전체주소', '소재지전화', '평수', '인허가일자', '폐업일자'
         ]
         
-        # Ensure columns exist (handle potential missing ones gracefully)
         final_cols = [c for c in display_cols if c in grid_df.columns]
         df_display = grid_df[final_cols]
         
-        # Display
-        # Note: Dates are already strings "YYYY-MM-DD", so we don't need DateColumn formatting here,
-        # just display as normal columns.
         st.dataframe(
             df_display, 
             use_container_width=True, 
@@ -1216,17 +1245,9 @@ if uploaded_zip and uploaded_dist:
             }
         )
         
-        # CSV Download (cp949 for Excel/Korean compatibility)
         csv = df_display.to_csv(index=False, encoding='cp949').encode('cp949')
         st.download_button("📥 CSV 다운로드", csv, "영업기회_처리결과.csv", "text/csv")
 
 else:
-    # Landing Page
     st.info("👈 사이드바에서 데이터를 업로드하거나, '자동 감지' 기능을 확인하세요.")
-    st.markdown("""
-    ### 🚀 시작하기
-    1. **자동 모드**: `data/` 폴더에 파일이 있으면 자동으로 불러옵니다.
-    2. **수동 모드**: 언제든지 사이드바에서 파일을 직접 업로드할 수 있습니다.
-    
-    > **Tip**: 모바일 접속 시 '홈 화면에 추가'하여 앱처럼 사용하세요!
-    """)
+    st.markdown("### 🚀 시작하기\n1. **자동 모드**: `data/` 폴더에 파일이 있으면 자동으로 불러옵니다.\n2. **수동 모드**: 언제든지 사이드바에서 파일을 직접 업로드할 수 있습니다.\n\n> **Tip**: 모바일 접속 시 '홈 화면에 추가'하여 앱처럼 사용하세요!", unsafe_allow_html=True)

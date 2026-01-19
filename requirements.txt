@@ -6,3 +6,7 @@ openpyxl
 rapidfuzz
 watchdog
 pyproj
+folium
+streamlit-folium
+requests
+python-dotenv

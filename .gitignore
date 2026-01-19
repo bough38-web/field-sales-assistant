@@ -12,3 +12,7 @@ temp_extracted_data/
 !data/*.xlsx
 !data/*.zip
 
+# API Keys
+오픈API/api_key.txt
+
+*.zip

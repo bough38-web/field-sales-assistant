@@ -1023,6 +1023,7 @@ if raw_df is not None:
         # [FEATURE] Address search (outside conditional block to ensure always defined)
         st.markdown("##### 🔍 주소 검색")
         address_search = st.text_input("주소 검색 (예: 인천/삼산동)", value="", placeholder="주소 또는 업체명 입력...")
+        global_search_mode = st.checkbox("🌐 지사 필터 무시하고 전체 검색", value=False, help="체크하면 선택한 지사와 상관없이 전체 데이터에서 검색합니다.")
         
     # Data Filtering
     base_df = raw_df.copy()
@@ -1030,9 +1031,11 @@ if raw_df is not None:
     # Get current branch selection
     current_branch_filter = st.session_state.get('sb_branch', "전체")
     
-    # [FEATURE] Only filter out 미지정 for non-admin users OR when admin is not specifically viewing 미지정
-    if st.session_state.user_role != 'admin' or (st.session_state.user_role == 'admin' and current_branch_filter not in ["전체", "미지정"]):
-        base_df = base_df[base_df['관리지사'] != '미지정']
+    # [FEATURE] Global Search Mode: Skip branch filtering if enabled
+    if not global_search_mode:
+        # [FEATURE] Only filter out 미지정 for non-admin users OR when admin is not specifically viewing 미지정
+        if st.session_state.user_role != 'admin' or (st.session_state.user_role == 'admin' and current_branch_filter not in ["전체", "미지정"]):
+             base_df = base_df[base_df['관리지사'] != '미지정']
         
     # Debug: show total records after 미지정 filter
     if st.session_state.user_role == 'admin':

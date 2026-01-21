@@ -502,14 +502,6 @@ if uploaded_dist:
         with st.spinner("🚀 파일 분석 및 매칭중..."):
              raw_df, error = data_loader.load_and_process_data(uploaded_zip, uploaded_dist)
              
-             # [FIX] Ensure '관리지사' has no NaNs, fill with '미지정'
-             if raw_df is not None:
-                 if '관리지사' in raw_df.columns:
-                     raw_df['관리지사'] = raw_df['관리지사'].fillna('미지정')
-                     raw_df.loc[raw_df['관리지사'].astype(str).str.strip() == '', '관리지사'] = '미지정'
-                 else:
-                     raw_df['관리지사'] = '미지정'  # Create if missing
-             
     elif data_source == "OpenAPI 연동 (Auto)" and api_df is not None:
         with st.spinner("🌐 API 데이터 매칭중..."):
              raw_df, error = data_loader.process_api_data(api_df, uploaded_dist)

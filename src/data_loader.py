@@ -458,4 +458,11 @@ def process_api_data(target_df, district_file_path_or_obj):
     final_df['관리지사'] = final_df['관리지사'].fillna('미지정')
     final_df['SP담당'] = final_df['SP담당'].fillna('미지정')
     
-    return final_df, None
+    # Extract Full Manager List from District File (regardless of matches)
+    # This ensures managers with 0 assigned facilities still appear in the list
+    if '영업구역 수정' in df_district.columns:
+        mgr_info = df_district[['SP담당', '영업구역 수정', '관리지사']].drop_duplicates().to_dict(orient='records')
+    else:
+        mgr_info = df_district[['SP담당', '관리지사']].drop_duplicates().to_dict(orient='records')
+    
+    return final_df, mgr_info, None

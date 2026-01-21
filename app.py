@@ -9,8 +9,10 @@ from datetime import datetime
 
 # Import modularized components
 from src import utils
-from src import data_loader
-from src import map_visualizer
+from src.data_loader import load_and_process_data, fetch_from_api
+from src.map_visualizer import create_folium_map
+from src.report_generator import generate_pdf_report
+from src import activity_logger  # Activity logging and status tracking
 
 # --- Configuration & Theme ---
 st.set_page_config(
@@ -490,7 +492,7 @@ with st.sidebar:
 
 # --- Main Logic ---
 
-st.title("💼 영업기회 파이프라인")
+# No title here - removed 파이프라인
 
 raw_df = None
 error = None
@@ -544,7 +546,7 @@ if raw_df is not None:
             unsafe_allow_html=True
         )
         
-        st.markdown("<h1 style='text-align: center; margin-bottom: 10px;'>Sales Opportunity Capture</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; margin-bottom: 10px;'>영업기회 포착 대시보드</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #666; margin-bottom: 40px;'>행정안전부 공공DATA 기반 고객 및 시장의 변화 신호(신규,폐업 징후)를 조기에 감지하여<br>신규 영업기회를 발굴, 기존 고객 해지 예방 활동 표시</p>", unsafe_allow_html=True)
         
         l_tab1, l_tab2, l_tab3 = st.tabs(["👮 관리자(Admin)", "🏢 지사(Branch)", "👤 담당자(Manager)"])
@@ -557,6 +559,8 @@ if raw_df is not None:
                     if pw == "admin1234":
                         st.session_state.user_role = 'admin'
                         st.session_state.admin_auth = True
+                        # Log access
+                        activity_logger.log_access('admin', '관리자', 'login')
                         st.rerun()
                     else:
                         st.error("암호가 올바르지 않습니다.")
@@ -573,6 +577,8 @@ if raw_df is not None:
                         st.session_state.user_role = 'branch'
                         st.session_state.user_branch = s_branch
                         st.session_state.sb_branch = s_branch # Pre-set filter
+                        # Log access
+                        activity_logger.log_access('branch', s_branch, 'login')
                         st.rerun()
                     else:
                         st.error("패스워드가 올바르지 않습니다.")
@@ -629,6 +635,8 @@ if raw_df is not None:
                             
                         st.session_state.sb_manager = p_name # This usually takes Name in main logic
                         
+                        # Log access
+                        activity_logger.log_access('manager', p_name, 'login')
                         st.rerun()
                     else:
                         st.error("패스워드가 올바르지 않습니다.")

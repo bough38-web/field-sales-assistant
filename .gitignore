@@ -13,24 +13,12 @@ reports/
 backup/
 backups/
 
-# Debug Scripts
-debug_*.py
-fix_*.py
-verify_*.py
-inspect_*.py
-streamlit.py
-utils_legacy.py
-analyze_data.py
-
-# Data Files (General)
-*.csv
-*.xlsx
-# Allow specific data files if needed
-!data/*.xlsx
-!data/*.zip
-
-# API Keys
+# API Key
 오픈API/api_key.txt
+
+# Storage (user data, logs, activity tracking)
+storage/
+storage/*.json
 
 *.zip
 !data/LOCALDATA_NOWMON_CSV.zip

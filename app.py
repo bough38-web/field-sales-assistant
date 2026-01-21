@@ -1576,7 +1576,7 @@ if raw_df is not None:
             if kakao_key:
                 map_visualizer.render_kakao_map(map_df, kakao_key)
             else:
-                map_visualizer.render_folium_map(map_df)
+                map_visualizer.render_folium_map(map_df) # [FIX] Correct function name
         else:
             st.warning("표시할 데이터가 없습니다.")
             

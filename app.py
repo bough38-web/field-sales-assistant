@@ -1064,6 +1064,10 @@ if raw_df is not None:
             norm_sel_branch = unicodedata.normalize('NFC', current_branch_filter)
             base_df = base_df[base_df['관리지사'] == norm_sel_branch]
             
+            # Debug log for admin
+            if st.session_state.user_role == 'admin':
+                st.sidebar.caption(f"📊 필터: {norm_sel_branch} | 결과: {len(base_df)}건")
+            
         if selected_area_code:
             base_df = base_df[base_df['영업구역 수정'] == selected_area_code]
         elif sel_manager != "전체": 

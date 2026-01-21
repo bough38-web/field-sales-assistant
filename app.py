@@ -679,6 +679,13 @@ if raw_df is not None:
             
         c_mode1, c_mode2 = st.columns(2)
         
+        # [INIT] Initialize admin-related variables from session state
+        admin_auth = st.session_state.get('admin_auth', False)
+        edit_mode = False
+        custom_view_mode = False
+        custom_view_managers = []
+        exclude_branches = []
+        
         # [UX] Admin Settings Toggle (Only for Admin Role)
         if st.session_state.user_role == 'admin':
             show_admin_settings = st.checkbox("⚙️ 관리자 설정 (필터 열기)", value=False)

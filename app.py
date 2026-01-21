@@ -1604,6 +1604,9 @@ if raw_df is not None:
             
         st.markdown("---")
         
+        if len(map_df) > 5000:
+            st.info(f"ℹ️ 데이터가 많아({len(map_df):,}건) 클러스터링되어 표시됩니다. 지도를 확대하면 개별 마커가 보입니다.")
+            
         st.markdown("#### 🗺️ 지도")
         if not map_df.empty:
             if kakao_key:

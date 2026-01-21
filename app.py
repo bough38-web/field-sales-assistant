@@ -990,13 +990,15 @@ if raw_df is not None:
             )
             
             
+            
             st.markdown("##### 📞 전화번호 필터")
             only_with_phone = st.toggle("전화번호 있는 것만 보기", value=False)
             
-            st.markdown("##### 🔍 주소 검색")
-            address_search = st.text_input("주소 검색 (예: 인천/삼산동)", value="", placeholder="주소 또는 업체명 입력...")
-            
             st.markdown("---")
+        
+        # [FEATURE] Address search (outside conditional block to ensure always defined)
+        st.markdown("##### 🔍 주소 검색")
+        address_search = st.text_input("주소 검색 (예: 인천/삼산동)", value="", placeholder="주소 또는 업체명 입력...")
         
     # Data Filtering
     base_df = raw_df.copy()

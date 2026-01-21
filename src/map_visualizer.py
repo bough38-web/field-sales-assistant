@@ -227,11 +227,9 @@ def render_folium_map(map_df):
     # [DEBUG] Visible Debug Info Removed
     display_df = valid_rows
     
-    # 2. Limit (Performance)
-    limit = 2000
-    if len(display_df) > limit:
-         st.warning(f"⚠️ 성능을 위해 상위 {limit:,}개만 지도에 표시합니다.")
-         display_df = display_df.head(limit)
+    # [FIX] Removed limit (Performance handled by MarkerCluster)
+    # limit = 2000
+    # if len(display_df) > limit: ...
     
     # 3. Center
     if not display_df.empty:
@@ -241,6 +239,14 @@ def render_folium_map(map_df):
         avg_lat, avg_lon = 37.5665, 126.9780
         
     m = folium.Map(location=[avg_lat, avg_lon], zoom_start=11, tiles=None)
+    
+    # Add Marker Cluster
+    marker_cluster = MarkerCluster(
+        name="영업기회 마커 클러스터",
+        overlay=True,
+        control=True,
+        icon_create_function=None
+    ).add_to(m)
     
     # Layers
     folium.TileLayer(
@@ -340,7 +346,7 @@ def render_folium_map(map_df):
                 popup=folium.Popup(popup_html, max_width=260),
                 tooltip=f"{title} ({status})",
                 icon=folium.Icon(color=color, icon=icon_type)
-            ).add_to(m) 
+            ).add_to(marker_cluster)  # [FIX] Add to Cluster 
             count += 1
         except: continue
         

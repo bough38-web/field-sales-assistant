@@ -65,8 +65,9 @@ def load_and_process_data(zip_file_path_or_obj, district_file_path_or_obj):
             
             address_col = [c for c in df.columns if '주소' in c][0]
             
-            # Filter rows (Seoul/Gyeonggi/Gangwon/Incheon)
-            df_filtered = df[df[address_col].str.contains('서울|경기|강원|인천', na=False)]
+            # [FIX] Allow ALL regions (removed hardcoded filter for Seoul/Gyeonggi/Gangwon/Incheon)
+            # df_filtered = df[df[address_col].str.contains('서울|경기|강원|인천', na=False)]
+            df_filtered = df  # Keep all data
             dfs.append(df_filtered)
             
         except Exception as e:

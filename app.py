@@ -1033,8 +1033,10 @@ if raw_df is not None:
     
     # [FEATURE] Global Search Mode: Skip branch filtering if enabled
     if not global_search_mode:
-        # [FEATURE] Only filter out 미지정 for non-admin users OR when admin is not specifically viewing 미지정
-        if st.session_state.user_role != 'admin' or (st.session_state.user_role == 'admin' and current_branch_filter not in ["전체", "미지정"]):
+        # [FEATURE] Simple Logic: Only filter out 미지정 for Non-Admin users
+        # Admin users should ALWAYS have access to '미지정' data in the base set
+        # Sub-filtering happens via the Sidebar Branch Selector later
+        if st.session_state.user_role != 'admin':
              base_df = base_df[base_df['관리지사'] != '미지정']
         
     # Debug: show total records after 미지정 filter

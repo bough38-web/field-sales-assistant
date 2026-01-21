@@ -1107,8 +1107,8 @@ if raw_df is not None:
             mask = pd.Series([True] * len(base_df), index=base_df.index)
             for keyword in keywords:
                 keyword_mask = (
-                    base_df['소재지전체주소'].astype(str).str.contains(keyword, case=False, na=False) |
-                    base_df['사업장명'].astype(str).str.contains(keyword, case=False, na=False)
+                    base_df['소재지전체주소'].astype(str).str.contains(keyword, case=False, na=False, regex=False) |
+                    base_df['사업장명'].astype(str).str.contains(keyword, case=False, na=False, regex=False)
                 )
                 mask = mask & keyword_mask
             base_df = base_df[mask]

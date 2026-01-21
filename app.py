@@ -500,11 +500,13 @@ error = None
 if uploaded_dist:
     if data_source == "파일 업로드 (File)" and uploaded_zip:
         with st.spinner("🚀 파일 분석 및 매칭중..."):
-             raw_df, error = data_loader.load_and_process_data(uploaded_zip, uploaded_dist)
+             # [FIX] Unpack 3 values (df, mgr_info, error)
+             raw_df, mgr_info_list, error = data_loader.load_and_process_data(uploaded_zip, uploaded_dist)
              
     elif data_source == "OpenAPI 연동 (Auto)" and api_df is not None:
         with st.spinner("🌐 API 데이터 매칭중..."):
-             raw_df, error = data_loader.process_api_data(api_df, uploaded_dist)
+             # [FIX] Unpack 3 values
+             raw_df, mgr_info_list, error = data_loader.process_api_data(api_df, uploaded_dist)
 
 if error:
     st.error(f"오류 발생: {error}")
@@ -598,7 +600,12 @@ if raw_df is not None:
             sel_br_for_mgr = st.selectbox("소속 지사 (필터용)", ["전체"] + global_branch_opts)
             
             if raw_df is not None:
-                mgr_candidates = raw_df.copy()
+                # [FIX] Use authoritative manager list from Excel if available
+                if 'mgr_info_list' in locals() and mgr_info_list:
+                    mgr_candidates = pd.DataFrame(mgr_info_list)
+                else:
+                    mgr_candidates = raw_df.copy()
+                
                 if sel_br_for_mgr != "전체":
                     mgr_candidates = mgr_candidates[mgr_candidates['관리지사'] == sel_br_for_mgr]
                 

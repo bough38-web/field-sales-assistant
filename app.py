@@ -162,42 +162,40 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Korean to English Romanization Helper
-def korean_to_romanization(text):
+# Predefined Password Maps
+BRANCH_PASSWORDS = {
+    '중앙지사': 'central123',
+    '강북지사': 'gangbuk456',
+    '서대문지사': 'seodae789',
+    '고양지사': 'goyang234',
+    '의정부지사': 'uijeong567',
+    '남양주지사': 'namyang890',
+    '강릉지사': 'gangneung345',
+    '원주지사': 'wonju678'
+}
+
+# For managers, use a simple pattern: first 3 chars of name + 1234
+# Example: 김철수 -> kim1234, 이영희 -> lee1234
+def get_manager_password(manager_name):
     """
-    Convert Korean text to English romanization for password validation.
-    Simplified mapping for common Korean characters.
+    Generate simple password for manager.
+    Uses first 3 characters (in lowercase romanization approximation) + 1234
     """
-    romanization_map = {
-        'ㅏ': 'a', 'ㅐ': 'ae', 'ㅑ': 'ya', 'ㅒ': 'yae', 'ㅓ': 'eo', 'ㅔ': 'e', 'ㅕ': 'yeo', 'ㅖ': 'ye',
-        'ㅗ': 'o', 'ㅘ': 'wa', 'ㅙ': 'wae', 'ㅚ': 'oe', 'ㅛ': 'yo', 'ㅜ': 'u', 'ㅝ': 'wo', 'ㅞ': 'we',
-        'ㅟ': 'wi', 'ㅠ': 'yu', 'ㅡ': 'eu', 'ㅢ': 'ui', 'ㅣ': 'i',
-        'ㄱ': 'g', 'ㄴ': 'n', 'ㄷ': 'd', 'ㄹ': 'r', 'ㅁ': 'm', 'ㅂ': 'b', 'ㅅ': 's', 'ㅇ': '',
-        'ㅈ': 'j', 'ㅊ': 'ch', 'ㅋ': 'k', 'ㅌ': 't', 'ㅍ': 'p', 'ㅎ': 'h',
-        'ㄲ': 'kk', 'ㄸ': 'tt', 'ㅃ': 'pp', 'ㅆ': 'ss', 'ㅉ': 'jj',
-        '가': 'ga', '나': 'na', '다': 'da', '라': 'ra', '마': 'ma', '바': 'ba', '사': 'sa', '아': 'a', '자': 'ja', '차': 'cha', '카': 'ka', '타': 'ta', '파': 'pa', '하': 'ha',
-        '각': 'gak', '간': 'gan', '갈': 'gal', '감': 'gam', '강': 'gang', '개': 'gae', '거': 'geo', '건': 'geon', '걸': 'geol', '검': 'geom', '게': 'ge', '겨': 'gyeo', '격': 'gyeok', '견': 'gyeon', '경': 'gyeong',
-        '고': 'go', '곡': 'gok', '곤': 'gon', '골': 'gol', '공': 'gong', '과': 'gwa', '관': 'gwan', '광': 'gwang', '괴': 'goe', '교': 'gyo', '구': 'gu', '국': 'guk', '군': 'gun', '굴': 'gul', '궁': 'gung', '권': 'gwon', '귀': 'gwi', '규': 'gyu', '균': 'gyun', '그': 'geu', '극': 'geuk', '근': 'geun', '글': 'geul', '금': 'geum', '급': 'geup', '기': 'gi', '길': 'gil',
-        '나': 'na', '낙': 'nak', '난': 'nan', '날': 'nal', '남': 'nam', '낭': 'nang', '내': 'nae', '너': 'neo', '널': 'neol', '네': 'ne', '녀': 'nyeo', '년': 'nyeon', '념': 'nyeom', '녕': 'nyeong', '노': 'no', '녹': 'nok', '논': 'non', '농': 'nong', '뇌': 'noe', '누': 'nu', '눈': 'nun', '늘': 'neul', '니': 'ni',
-        '다': 'da', '단': 'dan', '달': 'dal', '담': 'dam', '당': 'dang', '대': 'dae', '더': 'deo', '덕': 'deok', '던': 'deon', '덜': 'deol', '데': 'de', '도': 'do', '독': 'dok', '돈': 'don', '동': 'dong', '두': 'du', '둔': 'dun', '뒤': 'dwi', '드': 'deu', '득': 'deuk', '든': 'deun', '들': 'deul', '등': 'deung', '디': 'di',
-        '라': 'ra', '락': 'rak', '란': 'ran', '람': 'ram', '랑': 'rang', '래': 'rae', '러': 'reo', '럭': 'reok', '런': 'reon', '럴': 'reol', '레': 're', '려': 'ryeo', '력': 'ryeok', '련': 'ryeon', '렬': 'ryeol', '령': 'ryeong', '례': 'rye', '로': 'ro', '록': 'rok', '론': 'ron', '롱': 'rong', '뢰': 'roe', '료': 'ryo', '루': 'ru', '룩': 'ruk', '룬': 'run', '률': 'ryul', '륙': 'ryuk', '륜': 'ryun', '르': 'reu', '른': 'reun', '를': 'reul', '름': 'reum', '릉': 'reung', '리': 'ri', '린': 'rin', '림': 'rim', '립': 'rip',
-        '마': 'ma', '막': 'mak', '만': 'man', '말': 'mal', '망': 'mang', '매': 'mae', '머': 'meo', '먹': 'meok', '면': 'myeon', '멸': 'myeol', '명': 'myeong', '모': 'mo', '목': 'mok', '몰': 'mol', '못': 'mot', '무': 'mu', '묵': 'muk', '문': 'mun', '물': 'mul', '미': 'mi', '민': 'min',
-        '바': 'ba', '박': 'bak', '반': 'ban', '발': 'bal', '밤': 'bam', '방': 'bang', '배': 'bae', '백': 'baek', '번': 'beon', '벌': 'beol', '범': 'beom', '법': 'beop', '벽': 'byeok', '변': 'byeon', '별': 'byeol', '병': 'byeong', '보': 'bo', '복': 'bok', '본': 'bon', '봉': 'bong', '부': 'bu', '북': 'buk', '분': 'bun', '불': 'bul', '붕': 'bung', '비': 'bi', '빈': 'bin', '빙': 'bing',
-        '사': 'sa', '산': 'san', '살': 'sal', '삼': 'sam', '상': 'sang', '새': 'sae', '서': 'seo', '석': 'seok', '선': 'seon', '설': 'seol', '섬': 'seom', '성': 'seong', '세': 'se', '소': 'so', '속': 'sok', '손': 'son', '솔': 'sol', '송': 'song', '수': 'su', '숙': 'suk', '순': 'sun', '술': 'sul', '숭': 'sung', '슬': 'seul', '습': 'seup', '승': 'seung', '시': 'si', '식': 'sik', '신': 'sin', '실': 'sil', '심': 'sim',
-        '아': 'a', '악': 'ak', '안': 'an', '알': 'al', '암': 'am', '압': 'ap', '앙': 'ang', '애': 'ae', '야': 'ya', '약': 'yak', '양': 'yang', '어': 'eo', '언': 'eon', '얼': 'eol', '엄': 'eom', '업': 'eop', '에': 'e', '여': 'yeo', '역': 'yeok', '연': 'yeon', '열': 'yeol', '염': 'yeom', '영': 'yeong', '예': 'ye', '오': 'o', '옥': 'ok', '온': 'on', '올': 'ol', '옹': 'ong', '와': 'wa', '완': 'wan', '왕': 'wang', '외': 'oe', '요': 'yo', '용': 'yong', '우': 'u', '욱': 'uk', '운': 'un', '울': 'ul', '웅': 'ung', '원': 'won', '월': 'wol', '위': 'wi', '유': 'yu', '육': 'yuk', '윤': 'yun', '율': 'yul', '융': 'yung', '은': 'eun', '을': 'eul', '음': 'eum', '읍': 'eup', '응': 'eung', '의': 'ui', '이': 'i', '익': 'ik', '인': 'in', '일': 'il', '임': 'im', '입': 'ip',
-        '자': 'ja', '작': 'jak', '잔': 'jan', '잘': 'jal', '장': 'jang', '재': 'jae', '저': 'jeo', '적': 'jeok', '전': 'jeon', '절': 'jeol', '점': 'jeom', '접': 'jeop', '정': 'jeong', '제': 'je', '조': 'jo', '족': 'jok', '존': 'jon', '졸': 'jol', '종': 'jong', '좌': 'jwa', '주': 'ju', '죽': 'juk', '준': 'jun', '줄': 'jul', '중': 'jung', '즉': 'jeuk', '증': 'jeung', '지': 'ji', '직': 'jik', '진': 'jin', '질': 'jil', '집': 'jip',
-        '차': 'cha', '착': 'chak', '찬': 'chan', '찰': 'chal', '창': 'chang', '채': 'chae', '처': 'cheo', '척': 'cheok', '천': 'cheon', '철': 'cheol', '첨': 'cheom', '청': 'cheong', '체': 'che', '초': 'cho', '촉': 'chok', '촌': 'chon', '총': 'chong', '최': 'choe', '추': 'chu', '축': 'chuk', '춘': 'chun', '출': 'chul', '충': 'chung', '측': 'cheuk', '치': 'chi', '친': 'chin', '칠': 'chil', '침': 'chim',
-        '카': 'ka', '칸': 'kan', '쾌': 'kwae', '크': 'keu', '큰': 'keun',
-        '타': 'ta', '탁': 'tak', '탄': 'tan', '탈': 'tal', '탐': 'tam', '태': 'tae', '터': 'teo', '테': 'te', '토': 'to', '통': 'tong', '투': 'tu', '특': 'teuk', '티': 'ti',
-        '파': 'pa', '판': 'pan', '팔': 'pal', '패': 'pae', '평': 'pyeong', '폐': 'pye', '포': 'po', '폭': 'pok', '표': 'pyo', '품': 'pum', '풍': 'pung', '피': 'pi', '필': 'pil',
-        '하': 'ha', '학': 'hak', '한': 'han', '할': 'hal', '함': 'ham', '합': 'hap', '항': 'hang', '해': 'hae', '핵': 'haek', '행': 'haeng', '향': 'hyang', '허': 'heo', '헌': 'heon', '혁': 'hyeok', '현': 'hyeon', '혈': 'hyeol', '협': 'hyeop', '형': 'hyeong', '혜': 'hye', '호': 'ho', '혹': 'hok', '혼': 'hon', '홍': 'hong', '화': 'hwa', '확': 'hwak', '환': 'hwan', '활': 'hwal', '황': 'hwang', '회': 'hoe', '획': 'hoek', '횡': 'hoeng', '효': 'hyo', '후': 'hu', '훈': 'hun', '휘': 'hwi', '휴': 'hyu', '흐': 'heu', '흔': 'heun', '흥': 'heung', '희': 'hui', '흰': 'huin',
-        '중앙': 'wnddkd', '지사': 'wltk', '강북': 'rkddnr', '서대문': 'tjeoaems', '고양': 'rhidkd', '의정부': 'dmlwjdqn', '남양주': 'skakdrdnwn',  '강릉': 'rkddma', '원주': 'dnswn'
+    # Simple Korean to English first syllable mapping
+    first_syllable_map = {
+        '김': 'kim', '이': 'lee', '박': 'park', '최': 'choi', '정': 'jung',
+        '강': 'kang', '조': 'jo', '윤': 'yoon', '장': 'jang', '임': 'lim',
+        '한': 'han', '오': 'oh', '서': 'seo', '신': 'shin', '권': 'kwon',
+        '황': 'hwang', '안': 'ahn', '송': 'song', '류': 'ryu', '홍': 'hong',
+        '전': 'jeon', '고': 'go', '문': 'moon', '양': 'yang', '손': 'son',
+        '배': 'bae', '백': 'baek', '허': 'heo', '남': 'nam', '심': 'shim'
     }
     
-    result = ""
-    for char in text:
-        result += romanization_map.get(char, char)
-    return result.lower().replace(' ', '')
+    if manager_name and len(manager_name) > 0:
+        first_char = manager_name[0]
+        prefix = first_syllable_map.get(first_char, 'user')
+        return f"{prefix}1234"
+    return "user1234"
 
 # State Update Callbacks
 def update_branch_state(name):
@@ -567,17 +565,17 @@ if raw_df is not None:
             st.info("특정 지사의 데이터만 조회합니다.")
             with st.form("login_branch"):
                 s_branch = st.selectbox("지사 선택", global_branch_opts)
-                branch_pw = st.text_input("지사 패스워드 (영문)", type="password", help="예: 중앙지사 → wnddkdwltk")
+                branch_pw = st.text_input("지사 패스워드", type="password", help="예: central123")
                 if st.form_submit_button("지사 접속", type="primary", use_container_width=True):
                     # Validate password
-                    expected_pw = korean_to_romanization(s_branch)
+                    expected_pw = BRANCH_PASSWORDS.get(s_branch, "")
                     if branch_pw == expected_pw:
                         st.session_state.user_role = 'branch'
                         st.session_state.user_branch = s_branch
                         st.session_state.sb_branch = s_branch # Pre-set filter
                         st.rerun()
                     else:
-                        st.error(f"패스워드가 올바르지 않습니다. (예상: {expected_pw})")
+                        st.error("패스워드가 올바르지 않습니다.")
                     
         with l_tab3:
             st.info("본인의 영업구역/담당 데이터만 조회합니다.")
@@ -604,7 +602,7 @@ if raw_df is not None:
             
             with st.form("login_manager"):
                 s_manager_display = st.selectbox("담당자 선택", mgr_list)
-                manager_pw = st.text_input("담당자 패스워드 (영문)", type="password", help="예: 홍길동 → honggildong")
+                manager_pw = st.text_input("담당자 패스워드", type="password", help="예: kim1234")
                 if st.form_submit_button("담당자 접속", type="primary", use_container_width=True):
                     # Parse Name/Code
                     # Format: "Name (Code)" or "Name"
@@ -616,7 +614,7 @@ if raw_df is not None:
                         p_code = None
                     
                     # Validate password
-                    expected_pw = korean_to_romanization(p_name)
+                    expected_pw = get_manager_password(p_name)
                     if manager_pw == expected_pw:
                         st.session_state.user_role = 'manager'
                         st.session_state.user_manager_name = p_name
@@ -633,7 +631,7 @@ if raw_df is not None:
                         
                         st.rerun()
                     else:
-                        st.error(f"패스워드가 올바르지 않습니다. (예상: {expected_pw})")
+                        st.error("패스워드가 올바르지 않습니다.")
                     
         st.markdown("---")
         st.caption("ⓒ 2026 Field Sales Assistant System")
@@ -1118,72 +1116,72 @@ if raw_df is not None:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("### 🏢 지사별 현황")
-    
-    if 'dash_branch' not in st.session_state:
-        st.session_state.dash_branch = sorted_branches[0] if sorted_branches else None
+    with st.expander("🏭 지사별 현황", expanded=True):
         
-    b_rows = [sorted_branches[i:i+8] for i in range(0, len(sorted_branches), 8)]
-    for row in b_rows:
-        cols = st.columns(len(row))
-        for idx, btn_name in enumerate(row):
-            with cols[idx]:
-                # [FIX] Normalize comparison (use calculated source)
-                # We defer calculation of raw_dashboard_branch to below (hack for layout order), 
-                # OR we accept that buttons might flicker if we don't move the logic up.
-                # Actually, best is to use sel_branch directly here as well:
-                current_active_btn = sel_branch if sel_branch != "전체" else st.session_state.get('sb_branch', "전체")
-                current_active_btn = unicodedata.normalize('NFC', current_active_btn)
-                
-                # [FIX] Shorten Branch Name for Display (e.g., "중앙지사" -> "중앙")
-                # But keep full name for logic
-                disp_name = btn_name.replace("지사", "")
-                
-                type_ = "primary" if current_active_btn == btn_name else "secondary"
-                st.button(
-                    disp_name, 
-                    key=f"btn_{btn_name}", 
-                    type=type_, 
-                    use_container_width=True,
-                    on_click=update_branch_state,
-                    args=(btn_name,)
-                )
+        if 'dash_branch' not in st.session_state:
+            st.session_state.dash_branch = sorted_branches[0] if sorted_branches else None
+            
+        b_rows = [sorted_branches[i:i+8] for i in range(0, len(sorted_branches), 8)]
+        for row in b_rows:
+            cols = st.columns(len(row))
+            for idx, btn_name in enumerate(row):
+                with cols[idx]:
+                    # [FIX] Normalize comparison (use calculated source)
+                    # We defer calculation of raw_dashboard_branch to below (hack for layout order), 
+                    # OR we accept that buttons might flicker if we don't move the logic up.
+                    # Actually, best is to use sel_branch directly here as well:
+                    current_active_btn = sel_branch if sel_branch != "전체" else st.session_state.get('sb_branch', "전체")
+                    current_active_btn = unicodedata.normalize('NFC', current_active_btn)
+                    
+                    # [FIX] Shorten Branch Name for Display (e.g., "중앙지사" -> "중앙")
+                    # But keep full name for logic
+                    disp_name = btn_name.replace("지사", "")
+                    
+                    type_ = "primary" if current_active_btn == btn_name else "secondary"
+                    st.button(
+                        disp_name, 
+                        key=f"btn_{btn_name}", 
+                        type=type_, 
+                        use_container_width=True,
+                        on_click=update_branch_state,
+                        args=(btn_name,)
+                    )
 
 
-    
-    # [FIX] Source of Truth: Prioritize Widget (sel_branch) if active, else Session State
-    if sel_branch != "전체":
-        raw_dashboard_branch = sel_branch
-    else:
-        raw_dashboard_branch = st.session_state.get('sb_branch', "전체")
-    sel_dashboard_branch = unicodedata.normalize('NFC', raw_dashboard_branch)
+        
+        # [FIX] Source of Truth: Prioritize Widget (sel_branch) if active, else Session State
+        if sel_branch != "전체":
+            raw_dashboard_branch = sel_branch
+        else:
+            raw_dashboard_branch = st.session_state.get('sb_branch', "전체")
+        sel_dashboard_branch = unicodedata.normalize('NFC', raw_dashboard_branch)
 
-    cols = st.columns(len(sorted_branches) if sorted_branches else 1)
-    for i, col in enumerate(cols):
-        if i < len(sorted_branches):
-            b_name = sorted_branches[i]
-            # b_name is already normalized
-            b_df = base_df[base_df['관리지사'] == b_name]
-            b_total = len(b_df)
-            count_active = len(b_df[b_df['영업상태명'] == '영업/정상'])
-            count_closed = len(b_df[b_df['영업상태명'] == '폐업'])
-            count_others = b_total - count_active - count_closed
-            
-            bg_color = "#e8f5e9" if b_name == sel_dashboard_branch else "#ffffff"
-            border_color = "#2E7D32" if b_name == sel_dashboard_branch else "#e0e0e0"
-            
-            status_text = f"<span style='color:#2E7D32'>영업 {count_active}</span> / <span style='color:#d32f2f'>폐업 {count_closed}</span>"
-            if count_others > 0: status_text += f" / <span style='color:#757575'>기타 {count_others}</span>"
-            
-            with col:
-                branch_html = f'<div style="background-color: {bg_color}; border: 2px solid {border_color}; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px; color:#333;">{b_name}</div><div style="font-size:1.2rem; font-weight:bold; color:#000;">{b_total:,}</div><div style="font-size:0.8rem; margin-top:4px;">{status_text}</div></div>'
-                st.markdown(branch_html, unsafe_allow_html=True)
+        cols = st.columns(len(sorted_branches) if sorted_branches else 1)
+        for i, col in enumerate(cols):
+            if i < len(sorted_branches):
+                b_name = sorted_branches[i]
+                # b_name is already normalized
+                b_df = base_df[base_df['관리지사'] == b_name]
+                b_total = len(b_df)
+                count_active = len(b_df[b_df['영업상태명'] == '영업/정상'])
+                count_closed = len(b_df[b_df['영업상태명'] == '폐업'])
+                count_others = b_total - count_active - count_closed
                 
-                b_c1, b_c2 = st.columns(2)
-                with b_c1:
-                    st.button("영업", key=f"btn_br_active_{b_name}", on_click=update_branch_with_status, args=(b_name, '영업/정상'), use_container_width=True)
-                with b_c2:
-                    st.button("폐업", key=f"btn_br_closed_{b_name}", on_click=update_branch_with_status, args=(b_name, '폐업'), use_container_width=True)
+                bg_color = "#e8f5e9" if b_name == sel_dashboard_branch else "#ffffff"
+                border_color = "#2E7D32" if b_name == sel_dashboard_branch else "#e0e0e0"
+                
+                status_text = f"<span style='color:#2E7D32'>영업 {count_active}</span> / <span style='color:#d32f2f'>폐업 {count_closed}</span>"
+                if count_others > 0: status_text += f" / <span style='color:#757575'>기타 {count_others}</span>"
+                
+                with col:
+                    branch_html = f'<div style="background-color: {bg_color}; border: 2px solid {border_color}; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px; color:#333;">{b_name}</div><div style="font-size:1.2rem; font-weight:bold; color:#000;">{b_total:,}</div><div style="font-size:0.8rem; margin-top:4px;">{status_text}</div></div>'
+                    st.markdown(branch_html, unsafe_allow_html=True)
+                    
+                    b_c1, b_c2 = st.columns(2)
+                    with b_c1:
+                        st.button("영업", key=f"btn_br_active_{b_name}", on_click=update_branch_with_status, args=(b_name, '영업/정상'), use_container_width=True)
+                    with b_c2:
+                        st.button("폐업", key=f"btn_br_closed_{b_name}", on_click=update_branch_with_status, args=(b_name, '폐업'), use_container_width=True)
     
     st.markdown("---")
     
@@ -1198,108 +1196,109 @@ if raw_df is not None:
         # [FIX] Strict Normalization for Manager Section
         current_br_name = unicodedata.normalize('NFC', current_br_name)
         
-        st.markdown(f"### 👤 {current_br_name} 영업담당 현황")
         
-        if current_br_name != "전체":
-             # [FIX] Decouple from base_df to ensure Header-Content Match
-             # We go back to raw_df and filter explicitly for the request branch.
-             # This bypasses any Sidebar lag that might have filtered base_df to the wrong branch. (e.g. Gangbuk)
-             
-             # 1. Start with Raw (but respect Role!)
-             mgr_df = raw_df[raw_df['관리지사'].astype(str).apply(lambda x: unicodedata.normalize('NFC', x)) == current_br_name].copy()
-             
-             # [SECURITY] Re-Apply Manager Filter here because we started from raw_df
-             if st.session_state.user_role == 'manager':
-                 if st.session_state.user_manager_code:
-                     if '영업구역 수정' in mgr_df.columns:
-                         mgr_df = mgr_df[mgr_df['영업구역 수정'] == st.session_state.user_manager_code]
-                     else:
-                         mgr_df = mgr_df[mgr_df['SP담당'] == st.session_state.user_manager_name]
-                 elif st.session_state.user_manager_name:
-                     mgr_df = mgr_df[mgr_df['SP담당'] == st.session_state.user_manager_name]
-             
-             # 2. Re-apply Common Filters (Date, Type, Status) if they exist
-             # This ensures the manager view is still relevant, just correctly branched.
-             if sel_permit_ym != "전체":
-                 mgr_df = mgr_df[mgr_df['인허가일자'].dt.strftime('%Y-%m') == sel_permit_ym]
-             if sel_close_ym != "전체":
-                 mgr_df = mgr_df[mgr_df['폐업일자'].dt.strftime('%Y-%m') == sel_close_ym]
-             if sel_status != "전체":
-                 mgr_df = mgr_df[mgr_df['영업상태명'] == sel_status]
-             if only_hospitals:
-                 mask = mgr_df[type_col].astype(str).str.contains('병원|의원', na=False)
-                 if '개방서비스명' in mgr_df.columns:
-                     mask = mask | mgr_df['개방서비스명'].astype(str).str.contains('병원|의원', na=False)
-                 mgr_df = mgr_df[mask]
-        else:
-             mgr_df = base_df.copy()
-             
-        manager_items = [] 
+        with st.expander(f"👤 {current_br_name} 영업담당 현황", expanded=True):
         
-        if '영업구역 수정' in mgr_df.columns:
-            # [FIX] Do NOT dropna. Keep managers even if they lack a code.
-            # [FIX] Exclude 'Unassigned' or NaN names explicitly to prevent ghost cards
-            temp_g = mgr_df[['영업구역 수정', 'SP담당']].drop_duplicates()
-            temp_g = temp_g.dropna(subset=['SP담당'])
-            temp_g = temp_g[temp_g['SP담당'] != '미지정']
-            
-            temp_g['영업구역 수정'] = temp_g['영업구역 수정'].fillna('')
-            
-            # [UX] Sort by Name first to match Sidebar order, then Code.
-            # This makes it easier to find people.
-            temp_g = temp_g.sort_values(by=['SP담당', '영업구역 수정'])
-            
-            for _, r in temp_g.iterrows():
-                code = r['영업구역 수정']
-                name = r['SP담당']
-                # If code exists, show it. If not, just show Name.
-                if code:
-                    label = f"{code} ({name})"
-                else:
-                    label = name
-                    
-                manager_items.append({'label': label, 'code': code if code else None, 'name': name})
+            if current_br_name != "전체":
+                # [FIX] Decouple from base_df to ensure Header-Content Match
+                # We go back to raw_df and filter explicitly for the request branch.
+                # This bypasses any Sidebar lag that might have filtered base_df to the wrong branch. (e.g. Gangbuk)
                 
-        else:
-            unique_names = sorted(mgr_df['SP담당'].dropna().unique())
-            for name in unique_names:
-                manager_items.append({'label': name, 'code': None, 'name': name})
-        
-        m_cols = st.columns(8)
-        for i, item in enumerate(manager_items):
-            col_idx = i % 8
-            
-            if item['code']:
-                m_sub_df = mgr_df[mgr_df['영업구역 수정'] == item['code']]
-                target_val = item['code']
-                use_code_filter = True
+                # 1. Start with Raw (but respect Role!)
+                mgr_df = raw_df[raw_df['관리지사'].astype(str).apply(lambda x: unicodedata.normalize('NFC', x)) == current_br_name].copy()
+                
+                # [SECURITY] Re-Apply Manager Filter here because we started from raw_df
+                if st.session_state.user_role == 'manager':
+                    if st.session_state.user_manager_code:
+                        if '영업구역 수정' in mgr_df.columns:
+                            mgr_df = mgr_df[mgr_df['영업구역 수정'] == st.session_state.user_manager_code]
+                        else:
+                            mgr_df = mgr_df[mgr_df['SP담당'] == st.session_state.user_manager_name]
+                    elif st.session_state.user_manager_name:
+                        mgr_df = mgr_df[mgr_df['SP담당'] == st.session_state.user_manager_name]
+                
+                # 2. Re-apply Common Filters (Date, Type, Status) if they exist
+                # This ensures the manager view is still relevant, just correctly branched.
+                if sel_permit_ym != "전체":
+                    mgr_df = mgr_df[mgr_df['인허가일자'].dt.strftime('%Y-%m') == sel_permit_ym]
+                if sel_close_ym != "전체":
+                    mgr_df = mgr_df[mgr_df['폐업일자'].dt.strftime('%Y-%m') == sel_close_ym]
+                if sel_status != "전체":
+                    mgr_df = mgr_df[mgr_df['영업상태명'] == sel_status]
+                if only_hospitals:
+                    mask = mgr_df[type_col].astype(str).str.contains('병원|의원', na=False)
+                    if '개방서비스명' in mgr_df.columns:
+                        mask = mask | mgr_df['개방서비스명'].astype(str).str.contains('병원|의원', na=False)
+                    mgr_df = mgr_df[mask]
             else:
-                m_sub_df = mgr_df[mgr_df['SP담당'] == item['name']]
-                target_val = item['name']
-                use_code_filter = False
+                mgr_df = base_df.copy()
                 
-            mgr_label = item['label']
-            m_total = len(m_sub_df)
+            manager_items = [] 
             
-            m_active = len(m_sub_df[m_sub_df['영업상태명'] == '영업/정상'])
-            m_closed = len(m_sub_df[m_sub_df['영업상태명'] == '폐업'])
-            with m_cols[col_idx]:
-                  current_sb_manager = st.session_state.get('sb_manager', "전체")
-                  is_selected = (current_sb_manager == mgr_label)
-                  
-                  border_color_mgr = "#2E7D32" if is_selected else "#e0e0e0"
-                  bg_color_mgr = "#e8f5e9" if is_selected else "#ffffff"
-                  
-                  unique_key_suffix = item['code'] if item['code'] else item['name']
+            if '영업구역 수정' in mgr_df.columns:
+                # [FIX] Do NOT dropna. Keep managers even if they lack a code.
+                # [FIX] Exclude 'Unassigned' or NaN names explicitly to prevent ghost cards
+                temp_g = mgr_df[['영업구역 수정', 'SP담당']].drop_duplicates()
+                temp_g = temp_g.dropna(subset=['SP담당'])
+                temp_g = temp_g[temp_g['SP담당'] != '미지정']
+                
+                temp_g['영업구역 수정'] = temp_g['영업구역 수정'].fillna('')
+                
+                # [UX] Sort by Name first to match Sidebar order, then Code.
+                # This makes it easier to find people.
+                temp_g = temp_g.sort_values(by=['SP담당', '영업구역 수정'])
+                
+                for _, r in temp_g.iterrows():
+                    code = r['영업구역 수정']
+                    name = r['SP담당']
+                    # If code exists, show it. If not, just show Name.
+                    if code:
+                        label = f"{code} ({name})"
+                    else:
+                        label = name
+                        
+                    manager_items.append({'label': label, 'code': code if code else None, 'name': name})
+                    
+            else:
+                unique_names = sorted(mgr_df['SP담당'].dropna().unique())
+                for name in unique_names:
+                    manager_items.append({'label': name, 'code': None, 'name': name})
+            
+            m_cols = st.columns(8)
+            for i, item in enumerate(manager_items):
+                col_idx = i % 8
+                
+                if item['code']:
+                    m_sub_df = mgr_df[mgr_df['영업구역 수정'] == item['code']]
+                    target_val = item['code']
+                    use_code_filter = True
+                else:
+                    m_sub_df = mgr_df[mgr_df['SP담당'] == item['name']]
+                    target_val = item['name']
+                    use_code_filter = False
+                    
+                mgr_label = item['label']
+                m_total = len(m_sub_df)
+                
+                m_active = len(m_sub_df[m_sub_df['영업상태명'] == '영업/정상'])
+                m_closed = len(m_sub_df[m_sub_df['영업상태명'] == '폐업'])
+                with m_cols[col_idx]:
+                      current_sb_manager = st.session_state.get('sb_manager', "전체")
+                      is_selected = (current_sb_manager == mgr_label)
+                      
+                      border_color_mgr = "#2E7D32" if is_selected else "#e0e0e0"
+                      bg_color_mgr = "#e8f5e9" if is_selected else "#ffffff"
+                      
+                      unique_key_suffix = item['code'] if item['code'] else item['name']
 
-                  manager_card_html = f'<div class="metric-card" style="margin-bottom:4px; padding: 10px 5px; text-align: center; border: 2px solid {border_color_mgr}; background-color: {bg_color_mgr};"><div class="metric-label" style="color:#555; font-size: 0.85rem; font-weight:bold; margin-bottom:4px;">{mgr_label}</div><div class="metric-value" style="color:#333; font-size: 1.1rem; font-weight:bold;">{m_total:,}</div><div class="metric-sub" style="font-size:0.75rem; margin-top:4px;"><span style="color:#2E7D32">영업 {m_active}</span> / <span style="color:#d32f2f">폐업 {m_closed}</span></div></div>'
-                  st.markdown(manager_card_html, unsafe_allow_html=True)
-                  
-                  m_c1, m_c2 = st.columns(2)
-                  with m_c1:
-                      st.button("영업", key=f"btn_mgr_active_{unique_key_suffix}", on_click=update_manager_with_status, args=(mgr_label, '영업/정상'), use_container_width=True)
-                  with m_c2:
-                      st.button("폐업", key=f"btn_mgr_closed_{unique_key_suffix}", on_click=update_manager_with_status, args=(mgr_label, '폐업'), use_container_width=True)
+                      manager_card_html = f'<div class="metric-card" style="margin-bottom:4px; padding: 10px 5px; text-align: center; border: 2px solid {border_color_mgr}; background-color: {bg_color_mgr};"><div class="metric-label" style="color:#555; font-size: 0.85rem; font-weight:bold; margin-bottom:4px;">{mgr_label}</div><div class="metric-value" style="color:#333; font-size: 1.1rem; font-weight:bold;">{m_total:,}</div><div class="metric-sub" style="font-size:0.75rem; margin-top:4px;"><span style="color:#2E7D32">영업 {m_active}</span> / <span style="color:#d32f2f">폐업 {m_closed}</span></div></div>'
+                      st.markdown(manager_card_html, unsafe_allow_html=True)
+                      
+                      m_c1, m_c2 = st.columns(2)
+                      with m_c1:
+                          st.button("영업", key=f"btn_mgr_active_{unique_key_suffix}", on_click=update_manager_with_status, args=(mgr_label, '영업/정상'), use_container_width=True)
+                      with m_c2:
+                          st.button("폐업", key=f"btn_mgr_closed_{unique_key_suffix}", on_click=update_manager_with_status, args=(mgr_label, '폐업'), use_container_width=True)
 
     st.markdown("---")
 

@@ -805,6 +805,12 @@ if raw_df is not None:
         custom_branch_order = [unicodedata.normalize('NFC', b) for b in custom_branch_order]
         current_branches_in_raw = [unicodedata.normalize('NFC', str(b)) for b in raw_df['관리지사'].unique() if pd.notna(b)]
         sorted_branches_for_filter = [b for b in custom_branch_order if b in current_branches_in_raw]
+        
+        # [FEATURE] Add 미지정 option for admin users
+        if st.session_state.user_role == 'admin':
+            if '미지정' in current_branches_in_raw and '미지정' not in sorted_branches_for_filter:
+                sorted_branches_for_filter.append('미지정')
+        
         others_for_filter = [b for b in current_branches_in_raw if b not in custom_branch_order]
         sorted_branches_for_filter.extend(others_for_filter)
         sorted_branches_for_filter = [unicodedata.normalize('NFC', b) for b in sorted_branches_for_filter]

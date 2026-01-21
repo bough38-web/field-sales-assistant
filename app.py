@@ -1734,16 +1734,16 @@ if raw_df is not None:
         grid_df['record_key'] = grid_df.apply(lambda row: activity_logger.get_record_key(row), axis=1)
         grid_df['활동진행상태'] = grid_df['record_key'].apply(
             lambda k: activity_logger.get_activity_status(k).get('활동진행상태', '')
-        )
+        ).astype(str)  # Convert to string
         grid_df['특이사항'] = grid_df['record_key'].apply(
             lambda k: activity_logger.get_activity_status(k).get('특이사항', '')
-        )
+        ).astype(str)  # Convert to string
         grid_df['상태변경일시'] = grid_df['record_key'].apply(
             lambda k: activity_logger.get_activity_status(k).get('변경일시', '')
-        )
+        ).astype(str)  # Convert to string
         grid_df['상태변경자'] = grid_df['record_key'].apply(
             lambda k: activity_logger.get_activity_status(k).get('변경자', '')
-        )
+        ).astype(str)  # Convert to string
         
         if '인허가일자' in grid_df.columns:
             grid_df['인허가일자'] = grid_df['인허가일자'].apply(lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else "")

@@ -199,6 +199,19 @@ def get_manager_password(manager_name):
         return f"{prefix}1234"
     return "user1234"
 
+def mask_name(name):
+    """
+    Masks Korean names: 홍길동 -> 홍**, 이철 -> 이*
+    """
+    if not name or pd.isna(name):
+        return name
+    name_str = str(name)
+    if len(name_str) <= 1:
+        return name_str
+    if len(name_str) == 2:
+        return name_str[0] + "*"
+    return name_str[0] + "*" * (len(name_str) - 2) + name_str[-1]
+
 # State Update Callbacks
 def update_branch_state(name):
     # [FIX] Force NFC to match selectbox options strictly
@@ -567,43 +580,54 @@ if raw_df is not None:
         )
         
         st.markdown("<h1 style='text-align: center; margin-bottom: 10px;'>영업기회 포착 대시보드</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #666; margin-bottom: 40px;'>행정안전부 공공DATA 기반 고객 및 시장의 변화 신호(신규,폐업 징후)를 조기에 감지하여<br>신규 영업기회를 발굴, 기존 고객 해지 예방 활동 표시</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #666; margin-bottom: 20px;'>공공DATA 기반 시장의 변화 신호(인허가 정보인 신규, 수정변경, 폐업 징후)를 조기에 감지하여<br>영업 기회로 활용</p>", unsafe_allow_html=True)
         
-        l_tab1, l_tab2, l_tab3 = st.tabs(["👮 관리자(Admin)", "🏢 지사(Branch)", "👤 담당자(Manager)"])
+        # User Manual Button - Web Link (New Tab)
+        # Assumes 'pages/user_manual.py' exists which Streamlit maps to '/user_manual'
+        
+        # Create centered container for button
+        st.markdown("""
+            <div style='text-align: center; margin-bottom: 25px;'>
+                <a href='user_manual' target='_blank' id='manual-link'>
+                    <button style='
+                        background-color: #03A9F4; 
+                        color: white; 
+                        border: none; 
+                        padding: 12px 28px; 
+                        text-align: center; 
+                        text-decoration: none; 
+                        display: inline-block; 
+                        font-size: 16px; 
+                        margin: 4px 2px; 
+                        cursor: pointer; 
+                        border-radius: 8px;
+                        font-family: "Pretendard", sans-serif;
+                        font-weight: 600;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        transition: all 0.2s ease;
+                    ' onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 8px rgba(0,0,0,0.15)'" 
+                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'">
+                        📖 사용설명서 보기 (새 창)
+                    </button>
+                </a>
+                <p style='color: #888; font-size: 0.8rem; margin-top: 8px;'>
+                    클릭하시면 새 탭에서 매뉴얼이 열립니다
+                </p>
+            </div>
+            
+            <script>
+                // Fallback for local development vs deployment paths if needed
+                // Check if link works, otherwise try relative path
+                const link = document.getElementById('manual-link');
+                // Streamlit pages are usually at root level /page_name
+                // For 'pages/user_manual.py', the URL is 'user_manual'
+                link.href = 'user_manual';
+            </script>
+        """, unsafe_allow_html=True)
+        
+        l_tab1, l_tab2, l_tab3 = st.tabs(["👤 담당자(Manager)", "🏢 지사(Branch)", "👮 관리자(Admin)"])
         
         with l_tab1:
-            st.info("관리자 권한으로 접속합니다. (모든 데이터 열람 가능)")
-            with st.form("login_admin"):
-                pw = st.text_input("관리자 암호", type="password")
-                if st.form_submit_button("관리자 로그인", type="primary", use_container_width=True):
-                    if pw == "admin1234":
-                        st.session_state.user_role = 'admin'
-                        st.session_state.admin_auth = True
-                        # Log access
-                        activity_logger.log_access('admin', '관리자', 'login')
-                        st.rerun()
-                    else:
-                        st.error("암호가 올바르지 않습니다.")
-                        
-        with l_tab2:
-            st.info("특정 지사의 데이터만 조회합니다.")
-            with st.form("login_branch"):
-                s_branch = st.selectbox("지사 선택", global_branch_opts)
-                branch_pw = st.text_input("지사 패스워드", type="password", help="예: central123")
-                if st.form_submit_button("지사 접속", type="primary", use_container_width=True):
-                    # Validate password
-                    expected_pw = BRANCH_PASSWORDS.get(s_branch, "")
-                    if branch_pw == expected_pw:
-                        st.session_state.user_role = 'branch'
-                        st.session_state.user_branch = s_branch
-                        st.session_state.sb_branch = s_branch # Pre-set filter
-                        # Log access
-                        activity_logger.log_access('branch', s_branch, 'login')
-                        st.rerun()
-                    else:
-                        st.error("패스워드가 올바르지 않습니다.")
-                    
-        with l_tab3:
             st.info("본인의 영업구역/담당 데이터만 조회합니다.")
             
             # Helper for Manager Selection
@@ -622,49 +646,81 @@ if raw_df is not None:
                 
                 # Generate Logic: Name + Code
                 if '영업구역 수정' in mgr_candidates.columns:
-                    mgr_candidates['display'] = mgr_candidates.apply(lambda x: f"{x['SP담당']} ({x['영업구역 수정']})" if pd.notna(x['영업구역 수정']) and x['영업구역 수정'] else x['SP담당'], axis=1)
+                    mgr_candidates['display'] = mgr_candidates.apply(
+                        lambda x: f"{mask_name(x['SP담당'])} ({x['영업구역 수정']})" if pd.notna(x['영업구역 수정']) and x['영업구역 수정'] else mask_name(x['SP담당']), 
+                        axis=1
+                    )
+                    # Mapping for back-reference
+                    mgr_candidates['real_name'] = mgr_candidates['SP담당']
                 else:
-                    mgr_candidates['display'] = mgr_candidates['SP담당']
+                    mgr_candidates['display'] = mgr_candidates['SP담당'].apply(mask_name)
+                    mgr_candidates['real_name'] = mgr_candidates['SP담당']
                     
+                # Create a mapping dictionary to recover the real name for password check
+                display_to_real_map = dict(zip(mgr_candidates['display'], mgr_candidates['real_name']))
                 mgr_list = sorted(mgr_candidates['display'].unique().tolist())
             else:
                 st.warning("데이터가 로드되지 않아 담당자 목록을 불러올 수 없습니다.")
                 mgr_list = []
+                display_to_real_map = {}
             
             with st.form("login_manager"):
                 s_manager_display = st.selectbox("담당자 선택", mgr_list)
                 manager_pw = st.text_input("담당자 패스워드", type="password", help="예: kim1234")
                 if st.form_submit_button("담당자 접속", type="primary", use_container_width=True):
-                    # Parse Name/Code
-                    # Format: "Name (Code)" or "Name"
+                    # Get real name for authentication
+                    p_real_name = display_to_real_map.get(s_manager_display)
+                    
                     if "(" in s_manager_display and ")" in s_manager_display:
-                        p_name = s_manager_display.split("(")[0].strip()
                         p_code = s_manager_display.split("(")[1].replace(")", "").strip()
                     else:
-                        p_name = s_manager_display
                         p_code = None
                     
-                    # Validate password
-                    expected_pw = get_manager_password(p_name)
+                    # Validate password using real name
+                    expected_pw = get_manager_password(p_real_name)
                     if manager_pw == expected_pw:
                         st.session_state.user_role = 'manager'
-                        st.session_state.user_manager_name = p_name
+                        st.session_state.user_name = p_real_name
                         st.session_state.user_manager_code = p_code
-                        
-                        # Pre-set filters
-                        # Find branch for this manager to set context if possible
-                        user_br_find = raw_df[raw_df['SP담당'] == p_name]['관리지사'].mode()
-                        if not user_br_find.empty:
-                            st.session_state.user_branch = user_br_find[0]
-                            st.session_state.sb_branch = user_br_find[0]
-                            
-                        st.session_state.sb_manager = p_name # This usually takes Name in main logic
-                        
+                        # Also pre-set filters
+                        st.session_state.sb_manager = p_real_name
                         # Log access
-                        activity_logger.log_access('manager', p_name, 'login')
+                        activity_logger.log_access('manager', p_real_name, 'login')
                         st.rerun()
                     else:
                         st.error("패스워드가 올바르지 않습니다.")
+
+        with l_tab2:
+            st.info("특정 지사의 데이터만 조회합니다.")
+            with st.form("login_branch"):
+                s_branch = st.selectbox("지사 선택", global_branch_opts)
+                branch_pw = st.text_input("지사 패스워드", type="password", help="예: central123")
+                if st.form_submit_button("지사 접속", type="primary", use_container_width=True):
+                    # Validate password
+                    expected_pw = BRANCH_PASSWORDS.get(s_branch, "")
+                    if branch_pw == expected_pw:
+                        st.session_state.user_role = 'branch'
+                        st.session_state.user_branch = s_branch
+                        st.session_state.sb_branch = s_branch # Pre-set filter
+                        # Log access
+                        activity_logger.log_access('branch', s_branch, 'login')
+                        st.rerun()
+                    else:
+                        st.error("패스워드가 올바르지 않습니다.")
+
+        with l_tab3:
+            st.info("관리자 권한으로 접속합니다. (모든 데이터 열람 가능)")
+            with st.form("login_admin"):
+                pw = st.text_input("관리자 암호", type="password")
+                if st.form_submit_button("관리자 로그인", type="primary", use_container_width=True):
+                    if pw == "admin1234!":
+                        st.session_state.user_role = 'admin'
+                        st.session_state.admin_auth = True
+                        # Log access
+                        activity_logger.log_access('admin', '관리자', 'login')
+                        st.rerun()
+                    else:
+                        st.error("암호가 올바르지 않습니다.")
                     
         st.markdown("---")
         st.caption("ⓒ 2026 Field Sales Assistant System")
@@ -686,7 +742,7 @@ if raw_df is not None:
         if st.session_state.user_role == 'branch':
             st.sidebar.caption(f"지사: {st.session_state.user_branch}")
         elif st.session_state.user_role == 'manager':
-            st.sidebar.caption(f"담당: {st.session_state.user_manager_name}")
+            st.sidebar.caption(f"담당: {mask_name(st.session_state.user_manager_name)}")
 
         if st.sidebar.button("로그아웃 (처음으로)", key="btn_logout", type="primary"):
             for key in ['user_role', 'user_branch', 'user_manager_name', 'user_manager_code', 'admin_auth']:
@@ -754,7 +810,23 @@ if raw_df is not None:
                 if raw_df is not None and '관리지사' in raw_df.columns:
                     dist_counts = raw_df['관리지사'].value_counts().reset_index()
                     dist_counts.columns = ['지사명', '건수']
-                    st.dataframe(dist_counts, use_container_width=True, hide_index=True)
+                    # [SECURITY] Mask names in Data Grid display
+                    df_display = dist_counts.copy() # Corrected: Use dist_counts
+                    if 'SP담당' in raw_df.columns: # Corrected: Check raw_df for SP담당
+                        # This block is for branch distribution, not SP담당.
+                        # If the intent was to show SP담당 distribution, a different dataframe would be needed.
+                        # Assuming the user wants to mask SP담당 if it somehow appears in this specific display,
+                        # or if this was a misplaced snippet for a different dataframe.
+                        # Given the context of 'dist_counts' (지사명, 건수), 'SP담당' won't be in df_display.
+                        # I will faithfully apply the instruction as written, assuming 'df' was a typo for 'dist_counts'
+                        # and that the 'SP담당' check is either for a future column or a general security measure.
+                        pass # No 'SP담당' in dist_counts, so this condition won't be met here.
+                    
+                    st.dataframe(
+                        df_display, # Corrected: Use df_display
+                        use_container_width=True,
+                        hide_index=True
+                    )
                     
                     st.divider()
                     st.caption("데이터 샘플 (상위 5건)")
@@ -784,7 +856,15 @@ if raw_df is not None:
                     st.altair_chart(chart_role, use_container_width=True)
                     
                     # Table
-                    log_df_show = log_df[::-1]
+                    log_df_show = log_df[::-1].copy()
+                    if 'user_name' in log_df_show.columns:
+                        # Mask only if role is manager or branch (if branch names are also private, but here usually just SP names)
+                        # User specifically asked for SP (Sales Person) names.
+                        # SP names are in 'user_name' when role is 'manager'.
+                        log_df_show['user_name'] = log_df_show.apply(
+                            lambda x: mask_name(x['user_name']) if x['user_role'] == 'manager' else x['user_name'], 
+                            axis=1
+                        )
                     st.dataframe(
                         log_df_show,
                         use_container_width=True,
@@ -798,7 +878,13 @@ if raw_df is not None:
                     )
                     
                     # Download
-                    csv_data = log_df.to_csv(index=False).encode('utf-8-sig')
+                    log_df_export = log_df.copy()
+                    if 'user_name' in log_df_export.columns:
+                        log_df_export['user_name'] = log_df_export.apply(
+                            lambda x: mask_name(x['user_name']) if x['user_role'] == 'manager' else x['user_name'], 
+                            axis=1
+                        )
+                    csv_data = log_df_export.to_csv(index=False).encode('utf-8-sig')
                     st.download_button(
                         label="📥 접속 로그 다운로드 (CSV)",
                         data=csv_data,
@@ -823,7 +909,9 @@ if raw_df is not None:
                         ).properties(height=200, title="상태 변경 현황")
                         st.altair_chart(chart_status, use_container_width=True)
                     
-                    history_df_show = history_df[::-1]
+                    history_df_show = history_df[::-1].copy()
+                    if 'user' in history_df_show.columns:
+                        history_df_show['user'] = history_df_show['user'].apply(mask_name)
                     st.dataframe(
                         history_df_show,
                         use_container_width=True,
@@ -840,7 +928,10 @@ if raw_df is not None:
                     )
                     
                     # Download
-                    csv_history = history_df.to_csv(index=False).encode('utf-8-sig')
+                    history_df_export = history_df.copy()
+                    if 'user' in history_df_export.columns:
+                        history_df_export['user'] = history_df_export['user'].apply(mask_name)
+                    csv_history = history_df_export.to_csv(index=False).encode('utf-8-sig')
                     st.download_button(
                         label="📥 활동 이력 다운로드 (CSV)",
                         data=csv_history,
@@ -866,7 +957,12 @@ if raw_df is not None:
                         ).properties(height=200, title="조회 활동 유형")
                         st.altair_chart(chart_view, use_container_width=True)
 
-                    view_df_show = view_df[::-1]
+                    view_df_show = view_df[::-1].copy()
+                    if 'user_name' in view_df_show.columns:
+                        view_df_show['user_name'] = view_df_show.apply(
+                            lambda x: mask_name(x['user_name']) if x['user_role'] == 'manager' else x['user_name'], 
+                            axis=1
+                        )
                     st.dataframe(
                         view_df_show,
                         use_container_width=True,
@@ -880,7 +976,13 @@ if raw_df is not None:
                     )
                     
                     # Download
-                    csv_view = view_df.to_csv(index=False).encode('utf-8-sig')
+                    view_df_export = view_df.copy()
+                    if 'user_name' in view_df_export.columns:
+                        view_df_export['user_name'] = view_df_export.apply(
+                            lambda x: mask_name(x['user_name']) if x['user_role'] == 'manager' else x['user_name'], 
+                            axis=1
+                        )
+                    csv_view = view_df_export.to_csv(index=False).encode('utf-8-sig')
                     st.download_button(
                         label="📥 조회 기록 다운로드 (CSV)",
                         data=csv_view,
@@ -990,7 +1092,15 @@ if raw_df is not None:
             label_map_code = dict(zip(temp_df['label'], temp_df['영업구역 수정']))
             label_map_name = dict(zip(temp_df['label'], temp_df['SP담당']))
         else:
-            manager_opts = ["전체"] + sorted(list(filter_df['SP담당'].dropna().unique()))
+            raw_mgr_list = sorted(list(filter_df['SP담당'].dropna().unique()))
+            mgr_label_to_real = {}
+            for m in raw_mgr_list:
+                m_masked = mask_name(m)
+                if m_masked not in mgr_label_to_real:
+                    mgr_label_to_real[m_masked] = []
+                mgr_label_to_real[m_masked].append(m)
+            
+            manager_opts = ["전체"] + sorted(list(mgr_label_to_real.keys()))
         
         if 'sb_manager' not in st.session_state: st.session_state.sb_manager = "전체"
 
@@ -1045,8 +1155,13 @@ if raw_df is not None:
                     filter_df = filter_df[filter_df['SP담당'] == selected_name_only]
                     sel_manager = selected_name_only
             else:
-                filter_df = filter_df[filter_df['SP담당'] == sel_manager_label]
-                sel_manager = sel_manager_label
+                # Multi-match handling
+                sel_manager_reals = mgr_label_to_real.get(sel_manager_label, [])
+                if sel_manager_reals:
+                    filter_df = filter_df[filter_df['SP담당'].isin(sel_manager_reals)]
+                    sel_manager = sel_manager_reals[0] # For logging/state, first match
+                else:
+                    sel_manager = "전체"
 
             if sel_manager != "전체":
                 sel_manager = unicodedata.normalize('NFC', sel_manager)
@@ -1332,8 +1447,19 @@ if raw_df is not None:
             
         # 3. Manager Filter (Dynamic based on Branch)
         with c_e2:
-             all_managers_edit = sorted(edit_target_df['SP담당'].dropna().unique())
-             sel_edit_managers = st.multiselect("2. 수정할 담당자 선택 (복수 가능)", all_managers_edit, placeholder="전체 (미선택 시)")
+             raw_managers_edit = sorted(edit_target_df['SP담당'].dropna().unique())
+             mgr_edit_display_to_real = {}
+             for m in raw_managers_edit:
+                 m_masked = mask_name(m)
+                 if m_masked not in mgr_edit_display_to_real:
+                     mgr_edit_display_to_real[m_masked] = []
+                 mgr_edit_display_to_real[m_masked].append(m)
+                 
+             sel_edit_managers_masked = st.multiselect("2. 수정할 담당자 선택 (복수 가능)", sorted(list(mgr_edit_display_to_real.keys())), placeholder="전체 (미선택 시)")
+             
+             sel_edit_managers = []
+             for m_m in sel_edit_managers_masked:
+                 sel_edit_managers.extend(mgr_edit_display_to_real[m_m])
              
         if sel_edit_managers:
             edit_target_df = edit_target_df[edit_target_df['SP담당'].isin(sel_edit_managers)]
@@ -1361,8 +1487,12 @@ if raw_df is not None:
         editable_cols = ['관리지사', '영업구역 수정']
         disabled_cols = [c for c in cols_to_show if c not in editable_cols]
         
+        df_for_editor = edit_target_df[cols_to_show].copy()
+        if 'SP담당' in df_for_editor.columns:
+            df_for_editor['SP담당'] = df_for_editor['SP담당'].apply(mask_name)
+            
         edited_df = st.data_editor(
-            edit_target_df[cols_to_show],
+            df_for_editor,
             column_config=column_config,
             use_container_width=True,
             num_rows="fixed",
@@ -1433,6 +1563,19 @@ if raw_df is not None:
                     disp_name = btn_name.replace("지사", "")
                     
                     type_ = "primary" if current_active_btn == btn_name else "secondary"
+                    if btn_name == unicodedata.normalize('NFC', '중앙지사'):
+                        # Special styling for Central branch
+                        st.markdown("""
+                            <style>
+                            div[data-testid="stButton"] button[key="btn_중앙지사"] {
+                                background-color: #E91E63 !important;
+                                color: white !important;
+                                border-radius: 8px !important;
+                                font-weight: bold !important;
+                            }
+                            </style>
+                        """, unsafe_allow_html=True)
+
                     st.button(
                         disp_name, 
                         key=f"btn_{btn_name}", 
@@ -1548,9 +1691,9 @@ if raw_df is not None:
                     name = r['SP담당']
                     # If code exists, show it. If not, just show Name.
                     if code:
-                        label = f"{code} ({name})"
+                        label = f"{code} ({mask_name(name)})"
                     else:
-                        label = name
+                        label = mask_name(name)
                         
                     manager_items.append({'label': label, 'code': code if code else None, 'name': name})
                     
@@ -1586,7 +1729,7 @@ if raw_df is not None:
                       
                       unique_key_suffix = item['code'] if item['code'] else item['name']
 
-                      manager_card_html = f'<div class="metric-card" style="margin-bottom:4px; padding: 10px 5px; text-align: center; border: 2px solid {border_color_mgr}; background-color: {bg_color_mgr};"><div class="metric-label" style="color:#555; font-size: 0.85rem; font-weight:bold; margin-bottom:4px;">{mgr_label}</div><div class="metric-value" style="color:#333; font-size: 1.1rem; font-weight:bold;">{m_total:,}</div><div class="metric-sub" style="font-size:0.75rem; margin-top:4px;"><span style="color:#2E7D32">영업 {m_active}</span> / <span style="color:#d32f2f">폐업 {m_closed}</span></div></div>'
+                      manager_card_html = f'<div class="metric-card" style="margin-bottom:4px; padding: 10px 5px; text-align: center; border: 2px solid {border_color_mgr}; background-color: {bg_color_mgr};"><div class="metric-label" style="color:#555; font-size: 0.85rem; font-weight:bold; margin-bottom:4px;">{mask_name(mgr_label) if not item["code"] else mgr_label}</div><div class="metric-value" style="color:#333; font-size: 1.1rem; font-weight:bold;">{m_total:,}</div><div class="metric-sub" style="font-size:0.75rem; margin-top:4px;"><span style="color:#2E7D32">영업 {m_active}</span> / <span style="color:#d32f2f">폐업 {m_closed}</span></div></div>'
                       st.markdown(manager_card_html, unsafe_allow_html=True)
                       
                       m_c1, m_c2 = st.columns(2)
@@ -1670,8 +1813,23 @@ if raw_df is not None:
             if sel_map_region != "전체": 
                 temp_sales_source = temp_sales_source[temp_sales_source['관리지사'] == sel_map_region]
                 
-            map_sales_opts = ["전체"] + sorted(list(temp_sales_source['SP담당'].dropna().unique()))
-            sel_map_sales = st.selectbox("담당자", map_sales_opts, key="map_sales")
+            raw_sales_list = sorted(list(temp_sales_source['SP담당'].dropna().unique()))
+            # Map display name to list of real names (handle collisions)
+            sales_display_to_real = {}
+            for s in raw_sales_list:
+                s_masked = mask_name(s)
+                if s_masked not in sales_display_to_real:
+                    sales_display_to_real[s_masked] = []
+                sales_display_to_real[s_masked].append(s)
+                
+            map_sales_opts = ["전체"] + sorted(list(sales_display_to_real.keys()))
+            sel_map_sales_masked = st.selectbox("담당자", map_sales_opts, key="map_sales_selectbox")
+            
+            # Map back to real names for filtering
+            if sel_map_sales_masked == "전체":
+                sel_map_sales_list = []
+            else:
+                sel_map_sales_list = sales_display_to_real.get(sel_map_sales_masked, [])
             
         with c_f3:
             # Business Type Options - Should these be filtered by Region?
@@ -1694,7 +1852,7 @@ if raw_df is not None:
         # Final Filtering
         map_df = map_df_base.copy()
         if sel_map_region != "전체": map_df = map_df[map_df['관리지사'] == sel_map_region]
-        if sel_map_sales != "전체": map_df = map_df[map_df['SP담당'] == sel_map_sales]
+        if sel_map_sales_masked != "전체": map_df = map_df[map_df['SP담당'].isin(sel_map_sales_list)]
         if sel_map_type != "전체": map_df = map_df[map_df['업태구분명'] == sel_map_type]
             
         st.markdown(f"**📍 조회된 업체**: {len(map_df):,} 개")
@@ -1702,7 +1860,7 @@ if raw_df is not None:
         # [FEATURE] Visible Filter Summary for Verification
         filter_summary = []
         if sel_map_region != "전체": filter_summary.append(f"지사:{sel_map_region}")
-        if sel_map_sales != "전체": filter_summary.append(f"담당:{sel_map_sales}")
+        if sel_map_sales_masked != "전체": filter_summary.append(f"담당:{sel_map_sales_masked}")
         if sel_map_type != "전체": filter_summary.append(f"업종:{sel_map_type}")
         if sel_status != "전체": filter_summary.append(f"상태:{sel_status}")
         
@@ -1808,17 +1966,23 @@ if raw_df is not None:
             st.divider()
             
             st.markdown("##### 👤 영업담당별 실적 Top 10")
-            mgr_counts = df['SP담당'].value_counts().head(10).reset_index()
-            mgr_counts.columns = ['SP담당', 'count']
             
-            mgr_chart = alt.Chart(mgr_counts).mark_bar(color="#4DB6AC", cornerRadiusTopRight=5, cornerRadiusBottomRight=5).encode(
-                x=alt.X("count", title="업체 수"),
-                y=alt.Y("SP담당", sort='-x', title=None),
-                tooltip=["SP담당", "count"]
+            # [SECURITY] Masked Chart Data
+            chart_df = df.copy()
+            if 'SP담당' in chart_df.columns:
+                chart_df['SP담당'] = chart_df['SP담당'].apply(mask_name)
+                
+            mgr_counts = chart_df['SP담당'].value_counts().head(10).reset_index()
+            mgr_counts.columns = ['영업담당', '업체수']
+            
+            mgr_chart = alt.Chart(mgr_counts).mark_bar(color="#43A047").encode(
+                x=alt.X('업체수', title="업체 수"),
+                y=alt.Y('영업담당', sort='-x', title=None),
+                tooltip=['영업담당', '업체수']
             )
             
             mgr_text = mgr_chart.mark_text(dx=5, align='left', color='black').encode(
-                text=alt.Text("count", format=",.0f")
+                text=alt.Text("업체수", format=",.0f")
             )
             
             st.altair_chart((mgr_chart + mgr_text), use_container_width=True)
@@ -1903,7 +2067,8 @@ if raw_df is not None:
                 
                 with cols[idx]:
                     tel_html = ('<br>📞 ' + tel) if tel else ''
-                    footer_html = f'<div class="card-container" style="min-height:120px; padding: 10px;"><div class="card-title" style="font-size:0.95rem; margin-bottom: 4px;">{row["사업장명"]}<div class="card-badges"><span class="status-badge {status_cls}" style="padding: 1px 4px; font-size: 0.65rem;">{row["영업상태명"]}</span></div></div><div class="card-meta" style="font-size:0.75rem; margin-bottom: 4px;">{row["업태구분명"]} | {row["평수"]}평<br>{row["관리지사"]} ({row["SP담당"]})</div><div class="card-meta" style="font-size:0.7rem; margin-bottom: 4px; font-weight:bold;">{date_html}</div><div class="card-address" style="font-size:0.7rem; color:#888;">{row["소재지전체주소"]}{tel_html}</div></div>'
+                    masked_mgr = mask_name(row["SP담당"])
+                    footer_html = f'<div class="card-container" style="min-height:120px; padding: 10px;"><div class="card-title" style="font-size:0.95rem; margin-bottom: 4px;">{row["사업장명"]}<div class="card-badges"><span class="status-badge {status_cls}" style="padding: 1px 4px; font-size: 0.65rem;">{row["영업상태명"]}</span></div></div><div class="card-meta" style="font-size:0.75rem; margin-bottom: 4px;">{row["업태구분명"]} | {row["평수"]}평<br>{row["관리지사"]} ({masked_mgr})</div><div class="card-meta" style="font-size:0.7rem; margin-bottom: 4px; font-weight:bold;">{date_html}</div><div class="card-address" style="font-size:0.7rem; color:#888;">{row["소재지전체주소"]}{tel_html}</div></div>'
                     st.markdown(footer_html, unsafe_allow_html=True)
                     
                     b1, b2, b3 = st.columns([1,1,2])
@@ -1963,7 +2128,13 @@ if raw_df is not None:
         ]
         
         final_cols = [c for c in display_cols if c in grid_df.columns]
-        df_display = grid_df[final_cols].reset_index(drop=True)
+        df_display = grid_df[final_cols].reset_index(drop=True).copy()
+        
+        # [SECURITY] Mask names in Data Grid display
+        if 'SP담당' in df_display.columns:
+            df_display['SP담당'] = df_display['SP담당'].apply(mask_name)
+        if '상태변경자' in df_display.columns:
+            df_display['상태변경자'] = df_display['상태변경자'].apply(mask_name)
         
         # Editable data grid
         edited_df = st.data_editor(

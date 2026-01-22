@@ -6,6 +6,19 @@ import folium
 from streamlit_folium import st_folium
 from folium.plugins import MarkerCluster
 
+def simple_mask(name):
+    """
+    Masks Korean names: 홍길동 -> 홍*동, 이철 -> 이*
+    """
+    if not name or pd.isna(name):
+        return name
+    s = str(name)
+    if len(s) <= 1:
+        return s
+    if len(s) == 2:
+        return s[0] + "*"
+    return s[0] + "*" * (len(s) - 2) + s[-1]
+
 def render_kakao_map(map_df, kakao_key):
     """
     Renders a Kakao Map using HTML/JS injection.
@@ -60,11 +73,15 @@ def render_kakao_map(map_df, kakao_key):
     # [FEATURE] Business Type
     display_df['biz_type'] = display_df['업태구분명'].fillna('') if '업태구분명' in display_df.columns else ''
     
-    # [FEATURE] Branch & Manager info
-    display_df['branch'] = display_df['관리지사'].fillna('') if '관리지사' in display_df.columns else ''
-    display_df['manager'] = display_df['SP담당'].fillna('') if 'SP담당' in display_df.columns else ''
+    display_df['area'] = display_df['평수'].fillna(0) if '평수' in display_df.columns else 0
     
-    map_data = display_df[['lat', 'lon', 'title', 'status', 'addr', 'tel', 'close_date', 'permit_date', 'reopen_date', 'modified_date', 'biz_type', 'branch', 'manager']].to_dict(orient='records')
+    # Mask Manager Name for Tip/Popup
+    if 'manager' in display_df.columns:
+        display_df['manager_masked'] = display_df['manager'].apply(simple_mask)
+    else:
+        display_df['manager_masked'] = ''
+
+    map_data = display_df[['lat', 'lon', 'title', 'status', 'addr', 'tel', 'close_date', 'permit_date', 'reopen_date', 'modified_date', 'biz_type', 'branch', 'manager_masked', 'area']].to_dict(orient='records')
     json_data = json.dumps(map_data, ensure_ascii=False)
     
     st.markdown('<div style="background-color: #e3f2fd; border-left: 5px solid #2196F3; padding: 10px; margin-bottom: 10px; border-radius: 4px;"><small><b>Tip:</b> 지도가 보이지 않으면 도메인 등록(http://localhost:8501)을 확인하세요.</small></div>', unsafe_allow_html=True)
@@ -75,6 +92,21 @@ def render_kakao_map(map_df, kakao_key):
         .infowindow { padding:10px; font-size:12px; font-family: 'Pretendard', sans-serif; width: 220px; }
         .info-title { font-weight:bold; font-size:14px; margin-bottom:5px; color:#333; border-bottom:1px solid #eee; padding-bottom:5px; }
         .status-badge { display:inline-block; padding:2px 6px; border-radius:4px; color:white; font-size:11px; margin-left:5px; vertical-align:middle; }
+        .map-legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+            font-family: 'Pretendard', sans-serif;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 4px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
     '''
 
     html_content = f'''
@@ -86,6 +118,12 @@ def render_kakao_map(map_df, kakao_key):
     </head>
     <body>
         <div id="map"></div>
+        <div class="map-legend">
+            <div style="font-weight:bold; margin-bottom:6px; border-bottom:1px solid #eee; padding-bottom:3px;">🎨 지도 범례</div>
+            <div class="legend-item"><div class="legend-color" style="background:#2196F3;"></div>영업/정상 (파랑)</div>
+            <div class="legend-item"><div class="legend-color" style="background:#F44336;"></div>폐업/정지 (빨강)</div>
+            <div class="legend-item"><div class="legend-color" style="background:#9B59B6;"></div><b>100평 이상 (보라)</b></div>
+        </div>
         <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_key}&libraries=services,clusterer,drawing"></script>
         <script>
             var mapContainer = document.getElementById('map'), 
@@ -107,21 +145,29 @@ def render_kakao_map(map_df, kakao_key):
             
             // Markers
             var imgSize = new kakao.maps.Size(35, 35); 
-            // Blue for Open, Red for Closed
+            // [FEATURE] Purple for 100+ Pyeong, Blue for Open, Red for Closed
             var openImg = "https://maps.google.com/mapfiles/ms/icons/blue-dot.png";
             var closeImg = "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+            var purpleImg = "https://maps.google.com/mapfiles/ms/icons/purple-dot.png";
             
             var bounds = new kakao.maps.LatLngBounds();
             
             data.forEach(function(item) {{
                 var isOpen = item.status.includes('영업') || item.status.includes('정상');
+                var area = parseFloat(item.area) || 0;
+                
                 var imgSrc = isOpen ? openImg : closeImg;
+                if (area >= 100) {{
+                    imgSrc = purpleImg;
+                }}
+                
                 var markerImage = new kakao.maps.MarkerImage(imgSrc, imgSize);
                 var markerPos = new kakao.maps.LatLng(item.lat, item.lon);
                 
                 var marker = new kakao.maps.Marker({{
                     position: markerPos,
-                    image: markerImage
+                    image: markerImage,
+                    title: item.title + ' (' + item.manager_masked + ')'
                 }});
                 
                 // Extend bounds
@@ -133,7 +179,7 @@ def render_kakao_map(map_df, kakao_key):
                 var content = '<div class="infowindow">' + 
                               '<div class="info-title">' + item.title + 
                               '<span class="status-badge" style="background-color:' + badgeColor + ';">' + item.status + '</span></div>' +
-                              (item.branch ? ('<div style="color:#333; font-weight:bold; margin-bottom:2px;">🏠 ' + item.branch + ' / ' + item.manager + '</div>') : '') +
+                              (item.branch ? ('<div style="color:#333; font-weight:bold; margin-bottom:2px;">🏠 ' + item.branch + ' / ' + item.manager_masked + '</div>') : '') +
                               (item.biz_type ? ('<div style="color:#555; font-size:11px; margin-bottom:5px;">[' + item.biz_type + ']</div>') : '') + 
                               (item.permit_date ? ('<div style="color:#666;">인허가: ' + item.permit_date + '</div>') : '') + 
                               (item.close_date ? ('<div style="color:#D32F2F;">폐업: ' + item.close_date + '</div>') : '') + 
@@ -308,7 +354,11 @@ def render_folium_map(map_df):
             close_date = fmt_date(row.get('폐업일자'))
             
             # Color Logic
-            if "영업" in status or "정상" in status:
+            if float(area_val) >= 100:
+                color = "purple"
+                icon_type = "star"
+                status_style = "color:#9B59B6; font-weight:bold;"
+            elif "영업" in status or "정상" in status:
                 color = "green"
                 icon_type = "info-sign"
                 status_style = "color:green; font-weight:bold;"
@@ -323,7 +373,10 @@ def render_folium_map(map_df):
 
             # Popup HTML
             branch_info = str(row.get('관리지사', '')).replace('nan', '')
-            mgr_info = str(row.get('SP담당', '')).replace('nan', '')
+            
+            # Apply masking to manager name
+            mgr_raw_name = str(row.get('SP담당', '')).replace('nan', '')
+            mgr_info = simple_mask(mgr_raw_name)
             
             popup_html = f"""
             <div style="font-family:'Pretendard', sans-serif; width:240px; font-size:12px;">
@@ -353,7 +406,7 @@ def render_folium_map(map_df):
             folium.Marker(
                 [row['lat'], row['lon']],
                 popup=folium.Popup(popup_html, max_width=260),
-                tooltip=f"{title} ({status})",
+                tooltip=f"{title} ({status}) / {mgr_info}",
                 icon=folium.Icon(color=color, icon=icon_type)
             ).add_to(m) 
             count += 1
@@ -367,7 +420,21 @@ def render_folium_map(map_df):
         ne = display_df[['lat', 'lon']].max().values.tolist()
         m.fit_bounds([sw, ne])
         
-    # Render using st_folium (Stable)
-    # components.html can cause 'removeChild' DOM errors on re-render.
-    from streamlit_folium import st_folium
+    # Add Legend to Folium
+    legend_html = '''
+     <div style="
+     position: fixed; 
+     top: 10px; right: 10px; width: 130px; 
+     background-color: white; border: 2px solid grey; z-index:9999; font-size:12px;
+     padding: 10px; border-radius: 8px; opacity: 0.9;
+     font-family: 'Pretendard', sans-serif;
+     ">
+     <div style="font-weight:bold; margin-bottom:5px;">🎨 지도 범례</div>
+     <i style="background: #2E7D32; width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></i> 영업/정상<br>
+     <i style="background: #d32f2f; width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></i> 폐업/정지<br>
+     <i style="background: #9B59B6; width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></i> <b>100평↑ (대형)</b>
+     </div>
+     '''
+    m.get_root().html.add_child(folium.Element(legend_html))
+
     st_folium(m, width="100%", height=450, returned_objects=[])

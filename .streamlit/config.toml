@@ -4,3 +4,4 @@ font = "sans serif"  # 한글이 깔끔하게 나오는 기본 폰트 설정
 
 [server]
 enableCORS = false   # 보안 관련 에러 방지 (선택사항)
+enableStaticServing = true # static 폴더 정적 파일 서빙 활성화

@@ -21,7 +21,13 @@ except ImportError:
     HAS_PYPROJ = False
     transformer = None
 
-def normalize_address(address):
+from typing import Optional, Any
+import pandas as pd
+import re
+
+# ... existing code ...
+
+def normalize_address(address: Optional[str]) -> Optional[str]:
     """
     Normalizes a Korean address string.
     Removes special characters, standardizes region names.
@@ -36,12 +42,13 @@ def normalize_address(address):
     
     # Standardize
     address = address.replace('강원특별자치도', '강원도')
+
     address = address.replace('세종특별자치시', '세종시')
     address = address.replace('서울특별시', '서울시')
     address = address.replace('  ', ' ') # Double spaces
     address = address.replace('-', '')
     
-    if '*' in address or len(address) < 8:  # Too short or masked
+    if '*' in address or len(address) < 5:  # Too short or masked
         return None
         
     return address.strip()
@@ -148,3 +155,16 @@ def calculate_area(row):
         return round(float(val) / 3.3058, 1)
     except:
         return 0
+
+def mask_name(name: Any) -> Optional[str]:
+    """
+    Masks Korean names: 홍길동 -> 홍**, 이철 -> 이*
+    """
+    if not name or pd.isna(name):
+        return name
+    name_str = str(name)
+    if len(name_str) <= 1:
+        return name_str
+    if len(name_str) == 2:
+        return name_str[0] + "*"
+    return name_str[0] + "*" * (len(name_str) - 2) + name_str[-1]

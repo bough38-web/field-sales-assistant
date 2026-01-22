@@ -763,26 +763,47 @@ if raw_df is not None:
                     st.info("데이터가 로드되지 않았습니다.")
             
             # Admin Log Viewer
+            # [FEATURE] Enhanced Admin Log Viewer
             st.markdown("---")
-            st.markdown("#### 📊 관리 기록 조회")
-            log_tab1, log_tab2 = st.tabs(["접속 로그", "활동 변경 이력"])
+            st.markdown("#### 📊 관리 기록 조회 및 시각화")
+            log_tab1, log_tab2, log_tab3 = st.tabs(["접속 로그", "활동 변경 이력", "조회 기록"])
             
             with log_tab1:
                 st.caption("최근 접속 로그 (최대 50건)")
                 access_logs = activity_logger.get_access_logs(limit=50)
                 if access_logs:
                     log_df = pd.DataFrame(access_logs)
-                    log_df = log_df[::-1]  # Reverse to show newest first
+                    
+                    # 1. Visualization (Role Distribution)
+                    chart_role = alt.Chart(log_df).mark_bar().encode(
+                        x=alt.X('user_role', title='사용자 권한'),
+                        y=alt.Y('count()', title='접속 횟수'),
+                        color='user_role'
+                    ).properties(height=200, title="권한별 접속 현황")
+                    
+                    st.altair_chart(chart_role, use_container_width=True)
+                    
+                    # Table
+                    log_df_show = log_df[::-1]
                     st.dataframe(
-                        log_df,
+                        log_df_show,
                         use_container_width=True,
-                        height=300,
+                        height=250,
                         column_config={
                             "timestamp": "접속시간",
                             "user_role": "역할",
                             "user_name": "사용자",
                             "action": "행동"
                         }
+                    )
+                    
+                    # Download
+                    csv_data = log_df.to_csv(index=False).encode('utf-8-sig')
+                    st.download_button(
+                        label="📥 접속 로그 다운로드 (CSV)",
+                        data=csv_data,
+                        file_name='access_logs.csv',
+                        mime='text/csv'
                     )
                 else:
                     st.info("접속 로그가 없습니다.")
@@ -792,11 +813,21 @@ if raw_df is not None:
                 change_history = activity_logger.get_change_history(limit=50)
                 if change_history:
                     history_df = pd.DataFrame(change_history)
-                    history_df = history_df[::-1]  # Reverse to show newest first
+                    
+                    # Visualization (Status Changes)
+                    if 'new_status' in history_df.columns:
+                        chart_status = alt.Chart(history_df).mark_bar().encode(
+                            x=alt.X('new_status', title='변경 상태'),
+                            y=alt.Y('count()', title='횟수'),
+                            color='new_status'
+                        ).properties(height=200, title="상태 변경 현황")
+                        st.altair_chart(chart_status, use_container_width=True)
+                    
+                    history_df_show = history_df[::-1]
                     st.dataframe(
-                        history_df,
+                        history_df_show,
                         use_container_width=True,
-                        height=300,
+                        height=250,
                         column_config={
                             "timestamp": "변경시간",
                             "user": "변경자",
@@ -807,8 +838,57 @@ if raw_df is not None:
                             "new_notes": "변경 특이사항"
                         }
                     )
+                    
+                    # Download
+                    csv_history = history_df.to_csv(index=False).encode('utf-8-sig')
+                    st.download_button(
+                        label="📥 활동 이력 다운로드 (CSV)",
+                        data=csv_history,
+                        file_name='activity_history.csv',
+                        mime='text/csv'
+                    )
                 else:
                     st.info("변경 이력이 없습니다.")
+
+            with log_tab3:
+                st.caption("최근 조회/검색 기록 (최대 50건)")
+                view_logs = activity_logger.get_view_logs(limit=50)
+                if view_logs:
+                    view_df = pd.DataFrame(view_logs)
+                    
+                    # Visualization (Frequent Targets/Types)
+                    # Simple bar chart of 'target' (e.g., Search, Filter)
+                    if 'target' in view_df.columns:
+                        chart_view = alt.Chart(view_df).mark_bar().encode(
+                            x=alt.X('target', title='활동 유형'),
+                            y=alt.Y('count()', title='빈도'),
+                            color='target'
+                        ).properties(height=200, title="조회 활동 유형")
+                        st.altair_chart(chart_view, use_container_width=True)
+
+                    view_df_show = view_df[::-1]
+                    st.dataframe(
+                        view_df_show,
+                        use_container_width=True,
+                        height=250,
+                        column_config={
+                            "timestamp": "일시",
+                            "user_name": "사용자",
+                            "target": "대상 (필터)",
+                            "details": "상세 내용"
+                        }
+                    )
+                    
+                    # Download
+                    csv_view = view_df.to_csv(index=False).encode('utf-8-sig')
+                    st.download_button(
+                        label="📥 조회 기록 다운로드 (CSV)",
+                        data=csv_view,
+                        file_name='view_logs.csv',
+                        mime='text/csv'
+                    )
+                else:
+                    st.info("조회 기록이 없습니다.")
         
         st.divider()
         
@@ -1037,8 +1117,11 @@ if raw_df is not None:
             
             
             
+            def reset_page():
+                st.session_state.page = 0
+                
             st.markdown("##### 📞 전화번호 필터")
-            only_with_phone = st.toggle("전화번호 있는 것만 보기", value=False)
+            only_with_phone = st.toggle("전화번호 있는 것만 보기", value=False, on_change=reset_page)
             
             st.markdown("---")
         
@@ -1046,6 +1129,48 @@ if raw_df is not None:
         st.markdown("##### 🔍 주소 검색")
         address_search = st.text_input("주소 검색 (예: 인천/삼산동)", value="", placeholder="주소 또는 업체명 입력...")
         
+    # [LOGGING] View/Filter Logging
+    # We track changes in key filters
+    
+    current_filters = {
+        'branch': sel_branch,
+        'manager': sel_manager, 
+        'types': str(sorted(sel_types)) if sel_types else "All",
+        'status': sel_status,
+        'search': address_search
+    }
+    
+    # Initialize previous state if not exists
+    if 'prev_view_filters' not in st.session_state:
+        st.session_state.prev_view_filters = current_filters
+    
+    # Check for changes
+    filter_changes = []
+    prev_filters = st.session_state.prev_view_filters
+    
+    if prev_filters['branch'] != current_filters['branch']:
+        filter_changes.append(f"지사 변경: {prev_filters['branch']} -> {current_filters['branch']}")
+        
+    if prev_filters['manager'] != current_filters['manager']:
+        filter_changes.append(f"담당자 변경: {prev_filters['manager']} -> {current_filters['manager']}")
+        
+    if prev_filters['status'] != current_filters['status']:
+        filter_changes.append(f"영업상태 변경: {current_filters['status']}")
+
+    if prev_filters['search'] != current_filters['search'] and current_filters['search']:
+         filter_changes.append(f"검색어: {current_filters['search']}")
+
+    if filter_changes:
+        # User Info
+        u_role = st.session_state.get('user_role', 'Unknown')
+        u_name = st.session_state.get('user_manager_name') or st.session_state.get('user_branch') or 'Admin'
+        
+        # Log
+        activity_logger.log_view(u_role, u_name, "필터/검색", ", ".join(filter_changes))
+        
+        # Update State
+        st.session_state.prev_view_filters = current_filters
+
     # Data Filtering
     base_df = raw_df.copy()
     

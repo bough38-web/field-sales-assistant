@@ -4,7 +4,9 @@ from datetime import datetime
 from pathlib import Path
 
 # Storage directory
-STORAGE_DIR = Path(__file__).parent.parent / "storage"
+# Use absolute path resolution to avoid issues with Streamlit execution context
+BASE_DIR = Path(os.path.abspath(__file__)).parent.parent
+STORAGE_DIR = BASE_DIR / "storage"
 STORAGE_DIR.mkdir(exist_ok=True)
 
 ACCESS_LOG_FILE = STORAGE_DIR / "access_logs.json"
@@ -127,3 +129,33 @@ def get_change_history(record_key=None, limit=100):
         history = [h for h in history if h.get("record_key") == record_key]
     
     return history[-limit:] if history else []
+
+
+# ===== VIEW LOGGING =====
+
+VIEW_LOG_FILE = STORAGE_DIR / "view_logs.json"
+
+def log_view(user_role, user_name, target, details):
+    """Log view/search activity"""
+    logs = load_json_file(VIEW_LOG_FILE)
+    
+    log_entry = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "user_role": user_role,
+        "user_name": user_name,
+        "target": target,
+        "details": details
+    }
+    
+    logs.append(log_entry)
+    
+    # Keep only last 2000 entries (views happen more often)
+    if len(logs) > 2000:
+        logs = logs[-2000:]
+        
+    save_json_file(VIEW_LOG_FILE, logs)
+
+def get_view_logs(limit=100):
+    """Get recent view logs"""
+    logs = load_json_file(VIEW_LOG_FILE)
+    return logs[-limit:] if logs else []

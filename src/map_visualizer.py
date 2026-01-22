@@ -367,6 +367,7 @@ def render_folium_map(map_df):
         ne = display_df[['lat', 'lon']].max().values.tolist()
         m.fit_bounds([sw, ne])
         
-    # Render
-    map_html = m._repr_html_()
-    components.html(map_html, height=450, scrolling=False)
+    # Render using st_folium (Stable)
+    # components.html can cause 'removeChild' DOM errors on re-render.
+    from streamlit_folium import st_folium
+    st_folium(m, width="100%", height=450, returned_objects=[])

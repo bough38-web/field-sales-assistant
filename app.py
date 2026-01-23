@@ -2082,16 +2082,67 @@ if raw_df is not None:
         # Get current user info & Prep Columns
         current_user = st.session_state.get('user_manager_name') or st.session_state.get('user_branch') or '관리자'
         
+        
         display_cols = [
+            '활동진행상태', # Moved to first position
             '관리지사', 'SP담당', '업태구분명', '사업장명', 
             '소재지전체주소', '소재지전화', '평수', 
-            '활동진행상태', '특이사항', '상태변경일시', '상태변경자',
+            '특이사항', '상태변경일시', '상태변경자',
             '최종수정시점', '인허가일자', '폐업일자', 'record_key'
         ]
         
+        # [FEATURE] Activity Status Filter & Visualization
+        st.markdown("##### 📊 활동 현황 분석")
+        
+        # Filter Logic
+        status_filter_opts = ["상담중", "상담불가", "계약완료"]
+        sel_grid_status = st.multiselect("진행상태 필터 (선택 시 해당 상태만 조회)", status_filter_opts, placeholder="전체 보기 (미선택 시)")
+        
+        c_chart1, c_chart2 = st.columns([1, 2])
+        
+        # Prepare Data for Charts (Use grid_df before final filtering for global view)
+        chart_data = grid_df['활동진행상태'].value_counts().reset_index()
+        chart_data.columns = ['status', 'count']
+        chart_data = chart_data[chart_data['status'] != ''] # Exclude empty
+        
+        with c_chart1:
+            if not chart_data.empty:
+                # Donut Chart
+                base = alt.Chart(chart_data).encode(
+                    theta=alt.Theta("count", stack=True),
+                    color=alt.Color("status", scale=alt.Scale(domain=["상담중", "상담불가", "계약완료"], range=['#FFB74D', '#E57373', '#81C784']), legend=None)
+                )
+                pie = base.mark_arc(outerRadius=80, innerRadius=40)
+                text = base.mark_text(radius=100).encode(
+                    text=alt.Text("count", format=",.0f"),
+                    order=alt.Order("status"),
+                    color=alt.value("black")
+                )
+                st.altair_chart(pie + text, use_container_width=True)
+            else:
+                st.caption("집계된 활동 내역이 없습니다.")
+                
+        with c_chart2:
+            if not chart_data.empty:
+                # Bar Chart
+                bar_chart = alt.Chart(chart_data).mark_bar().encode(
+                    x=alt.X('count', title='건수'),
+                    y=alt.Y('status', sort='-x', title='상태'),
+                    color=alt.Color('status', legend=None),
+                    tooltip=['status', 'count']
+                )
+                st.altair_chart(bar_chart, use_container_width=True)
+        
+        # Apply Status Filter to Grid Display
+        if sel_grid_status:
+            grid_df = grid_df[grid_df['활동진행상태'].isin(sel_grid_status)]
+            
+        st.divider()
+
+        
+        # Create display dataframe AFTER filtering
         final_cols = [c for c in display_cols if c in grid_df.columns]
         df_display = grid_df[final_cols].reset_index(drop=True)
-        
         
         # [CLEANUP] Replace NaN and None values with empty string for clean display
         # Convert categorical columns to object type first to avoid TypeError
@@ -2101,7 +2152,6 @@ if raw_df is not None:
         
         df_display = df_display.fillna('')
         df_display = df_display.replace(['None', 'nan', 'NaN'], '')
-        
         
         # Render Editable Grid (Full Width for All Users)
         st.caption(f"총 {len(df_display):,}건 (수정 가능)")
@@ -2114,7 +2164,7 @@ if raw_df is not None:
                 "평수": st.column_config.NumberColumn(format="%.1f평"),
                 "활동진행상태": st.column_config.SelectboxColumn(
                     "활동상태",
-                    options=["", "진행중", "계약완료", "활동불가대상"],
+                    options=["", "상담중", "상담불가", "계약완료"],
                     required=False
                 ),
                 "특이사항": st.column_config.TextColumn(

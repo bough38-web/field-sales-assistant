@@ -364,6 +364,7 @@
         <a href="#dashboard" class="nav-item"><i class="fas fa-chart-pie"></i> 대시보드 활용</a>
         <a href="#map" class="nav-item"><i class="fas fa-map-marked-alt"></i> 지도 및 타겟팅</a>
         <a href="#mobile" class="nav-item"><i class="fas fa-mobile-alt"></i> 모바일 리스트</a>
+        <a href="#voc" class="nav-item"><i class="fas fa-comments"></i> VOC 관리</a>
     </nav>
 
     <!-- Main Content -->
@@ -589,6 +590,85 @@
                         <div style="font-size:0.8rem; color:#666;">포털 상세 정보 확인</div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- VOC Management -->
+        <section id="voc">
+            <h2 class="section-title"><i class="fas fa-comments"></i> 🗣️ VOC (고객의 소리) 관리</h2>
+            <p>담당자와 지사는 시스템 사용 중 발생하는 <strong>건의사항, 오류 제보, 기능 요청</strong> 등을 관리자에게 전달할 수 있으며, 관리자는 이를 확인하고 답변을 제공합니다.
+            </p>
+
+            <div class="grid-2" style="margin-top:30px;">
+                <div class="visual-card" style="border-left: 5px solid #2196F3;">
+                    <h3><i class="fas fa-user"></i> 담당자/지사 사용자</h3>
+                    <p style="font-size:0.9rem; margin-bottom:15px;">상단 탭 메뉴에서 <strong>🗣️ 관리자에게 요청하기</strong> 탭을 클릭하세요.
+                    </p>
+
+                    <div style="background:#E3F2FD; padding:15px; border-radius:8px; margin-bottom:15px;">
+                        <strong style="color:#1976D2;">📋 나의 요청 내역</strong>
+                        <ul style="margin:10px 0 0 20px; font-size:0.85rem; color:#555;">
+                            <li>제출한 모든 요청을 상태별로 확인할 수 있습니다</li>
+                            <li><span style="color:#d32f2f;">🔴 접수</span>: 새로 등록된 요청</li>
+                            <li><span style="color:#FBC02D;">🟡 진행중</span>: 관리자가 처리 중인 요청</li>
+                            <li><span style="color:#2E7D32;">✅ 완료</span>: 처리 완료된 요청</li>
+                            <li><strong>💬 관리자 답변</strong>이 있으면 요청 내역 하단에 표시됩니다</li>
+                        </ul>
+                    </div>
+
+                    <div style="background:#FFF3E0; padding:15px; border-radius:8px;">
+                        <strong style="color:#E65100;">✍️ 새 요청 등록</strong>
+                        <ol style="margin:10px 0 0 20px; font-size:0.85rem; color:#555;">
+                            <li>제목과 내용을 입력합니다</li>
+                            <li>중요도를 선택합니다 (Low/Normal/High)</li>
+                            <li><strong>📤 요청 등록</strong> 버튼을 클릭합니다</li>
+                            <li>등록 즉시 <strong>나의 요청 내역</strong>에 표시됩니다</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="visual-card" style="border-left: 5px solid var(--primary);">
+                    <h3><i class="fas fa-user-shield"></i> 관리자</h3>
+                    <p style="font-size:0.9rem; margin-bottom:15px;">사이드바에서 <strong>⚙️ 관리자 통합 도구</strong>를 열고
+                        <strong>🗣️ VOC 관리</strong> 탭으로 이동하세요.</p>
+
+                    <div style="background:#E8F5E9; padding:15px; border-radius:8px; margin-bottom:15px;">
+                        <strong style="color:#2E7D32;">📊 VOC 목록 관리</strong>
+                        <ul style="margin:10px 0 0 20px; font-size:0.85rem; color:#555;">
+                            <li>모든 사용자의 요청을 한눈에 확인</li>
+                            <li>상태별 필터링 (전체/접수/진행중/완료)</li>
+                            <li>요청자 정보 및 중요도 확인</li>
+                        </ul>
+                    </div>
+
+                    <div style="background:#FFF9C4; padding:15px; border-radius:8px; margin-bottom:15px;">
+                        <strong style="color:#F57F17;">✅ 요청 처리</strong>
+                        <ol style="margin:10px 0 0 20px; font-size:0.85rem; color:#555;">
+                            <li><strong>관리자 메모</strong>에 답변을 작성합니다</li>
+                            <li><strong>상태</strong>를 변경합니다 (접수→진행중→완료)</li>
+                            <li><strong>✅ 업데이트</strong> 버튼을 클릭하여 저장합니다</li>
+                            <li>사용자는 즉시 답변을 확인할 수 있습니다</li>
+                        </ol>
+                    </div>
+
+                    <div style="background:#FFEBEE; padding:15px; border-radius:8px;">
+                        <strong style="color:#C62828;">🗑️ 완료된 요청 삭제</strong>
+                        <p style="margin:10px 0 0 0; font-size:0.85rem; color:#555;">
+                            상태가 <strong>✅ 완료</strong>인 요청에 대해서만 <strong>🗑️ 삭제</strong> 버튼이 표시됩니다.
+                            삭제 버튼을 클릭하면 해당 요청이 영구적으로 제거됩니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-card" style="margin-top:20px; background:#f0f4ff; border-left:5px solid #5C6BC0;">
+                <h3 style="margin-top:0;"><i class="fas fa-lightbulb"></i> 💡 활용 팁</h3>
+                <ul style="margin-left:20px; color:#444; font-size:0.9rem;">
+                    <li><strong>명확한 제목</strong>: 요청 내용을 한눈에 알 수 있도록 구체적으로 작성하세요</li>
+                    <li><strong>상세한 설명</strong>: 오류의 경우 발생 시점, 상황, 화면 등을 자세히 기술하면 빠른 해결에 도움이 됩니다</li>
+                    <li><strong>중요도 활용</strong>: 긴급한 사항은 <strong>High</strong>로 설정하여 우선 처리를 요청하세요</li>
+                    <li><strong>주기적 확인</strong>: 관리자 답변이 도착하면 <strong>💬 관리자 답변</strong> 섹션에서 확인할 수 있습니다</li>
+                </ul>
             </div>
         </section>
 

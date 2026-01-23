@@ -1,0 +1,26 @@
+[
+  {
+    "id": "20260123103321",
+    "timestamp": "2026-01-23 10:33:21",
+    "user_role": "manager",
+    "user_name": "김병조",
+    "region": "중앙지사",
+    "subject": "테스트",
+    "content": "ㅋㅊㄹ",
+    "priority": "Normal",
+    "status": "New",
+    "admin_comment": ""
+  },
+  {
+    "id": "20260123102746",
+    "timestamp": "2026-01-23 10:27:46",
+    "user_role": "manager",
+    "user_name": "김병조",
+    "region": "중앙지사",
+    "subject": "테스트",
+    "content": "ㄴㅇㅁㄴㅇ",
+    "priority": "Normal",
+    "status": "New",
+    "admin_comment": ""
+  }
+]

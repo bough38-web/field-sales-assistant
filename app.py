@@ -14,6 +14,7 @@ from src import data_loader
 from src import map_visualizer
 from src import report_generator
 from src import activity_logger  # Activity logging and status tracking
+from src import voc_manager  # VOC / Request Manager
 
 # --- Configuration & Theme ---
 st.set_page_config(
@@ -505,18 +506,30 @@ with st.sidebar:
     st.sidebar.markdown("---")
     show_manual = st.sidebar.toggle("📘 사용 설명서 보기", value=False)
     if show_manual:
-        manual_path = os.path.join("reports", "premium_user_manual.html")
+        # Robust Path Resolution
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        manual_filename = "premium_user_manual.html"
+        reports_dir = os.path.join(BASE_DIR, "reports")
+        manual_path = os.path.join(reports_dir, manual_filename)
+        
+        # [FIX] Robust find (Unicode Normalization)
+        if not os.path.exists(manual_path) and os.path.exists(reports_dir):
+            for f in os.listdir(reports_dir):
+                if unicodedata.normalize('NFC', f) == unicodedata.normalize('NFC', manual_filename):
+                    manual_path = os.path.join(reports_dir, f)
+                    break
+        
         if os.path.exists(manual_path):
             with open(manual_path, "r", encoding="utf-8") as f:
                 html_content = f.read()
             
             # Embed Images
-            html_content = embed_local_images(html_content, base_path="reports")
+            html_content = embed_local_images(html_content, base_path=os.path.join(BASE_DIR, "reports"))
             st.components.v1.html(html_content, height=1000, scrolling=True)
             st.sidebar.info("설명서 닫기: 스위치 OFF")
             st.stop()
         else:
-            st.sidebar.error("설명서 파일이 없습니다.")
+            st.sidebar.error(f"설명서 파일이 없습니다. (경로: {manual_path})")
         
 
 
@@ -600,24 +613,7 @@ if raw_df is not None:
         
         _, main_col, _ = st.columns([1, 2, 1])
         
-        if st.session_state.show_manual_landing:
-             st.markdown("### 📘 이용 가이드 (사용 설명서)")
-             if st.button("⬅️ 설명서 닫기 (로그인 화면으로 돌아가기)", type="primary"):
-                 st.session_state.show_manual_landing = False
-                 st.rerun()
              
-             manual_path = os.path.join("reports", "premium_user_manual.html")
-             if os.path.exists(manual_path):
-                  with open(manual_path, "r", encoding="utf-8") as f:
-                      html_content = f.read()
-                  
-                  # Embed Images
-                  html_content = embed_local_images(html_content, base_path="reports")
-                  # Full Width Component
-                  st.components.v1.html(html_content, height=1200, scrolling=True)
-             else:
-                  st.error("설명서 파일을 찾을 수 없습니다.")
-             st.stop()
         
         with main_col:
             st.markdown("<h1 style='text-align: center; margin-top: -30px; margin-bottom: 5px;'>영업기회 포착 대시보드</h1>", unsafe_allow_html=True)
@@ -652,9 +648,8 @@ if raw_df is not None:
             # [FEATURE] Manual Button
             c_man1, c_man2, c_man3 = st.columns([1, 2, 1])
             with c_man2:
-                 if st.button("📘 이용 가이드 (사용 설명서) 보기", use_container_width=True):
-                     st.session_state.show_manual_landing = True
-                     st.rerun()
+                 if st.button("📘 이용 가이드 (설명서 Full Screen) 보기", use_container_width=True):
+                     st.switch_page("pages/99_Manual.py")
 
             st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
             
@@ -814,216 +809,112 @@ if raw_df is not None:
         custom_view_managers = []
         exclude_branches = []
         
-        # [UX] Admin Settings Toggle (Only for Admin Role)
+        # [UX] Admin Settings Toggle (Config & VOC)
         if st.session_state.user_role == 'admin':
-            show_admin_settings = st.checkbox("⚙️ 관리자 설정 (필터 열기)", value=False)
-            
-            # Auth Logic Triggered by Checkbox
-            if show_admin_settings:
-                # Already authenticated via Landing Page, but double check or just show controls
-                if not st.session_state.admin_auth:
-                     st.warning("재인증이 필요합니다.")
-                     # Re-auth logic if needed, but usually redundant here
-                else:
-                    # Logged In UI
+            if st.checkbox("⚙️ 관리자 통합 도구 (설정/VOC/뷰)", value=False):
+                st.divider()
+                adm_tab1, adm_tab2, adm_tab3 = st.tabs(["📢 공지/설정", "🗣️ VOC 관리", "🛠️ 뷰/로그"])
+                
+                with adm_tab1: # Notice & Config
+                    curr_config = load_system_config()
+                    with st.form("sys_config_form_v2"):
+                        st.subheader("시스템 설정")
+                        new_date = st.text_input("기준일", value=curr_config.get("data_standard_date", ""))
+                        st.subheader("공지사항")
+                        use_notice = st.checkbox("노출 ON", value=curr_config.get("show_notice", False))
+                        n_title = st.text_input("제목", value=curr_config.get("notice_title", ""))
+                        n_content = st.text_area("내용", value=curr_config.get("notice_content", ""))
+                        if st.form_submit_button("설정 저장"):
+                            save_system_config({"data_standard_date":new_date, "show_notice":use_notice, "notice_title":n_title, "notice_content":n_content})
+                            st.rerun()
+
+                with adm_tab2: # VOC Management
+                    st.subheader("요청사항(VOC) 목록")
+                    vocs = voc_manager.load_voc_requests()
+                    if not vocs:
+                        st.info("접수된 요청사항이 없습니다.")
+                    else:
+                        # Filters
+                        status_filter = st.multiselect("상태 필터", ["New", "In Progress", "Done"], default=["New", "In Progress"])
+                        filtered_vocs = [v for v in vocs if v['status'] in status_filter]
+                        
+                        st.caption(f"총 {len(filtered_vocs)}건 표시 중")
+                        for v in filtered_vocs:
+                            badge = voc_manager.get_status_badge(v['status'])
+                            with st.expander(f"[{badge}] {v['subject']} ({v['user_name']})"):
+                                st.write(f"**내용**: {v['content']}")
+                                st.caption(f"작성: {v['timestamp']} | 중요도: {v['priority']}")
+                                
+                                c_up1, c_up2 = st.columns([3, 1])
+                                with c_up1:
+                                    admin_note = st.text_input("관리자 메모", value=v.get('admin_comment',''), key=f"note_{v['id']}")
+                                with c_up2:
+                                    new_stat = st.selectbox("상태", ["New", "In Progress", "Done"], index=["New", "In Progress", "Done"].index(v['status']), key=f"stat_{v['id']}")
+                                
+                                col_btn1, col_btn2 = st.columns([1, 1])
+                                with col_btn1:
+                                    if st.button("✅ 업데이트", key=f"btn_{v['id']}", use_container_width=True):
+                                        voc_manager.update_voc_status(v['id'], new_stat, admin_note)
+                                        st.success("업데이트 완료")
+                                        st.rerun()
+                                
+                                with col_btn2:
+                                    # Only show delete button for completed items
+                                    if v['status'] == 'Done':
+                                        if st.button("🗑️ 삭제", key=f"del_{v['id']}", type="secondary", use_container_width=True):
+                                            if voc_manager.delete_voc_request(v['id']):
+                                                st.success("요청이 삭제되었습니다.")
+                                                st.rerun()
+                                            else:
+                                                st.error("삭제 실패")
+
+                with adm_tab3: # View & Logs
+                    st.info("대시보드 뷰 컨트롤")
                     c_edit, c_view = st.columns(2)
                     with c_edit:
-                        edit_mode = st.toggle("🛠️ 수정 모드", value=False)
+                         edit_mode = st.toggle("🛠️ 데이터 수정 모드", value=False)
                     with c_view:
-                        custom_view_mode = st.toggle("👮 관리자 뷰", value=False)
-        else:
-            show_admin_settings = False
-
-        # [FEATURE] Custom Dashboard View Controls (Only if auth)
-        custom_view_managers = []
-        if custom_view_mode and st.session_state.admin_auth:
-            st.info("👮 대시보드 강제 지정 모드")
-            all_mgrs_raw = sorted(raw_df['SP담당'].dropna().unique())
-            custom_view_managers = st.multiselect(
-                "노출할 담당자 지정 (복수)", 
-                all_mgrs_raw,
-                placeholder="담당자 선택..."
-            )
-            all_branches_raw = sorted(raw_df['관리지사'].dropna().unique())
-            exclude_branches = st.multiselect(
-                "제외할 지사 지정 (복수)",
-                all_branches_raw,
-                placeholder="제외할 지사 선택..."
-            )
-            
-            # Debug: Raw Data Distribution
-            with st.expander("📊 데이터 분포 확인 (관리자용)", expanded=False):
-                st.caption("원본 데이터 지사별 건수")
-                if raw_df is not None and '관리지사' in raw_df.columns:
-                    dist_counts = raw_df['관리지사'].value_counts().reset_index()
-                    dist_counts.columns = ['지사명', '건수']
-                    st.dataframe(dist_counts, use_container_width=True, hide_index=True)
+                         custom_view_mode = st.toggle("👮 강제 뷰 모드", value=False)
                     
+                    if custom_view_mode:
+                        all_mgrs_raw = sorted(raw_df['SP담당'].dropna().unique())
+                        custom_view_managers = st.multiselect("담당자 지정", all_mgrs_raw)
+                        all_branches_raw = sorted(raw_df['관리지사'].dropna().unique())
+                        exclude_branches = st.multiselect("지사 제외", all_branches_raw)
+
+                    # [MOVED] Admin Log Viewer
                     st.divider()
-                    st.caption("데이터 샘플 (상위 5건)")
-                    st.dataframe(raw_df[['관리지사', '소재지전체주소', '사업장명']].head(), use_container_width=True, hide_index=True)
-                else:
-                    st.info("데이터가 로드되지 않았습니다.")
-            
-            # [FEATURE] System Config Admin
-            st.divider()
-            with st.expander("📢 공지사항 및 시스템 설정", expanded=False):
-                st.caption("전체 사용자에게 보여줄 공지사항과 데이터 기준일을 설정합니다.")
-                
-                # Load current config
-                curr_config = load_system_config()
-                
-                with st.form("sys_config_form"):
-                    st.subheader("1. 데이터 기준일 설정")
-                    new_date = st.text_input("데이터 기준일 (예: 2024.01.20 기준)", value=curr_config.get("data_standard_date", ""))
+                    st.markdown("#### 📊 관리 기록 조회 및 시각화")
+                    log_tab1, log_tab2, log_tab3 = st.tabs(["접속 로그", "활동 변경 이력", "조회 기록"])
                     
-                    st.subheader("2. 공지사항 설정")
-                    use_notice = st.checkbox("공지사항 노출", value=curr_config.get("show_notice", False))
-                    notice_title = st.text_input("공지 제목", value=curr_config.get("notice_title", ""))
-                    notice_content = st.text_area("공지 내용", value=curr_config.get("notice_content", ""))
-                    
-                    if st.form_submit_button("설정 저장"):
-                        updated_config = {
-                            "data_standard_date": new_date,
-                            "show_notice": use_notice,
-                            "notice_title": notice_title,
-                            "notice_content": notice_content
-                        }
-                        if save_system_config(updated_config):
-                            st.success("시스템 설정이 저장되었습니다. 새로고침 후 반영됩니다.")
-                            import time
-                            time.sleep(1)
-                            st.rerun()
+                    with log_tab1:
+                        st.caption("최근 접속 로그 (최대 50건)")
+                        access_logs = activity_logger.get_access_logs(limit=50)
+                        if access_logs:
+                            log_df = pd.DataFrame(access_logs)
+                            st.dataframe(log_df[::-1], use_container_width=True, height=200)
                         else:
-                            st.error("설정 저장 실패")
+                            st.info("로그 없음")
 
-            # Admin Log Viewer
-            # [FEATURE] Enhanced Admin Log Viewer
-            st.markdown("---")
-            st.markdown("#### 📊 관리 기록 조회 및 시각화")
-            log_tab1, log_tab2, log_tab3 = st.tabs(["접속 로그", "활동 변경 이력", "조회 기록"])
-            
-            with log_tab1:
-                st.caption("최근 접속 로그 (최대 50건)")
-                access_logs = activity_logger.get_access_logs(limit=50)
-                if access_logs:
-                    log_df = pd.DataFrame(access_logs)
-                    
-                    # 1. Visualization (Role Distribution)
-                    chart_role = alt.Chart(log_df).mark_bar().encode(
-                        x=alt.X('user_role', title='사용자 권한'),
-                        y=alt.Y('count()', title='접속 횟수'),
-                        color='user_role'
-                    ).properties(height=200, title="권한별 접속 현황")
-                    
-                    st.altair_chart(chart_role, use_container_width=True)
-                    
-                    # Table
-                    log_df_show = log_df[::-1]
-                    st.dataframe(
-                        log_df_show,
-                        use_container_width=True,
-                        height=250,
-                        column_config={
-                            "timestamp": "접속시간",
-                            "user_role": "역할",
-                            "user_name": "사용자",
-                            "action": "행동"
-                        }
-                    )
-                    
-                    # Download
-                    csv_data = log_df.to_csv(index=False).encode('utf-8-sig')
-                    st.download_button(
-                        label="📥 접속 로그 다운로드 (CSV)",
-                        data=csv_data,
-                        file_name='access_logs.csv',
-                        mime='text/csv'
-                    )
-                else:
-                    st.info("접속 로그가 없습니다.")
-            
-            with log_tab2:
-                st.caption("최근 활동 변경 이력 (최대 50건)")
-                change_history = activity_logger.get_change_history(limit=50)
-                if change_history:
-                    history_df = pd.DataFrame(change_history)
-                    
-                    # Visualization (Status Changes)
-                    if 'new_status' in history_df.columns:
-                        chart_status = alt.Chart(history_df).mark_bar().encode(
-                            x=alt.X('new_status', title='변경 상태'),
-                            y=alt.Y('count()', title='횟수'),
-                            color='new_status'
-                        ).properties(height=200, title="상태 변경 현황")
-                        st.altair_chart(chart_status, use_container_width=True)
-                    
-                    history_df_show = history_df[::-1]
-                    st.dataframe(
-                        history_df_show,
-                        use_container_width=True,
-                        height=250,
-                        column_config={
-                            "timestamp": "변경시간",
-                            "user": "변경자",
-                            "record_key": "대상",
-                            "old_status": "이전 상태",
-                            "new_status": "변경 상태",
-                            "old_notes": "이전 특이사항",
-                            "new_notes": "변경 특이사항"
-                        }
-                    )
-                    
-                    # Download
-                    csv_history = history_df.to_csv(index=False).encode('utf-8-sig')
-                    st.download_button(
-                        label="📥 활동 이력 다운로드 (CSV)",
-                        data=csv_history,
-                        file_name='activity_history.csv',
-                        mime='text/csv'
-                    )
-                else:
-                    st.info("변경 이력이 없습니다.")
+                    with log_tab2:
+                        st.caption("최근 변경 이력")
+                        change_history = activity_logger.get_change_history(limit=50)
+                        if change_history:
+                            history_df = pd.DataFrame(change_history)
+                            st.dataframe(history_df[::-1], use_container_width=True, height=200)
+                        else:
+                            st.info("이력 없음")
 
-            with log_tab3:
-                st.caption("최근 조회/검색 기록 (최대 50건)")
-                view_logs = activity_logger.get_view_logs(limit=50)
-                if view_logs:
-                    view_df = pd.DataFrame(view_logs)
-                    
-                    # Visualization (Frequent Targets/Types)
-                    # Simple bar chart of 'target' (e.g., Search, Filter)
-                    if 'target' in view_df.columns:
-                        chart_view = alt.Chart(view_df).mark_bar().encode(
-                            x=alt.X('target', title='활동 유형'),
-                            y=alt.Y('count()', title='빈도'),
-                            color='target'
-                        ).properties(height=200, title="조회 활동 유형")
-                        st.altair_chart(chart_view, use_container_width=True)
+                    with log_tab3:
+                        st.caption("조회 기록")
+                        view_logs = activity_logger.get_view_logs(limit=50)
+                        if view_logs:
+                            view_df = pd.DataFrame(view_logs)
+                            st.dataframe(view_df[::-1], use_container_width=True, height=200)
+                        else:
+                            st.info("기록 없음")
+        
 
-                    view_df_show = view_df[::-1]
-                    st.dataframe(
-                        view_df_show,
-                        use_container_width=True,
-                        height=250,
-                        column_config={
-                            "timestamp": "일시",
-                            "user_name": "사용자",
-                            "target": "대상 (필터)",
-                            "details": "상세 내용"
-                        }
-                    )
-                    
-                    # Download
-                    csv_view = view_df.to_csv(index=False).encode('utf-8-sig')
-                    st.download_button(
-                        label="📥 조회 기록 다운로드 (CSV)",
-                        data=csv_view,
-                        file_name='view_logs.csv',
-                        mime='text/csv'
-                    )
-                else:
-                    st.info("조회 기록이 없습니다.")
         
         st.divider()
         
@@ -1057,142 +948,117 @@ if raw_df is not None:
              elif st.session_state.user_manager_name:
                   filter_df = filter_df[filter_df['SP담당'] == st.session_state.user_manager_name]
         
-        # [UI] Common Filters Logic
-        # Always show Common Filters, but Restriction based on Role
-        st.markdown("### 🔍 조회 조건 설정")
-            
-        # 1. Branch
-        custom_branch_order = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사']
-        custom_branch_order = [unicodedata.normalize('NFC', b) for b in custom_branch_order]
-        current_branches_in_raw = [unicodedata.normalize('NFC', str(b)) for b in raw_df['관리지사'].unique() if pd.notna(b)]
-        sorted_branches_for_filter = [b for b in custom_branch_order if b in current_branches_in_raw]
-        
-        # [FEATURE] Add 미지정 option for admin users
+        # [SECURITY] Global Filter Visibility (Admin Only)
         if st.session_state.user_role == 'admin':
+            st.markdown("### 🔍 조회 조건 설정")
+                
+            # 1. Branch
+            custom_branch_order = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사']
+            custom_branch_order = [unicodedata.normalize('NFC', b) for b in custom_branch_order]
+            current_branches_in_raw = [unicodedata.normalize('NFC', str(b)) for b in raw_df['관리지사'].unique() if pd.notna(b)]
+            sorted_branches_for_filter = [b for b in custom_branch_order if b in current_branches_in_raw]
+            
+            # [FEATURE] Add 미지정 option for admin users
             if '미지정' in current_branches_in_raw and '미지정' not in sorted_branches_for_filter:
                 sorted_branches_for_filter.append('미지정')
-        
-        others_for_filter = [b for b in current_branches_in_raw if b not in custom_branch_order]
-        sorted_branches_for_filter.extend(others_for_filter)
-        sorted_branches_for_filter = [unicodedata.normalize('NFC', b) for b in sorted_branches_for_filter]
-
-        st.markdown("##### 🏢 지사 선택")
-        
-        # [ROLE_CONSTRAINT] Branch Selection
-        branch_opts = ["전체"] + sorted_branches_for_filter
-        
-        # Default logic
-        if 'sb_branch' not in st.session_state: st.session_state.sb_branch = "전체"
-        
-        # Force overrides
-        disabled_branch = False
-        if st.session_state.user_role == 'branch' or st.session_state.user_role == 'manager':
-            # Lock to user's branch
-            if st.session_state.user_branch:
-                st.session_state.sb_branch = st.session_state.user_branch
-                disabled_branch = True
-        
-        if st.session_state.sb_branch != "전체":
-                st.session_state.sb_branch = unicodedata.normalize('NFC', st.session_state.sb_branch)
-        
-        def reset_manager_filter():
-            st.session_state.sb_manager = "전체"
             
-        sel_branch = st.selectbox(
-            "관리지사", 
-            branch_opts, 
-            key="sb_branch",
-            on_change=reset_manager_filter,
-            disabled=disabled_branch
-        )
+            others_for_filter = [b for b in current_branches_in_raw if b not in custom_branch_order]
+            sorted_branches_for_filter.extend(others_for_filter)
+            sorted_branches_for_filter = [unicodedata.normalize('NFC', b) for b in sorted_branches_for_filter]
 
-        if sel_branch != "전체":
-            filter_df = filter_df[filter_df['관리지사'] == sel_branch]
-        
-        # 2. Manager
-        has_area_code = '영업구역 수정' in filter_df.columns
-        
-        st.markdown("##### 🧑‍💻 영업구역 (담당자) 선택")
-        
-        if has_area_code:
-            temp_df = filter_df[['영업구역 수정', 'SP담당']].dropna(subset=['SP담당']).copy()
-            # Handle potential NaN in code
-            temp_df['영업구역 수정'] = temp_df['영업구역 수정'].fillna('')
-            temp_df['label'] = temp_df.apply(lambda x: f"{x['영업구역 수정']} ({x['SP담당']})" if x['영업구역 수정'] else x['SP담당'], axis=1)
-            temp_df = temp_df.sort_values(['SP담당', '영업구역 수정'])
-            manager_opts = ["전체"] + list(temp_df['label'].unique())
-            # Map label back to data
-            label_map_code = dict(zip(temp_df['label'], temp_df['영업구역 수정']))
-            label_map_name = dict(zip(temp_df['label'], temp_df['SP담당']))
-        else:
-            manager_opts = ["전체"] + sorted(list(filter_df['SP담당'].dropna().unique()))
-        
-        if 'sb_manager' not in st.session_state: st.session_state.sb_manager = "전체"
-
-        # [ROLE_CONSTRAINT] Manager
-        disabled_mgr = False
-        if st.session_state.user_role == 'manager':
-            # Identify current manager's label
-            if st.session_state.user_manager_name:
-                # Try to matching label in list
-                target_name = st.session_state.user_manager_name
-                target_code = st.session_state.user_manager_code
+            st.markdown("##### 🏢 지사 선택")
+            
+            # [ROLE_CONSTRAINT] Branch Selection
+            branch_opts = ["전체"] + sorted_branches_for_filter
+            
+            # Default logic
+            if 'sb_branch' not in st.session_state: st.session_state.sb_branch = "전체"
+            
+            # Force overrides
+            disabled_branch = False
+            if st.session_state.user_role == 'branch' or st.session_state.user_role == 'manager':
+                # Lock to user's branch
+                if st.session_state.user_branch:
+                    st.session_state.sb_branch = st.session_state.user_branch
+                    disabled_branch = True
+            
+            if st.session_state.sb_branch != "전체":
+                    st.session_state.sb_branch = unicodedata.normalize('NFC', st.session_state.sb_branch)
+            
+            def reset_manager_filter():
+                st.session_state.sb_manager = "전체"
                 
-                # Find matching label
-                # If code exists, look for "Code (Name)"
-                # Else "Name"
-                found_label = None
-                if target_code:
-                     found_label = f"{target_code} ({target_name})"
-                else:
-                     found_label = target_name
-                     
-                if found_label in manager_opts:
-                    st.session_state.sb_manager = found_label
-                    disabled_mgr = True
-                elif target_name in manager_opts:
-                    st.session_state.sb_manager = target_name
-                    disabled_mgr = True
-        
-        sel_manager_label = st.selectbox(
-            "영업구역/담당", 
-            manager_opts, 
-            index=manager_opts.index(st.session_state.get('sb_manager', "전체")) if st.session_state.get('sb_manager') in manager_opts else 0,
-            key="sb_manager",
-            disabled=disabled_mgr
-        )
-        
-        sel_manager = "전체" 
-        selected_area_code = None 
-        
-        if sel_manager_label != "전체":
+            sel_branch = st.selectbox(
+                "관리지사 선택", 
+                branch_opts, 
+                index=branch_opts.index(st.session_state.sb_branch) if st.session_state.sb_branch in branch_opts else 0,
+                key="sb_branch",
+                on_change=reset_manager_filter,
+                disabled=disabled_branch
+            )
+
+            if sel_branch != "전체":
+                filter_df = filter_df[filter_df['관리지사'] == sel_branch]
+            
+            # 2. Manager
+            has_area_code = '영업구역 수정' in filter_df.columns
+            
+            st.markdown("##### 🧑‍💻 영업구역 (담당자) 선택")
+            
             if has_area_code:
-                # Reverse lookup
-                # If using label map
-                selected_area_code = label_map_code.get(sel_manager_label)
-                selected_name_only = label_map_name.get(sel_manager_label)
-                
-                if selected_area_code:
-                    filter_df = filter_df[filter_df['영업구역 수정'] == selected_area_code]
-                    sel_manager = selected_name_only
-                else:
-                    # No code, just name
-                    filter_df = filter_df[filter_df['SP담당'] == selected_name_only]
-                    sel_manager = selected_name_only
+                    temp_df = filter_df[['영업구역 수정', 'SP담당']].dropna(subset=['SP담당']).copy()
+                    # Handle potential NaN in code
+                    temp_df['영업구역 수정'] = temp_df['영업구역 수정'].fillna('')
+                    temp_df['label'] = temp_df.apply(lambda x: f"{x['영업구역 수정']} ({x['SP담당']})" if x['영업구역 수정'] else x['SP담당'], axis=1)
+                    temp_df = temp_df.sort_values(['SP담당', '영업구역 수정'])
+                    manager_opts = ["전체"] + list(temp_df['label'].unique())
+                    # Map label back to data
+                    label_map_code = dict(zip(temp_df['label'], temp_df['영업구역 수정']))
+                    label_map_name = dict(zip(temp_df['label'], temp_df['SP담당']))
             else:
-                filter_df = filter_df[filter_df['SP담당'] == sel_manager_label]
-                sel_manager = sel_manager_label
+                manager_opts = ["전체"] + sorted(list(filter_df['SP담당'].dropna().unique()))
+            
+            if 'sb_manager' not in st.session_state: st.session_state.sb_manager = "전체"
 
-            if sel_manager != "전체":
-                sel_manager = unicodedata.normalize('NFC', sel_manager)
-                
+            # [ROLE_CONSTRAINT] Manager (Admin can always change)
+            sel_manager_label = st.selectbox(
+                "영업구역/담당", 
+                manager_opts, 
+                index=manager_opts.index(st.session_state.get('sb_manager', "전체")) if st.session_state.get('sb_manager') in manager_opts else 0,
+                key="sb_manager",
+                disabled=False # Admin can always change
+            )
+            
+            sel_manager = "전체" 
+            selected_area_code = None 
+            
+            if sel_manager_label != "전체":
+                if has_area_code:
+                    # Reverse lookup
+                    selected_area_code = label_map_code.get(sel_manager_label)
+                    selected_name_only = label_map_name.get(sel_manager_label)
+                    
+                    if selected_area_code:
+                        filter_df = filter_df[filter_df['영업구역 수정'] == selected_area_code]
+                        sel_manager = selected_name_only
+                    else:
+                        # No code, just name
+                        filter_df = filter_df[filter_df['SP담당'] == selected_name_only]
+                        sel_manager = selected_name_only
+                else:
+                    filter_df = filter_df[filter_df['SP담당'] == sel_manager_label]
+                    sel_manager = sel_manager_label
+
+                if sel_manager != "전체":
+                    sel_manager = unicodedata.normalize('NFC', sel_manager)
+                    
             # 3. Type
             st.markdown("##### 🏥 병원/의원 필터")
             c_h1, c_h2 = st.columns(2)
             with c_h1:
-                 only_hospitals = st.toggle("🏥 병원 관련만 보기", value=False)
+                only_hospitals = st.toggle("🏥 병원 관련만 보기", value=False)
             with c_h2:
-                 only_large_area = st.toggle("🏗️ 100평 이상만 보기", value=False)
+                only_large_area = st.toggle("🏗️ 100평 이상만 보기", value=False)
             
             try:
                 available_types = sorted(list(filter_df[type_col].dropna().unique()))
@@ -1200,8 +1066,8 @@ if raw_df is not None:
                 available_types = []
                 
             if not available_types and not filter_df.empty:
-                 available_types = sorted(list(raw_df[type_col].dropna().unique()))
-                 
+                available_types = sorted(list(raw_df[type_col].dropna().unique()))
+                
             with st.expander("📂 업태(업종) 필터 (펼치기/접기)", expanded=False):
                 sel_types = st.multiselect(
                     "업태를 선택하세요 (복수 선택 가능)", 
@@ -1250,8 +1116,6 @@ if raw_df is not None:
                 key="sb_status"
             )
             
-            
-            
             def reset_page():
                 st.session_state.page = 0
                 
@@ -1259,11 +1123,33 @@ if raw_df is not None:
             only_with_phone = st.toggle("전화번호 있는 것만 보기", value=False, on_change=reset_page)
             
             st.markdown("---")
-        
-        # [FEATURE] Address search (outside conditional block to ensure always defined)
-        st.markdown("##### 🔍 주소 검색")
-        address_search = st.text_input("주소 검색 (예: 인천/삼산동)", value="", placeholder="주소 또는 업체명 입력...")
-        
+            
+            # [FEATURE] Address search
+            st.markdown("##### 🔍 주소 검색")
+            address_search = st.text_input("주소 검색 (예: 인천/삼산동)", value="", placeholder="주소 또는 업체명 입력...")
+        else:
+            # [HIDDEN] Defaults for Manager/Branch
+            # They see no global filter sidebar widgets, their filters are applied via hard filters
+            sel_branch = st.session_state.user_branch if st.session_state.user_branch else "전체"
+            sel_manager = "전체" # Managers see their own only via Main Data Filter, global filter is 'all' within that scope
+            sel_manager_label = "전체" # Default for manager label
+            selected_area_code = None # Default for area code
+            only_hospitals = False
+            only_large_area = False
+            sel_types = []
+            sel_permit_ym = "전체"
+            sel_close_ym = "전체"
+            sel_status = "전체"
+            only_with_phone = False
+            address_search = ""
+            
+            # Force Session State for consistency
+            st.session_state.sb_branch = sel_branch
+            st.session_state.sb_manager = "전체"
+            st.session_state.sb_status = "전체"
+            if 'sb_permit_ym' not in st.session_state: st.session_state.sb_permit_ym = "전체"
+            if 'sb_close_ym' not in st.session_state: st.session_state.sb_close_ym = "전체"
+            
     # [LOGGING] View/Filter Logging
     # We track changes in key filters
     
@@ -1743,7 +1629,11 @@ if raw_df is not None:
 
     st.markdown("---")
 
-    tab1, tab_stats, tab2, tab3 = st.tabs(["🗺️ 지도 & 분석", "📈 상세통계", "📱 모바일 리스트", "📋 데이터 그리드"])
+    # [LAYOUT] Tab Structure - Different for Admin vs Non-Admin
+    if st.session_state.user_role == 'admin':
+        tab1, tab_stats, tab2, tab3 = st.tabs(["🗺️ 지도 & 분석", "📈 상세통계", "📱 모바일 리스트", "📋 데이터 그리드"])
+    else:
+        tab1, tab_stats, tab2, tab3, tab_voc = st.tabs(["🗺️ 지도 & 분석", "📈 상세통계", "📱 모바일 리스트", "📋 데이터 그리드", "🗣️ 관리자에게 요청하기"])
 
     with tab1:
         st.subheader("🗺️ 지사/담당자 조회")
@@ -2098,7 +1988,9 @@ if raw_df is not None:
 
         grid_df = grid_df.sort_values(by=['관리지사', 'SP담당', '업태구분명'])
         
-        # Get current user info
+        # [LAYOUT] Data Grid & VOC
+        
+        # Get current user info & Prep Columns
         current_user = st.session_state.get('user_manager_name') or st.session_state.get('user_branch') or '관리자'
         
         display_cols = [
@@ -2111,7 +2003,10 @@ if raw_df is not None:
         final_cols = [c for c in display_cols if c in grid_df.columns]
         df_display = grid_df[final_cols].reset_index(drop=True)
         
-        # Editable data grid
+        
+        # Render Editable Grid (Full Width for All Users)
+        st.caption(f"총 {len(df_display):,}건 (수정 가능)")
+        
         edited_df = st.data_editor(
             df_display, 
             use_container_width=True, 
@@ -2136,15 +2031,13 @@ if raw_df is not None:
             key="data_grid_editor"
         )
         
-        # Save button
+        # Save button and Download
         col1, col2 = st.columns([1, 4])
         with col1:
             if st.button("💾 변경사항 저장", use_container_width=True):
-                # Save changes
                 saved_count = 0
                 for idx, row in edited_df.iterrows():
                     orig_row = df_display.iloc[idx]
-                    # Check if changed
                     if (row['활동진행상태'] != orig_row['활동진행상태'] or 
                         row['특이사항'] != orig_row['특이사항']):
                         activity_logger.save_activity_status(
@@ -2162,9 +2055,71 @@ if raw_df is not None:
                     st.info("변경된 항목이 없습니다.")
         
         with col2:
-            # Download button
             csv = df_display.drop(columns=['record_key']).to_csv(index=False, encoding='cp949').encode('cp949')
             st.download_button("📥 CSV 다운로드", csv, "영업기회_처리결과.csv", "text/csv")
+    
+    # [TAB] VOC Request (Only for Non-Admin Users)
+    if st.session_state.user_role != 'admin':
+        with tab_voc:
+            st.subheader("🗣️ 관리자에게 요청하기")
+            
+            # Show existing requests first
+            st.markdown("### 📋 나의 요청 내역")
+            
+            # Load all requests and filter by current user
+            all_requests = voc_manager.load_voc_requests()
+            u_name = st.session_state.user_manager_name or st.session_state.user_branch or "Unknown"
+            my_requests = [req for req in all_requests if req.get('user_name') == u_name]
+            
+            if my_requests:
+                for req in my_requests:
+                    # Status badge
+                    status_badge = voc_manager.get_status_badge(req['status'])
+                    priority_emoji = "🔴" if req['priority'] == "High" else "🟡" if req['priority'] == "Normal" else "🟢"
+                    
+                    with st.expander(f"{status_badge} {priority_emoji} {req['subject']} - {req['timestamp']}", expanded=(req['status'] == 'New')):
+                        col1, col2 = st.columns([3, 1])
+                        with col1:
+                            st.caption(f"**요청 ID:** {req['id']}")
+                            st.caption(f"**등록일시:** {req['timestamp']}")
+                        with col2:
+                            st.caption(f"**상태:** {status_badge}")
+                            st.caption(f"**중요도:** {priority_emoji} {req['priority']}")
+                        
+                        st.markdown("**📄 요청 내용:**")
+                        st.info(req['content'])
+                        
+                        # Show admin comment if exists
+                        if req.get('admin_comment') and req['admin_comment'].strip():
+                            st.markdown("**💬 관리자 답변:**")
+                            st.success(req['admin_comment'])
+                        elif req['status'] != 'New':
+                            st.caption("_관리자가 아직 답변을 작성하지 않았습니다._")
+            else:
+                st.info("아직 등록한 요청이 없습니다.")
+            
+            st.markdown("---")
+            st.markdown("### ✍️ 새 요청 등록")
+            st.info("건의사항, 오류 제보, 기능 요청 등을 관리자에게 전달할 수 있습니다.")
+            
+            with st.form("voc_request_form"):
+                voc_subj = st.text_input("📝 제목", placeholder="요청 제목을 입력하세요")
+                voc_cont = st.text_area("📄 내용", placeholder="상세 내용을 입력하세요...", height=200)
+                voc_pri = st.select_slider("⚠️ 중요도", options=["Low", "Normal", "High"], value="Normal")
+                
+                submitted = st.form_submit_button("📤 요청 등록", type="primary", use_container_width=True)
+                
+                if submitted:
+                    if voc_subj and voc_cont:
+                        u_name = st.session_state.user_manager_name or st.session_state.user_branch or "Unknown"
+                        u_region = st.session_state.user_branch or "Unknown"
+                        if voc_manager.add_voc_request(st.session_state.user_role, u_name, u_region, voc_subj, voc_cont, voc_pri):
+                            st.success("✅ 요청이 성공적으로 접수되었습니다. 관리자가 확인 후 답변드리겠습니다.")
+                            st.rerun()
+                        else:
+                            st.error("❌ 요청 등록에 실패했습니다. 다시 시도해주세요.")
+                    else:
+                        st.warning("⚠️ 제목과 내용을 모두 입력해주세요.")
 
 else:
     st.info("👈 사이드바에서 데이터를 업로드하거나, '자동 감지' 기능을 확인하세요.")

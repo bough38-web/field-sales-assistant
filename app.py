@@ -1342,7 +1342,13 @@ if raw_df is not None:
     else:
         # Standard Sidebar Filters
         # [FIX] Source of Truth is Session State (for Immediate Button Response)
-        current_branch_filter = st.session_state.get('sb_branch', "전체")
+        # [FIX] Only Admin can use Sidebar Branch Filter. 
+        # Non-admins (Branch/Manager) are already filtered by Security Filter above.
+        # If we check sb_branch for them, stale session state might cause conflict (0 results).
+        if st.session_state.user_role == 'admin':
+            current_branch_filter = st.session_state.get('sb_branch', "전체")
+        else:
+            current_branch_filter = "전체"
         
         if current_branch_filter != "전체":
             # [FIX] Normalize comparison for Mac/Excel compatibility

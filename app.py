@@ -1974,7 +1974,8 @@ if raw_df is not None:
         
         keyword = st.text_input("검색", placeholder="업체명 또는 주소...")
             
-        m_df = df.copy()
+        # Use base_df instead of df to show all statuses (including closed)
+        m_df = base_df.copy()
         
         if keyword: m_df = m_df[m_df['사업장명'].str.contains(keyword, na=False) | m_df['소재지전체주소'].str.contains(keyword, na=False)]
         

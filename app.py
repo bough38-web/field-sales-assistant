@@ -509,14 +509,14 @@ with st.sidebar:
         # Robust Path Resolution
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         manual_filename = "premium_user_manual.html"
-        reports_dir = os.path.join(BASE_DIR, "reports")
-        manual_path = os.path.join(reports_dir, manual_filename)
+        static_dir = os.path.join(BASE_DIR, "static")
+        manual_path = os.path.join(static_dir, manual_filename)
         
         # [FIX] Robust find (Unicode Normalization)
-        if not os.path.exists(manual_path) and os.path.exists(reports_dir):
-            for f in os.listdir(reports_dir):
+        if not os.path.exists(manual_path) and os.path.exists(static_dir):
+            for f in os.path.listdir(static_dir):
                 if unicodedata.normalize('NFC', f) == unicodedata.normalize('NFC', manual_filename):
-                    manual_path = os.path.join(reports_dir, f)
+                    manual_path = os.path.join(static_dir, f)
                     break
         
         if os.path.exists(manual_path):
@@ -524,7 +524,7 @@ with st.sidebar:
                 html_content = f.read()
             
             # Embed Images
-            html_content = embed_local_images(html_content, base_path=os.path.join(BASE_DIR, "reports"))
+            html_content = embed_local_images(html_content, base_path=os.path.join(BASE_DIR, "static"))
             st.components.v1.html(html_content, height=1000, scrolling=True)
             st.sidebar.info("설명서 닫기: 스위치 OFF")
             st.stop()

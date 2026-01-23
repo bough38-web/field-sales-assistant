@@ -2092,7 +2092,13 @@ if raw_df is not None:
         final_cols = [c for c in display_cols if c in grid_df.columns]
         df_display = grid_df[final_cols].reset_index(drop=True)
         
+        
         # [CLEANUP] Replace NaN and None values with empty string for clean display
+        # Convert categorical columns to object type first to avoid TypeError
+        for col in df_display.columns:
+            if pd.api.types.is_categorical_dtype(df_display[col]):
+                df_display[col] = df_display[col].astype('object')
+        
         df_display = df_display.fillna('')
         df_display = df_display.replace(['None', 'nan', 'NaN'], '')
         

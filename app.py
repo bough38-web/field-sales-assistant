@@ -2094,9 +2094,43 @@ if raw_df is not None:
         # [FEATURE] Activity Status Filter & Visualization
         st.markdown("##### 📊 활동 현황 분석")
         
-        # Filter Logic
-        status_filter_opts = ["상담중", "상담불가", "계약완료"]
-        sel_grid_status = st.multiselect("진행상태 필터 (선택 시 해당 상태만 조회)", status_filter_opts, placeholder="전체 보기 (미선택 시)")
+        # [MIGRATION] Convert plain status to Emoji status for display consistency
+        # This modification is temporary for display; saving handles the mapping if needed, 
+        # but here we just convert loaded data to new format.
+        status_map = {
+            "상담중": "🟡 상담중",
+            "상담불가": "🔴 상담불가",
+            "계약완료": "🟢 계약완료",
+            "진행중": "🟡 상담중", # Handle legacy '진행중' map to '상담중'
+            "활동불가대상": "🔴 상담불가" # Legacy map
+        }
+        
+        # Apply mapping to grid_df['활동진행상태']
+        # If value is already in values (has emoji), keep it. If in keys, map it.
+        def map_status_display(val):
+            val = str(val).strip()
+            if val in status_map:
+                return status_map[val]
+            # Check if it's already one of the target values
+            if val in status_map.values():
+                return val
+            return val
+            
+        if '활동진행상태' in grid_df.columns:
+            grid_df['활동진행상태'] = grid_df['활동진행상태'].apply(map_status_display)
+
+        
+        # Layout: Filter & Search
+        c_filter, c_search = st.columns([2, 1])
+        
+        status_filter_opts = ["🟡 상담중", "🔴 상담불가", "🟢 계약완료"]
+        
+        with c_filter:
+            sel_grid_status = st.multiselect("진행상태 필터", status_filter_opts, placeholder="전체 보기 (미선택 시)")
+        
+        with c_search:
+            grid_search_kw = st.text_input("검색 (업체명/주소)", placeholder="검색어 입력")
+        
         
         c_chart1, c_chart2 = st.columns([1, 2])
         
@@ -2110,7 +2144,7 @@ if raw_df is not None:
                 # Donut Chart
                 base = alt.Chart(chart_data).encode(
                     theta=alt.Theta("count", stack=True),
-                    color=alt.Color("status", scale=alt.Scale(domain=["상담중", "상담불가", "계약완료"], range=['#FFB74D', '#E57373', '#81C784']), legend=None)
+                    color=alt.Color("status", scale=alt.Scale(domain=["🟡 상담중", "🔴 상담불가", "🟢 계약완료"], range=['#FFB74D', '#E57373', '#81C784']), legend=None)
                 )
                 pie = base.mark_arc(outerRadius=80, innerRadius=40)
                 text = base.mark_text(radius=100).encode(
@@ -2133,9 +2167,15 @@ if raw_df is not None:
                 )
                 st.altair_chart(bar_chart, use_container_width=True)
         
-        # Apply Status Filter to Grid Display
+        # Apply Filters to Grid Display (Status AND Search)
         if sel_grid_status:
             grid_df = grid_df[grid_df['활동진행상태'].isin(sel_grid_status)]
+            
+        if grid_search_kw:
+            grid_df = grid_df[
+                grid_df['사업장명'].astype(str).str.contains(grid_search_kw, na=False) | 
+                grid_df['소재지전체주소'].astype(str).str.contains(grid_search_kw, na=False)
+            ]
             
         st.divider()
 
@@ -2164,7 +2204,7 @@ if raw_df is not None:
                 "평수": st.column_config.NumberColumn(format="%.1f평"),
                 "활동진행상태": st.column_config.SelectboxColumn(
                     "활동상태",
-                    options=["", "상담중", "상담불가", "계약완료"],
+                    options=["", "🟡 상담중", "🔴 상담불가", "🟢 계약완료"],
                     required=False
                 ),
                 "특이사항": st.column_config.TextColumn(

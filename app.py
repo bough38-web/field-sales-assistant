@@ -2121,7 +2121,7 @@ if raw_df is not None:
 
         
         # Layout: Filter & Search
-        c_filter, c_search = st.columns([3, 1])
+        c_filter, c_search = st.columns([1, 1])
         
         status_filter_opts = ["🟡 상담중", "🔴 상담불가", "🟢 계약완료"]
         

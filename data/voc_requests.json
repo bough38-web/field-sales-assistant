@@ -8,8 +8,8 @@
     "subject": "테스트",
     "content": "ㅋㅊㄹ",
     "priority": "Normal",
-    "status": "New",
-    "admin_comment": ""
+    "status": "Done",
+    "admin_comment": "완료하였습니다"
   },
   {
     "id": "20260123102746",
@@ -20,7 +20,7 @@
     "subject": "테스트",
     "content": "ㄴㅇㅁㄴㅇ",
     "priority": "Normal",
-    "status": "New",
-    "admin_comment": ""
+    "status": "Done",
+    "admin_comment": "처리하였습니다."
   }
 ]

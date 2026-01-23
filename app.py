@@ -829,44 +829,96 @@ if raw_df is not None:
                             st.rerun()
 
                 with adm_tab2: # VOC Management
-                    st.subheader("요청사항(VOC) 목록")
+                    st.subheader("요청사항(VOC) 관리")
                     vocs = voc_manager.load_voc_requests()
+                    
                     if not vocs:
                         st.info("접수된 요청사항이 없습니다.")
                     else:
-                        # Filters
-                        status_filter = st.multiselect("상태 필터", ["New", "In Progress", "Done"], default=["New", "In Progress"])
-                        filtered_vocs = [v for v in vocs if v['status'] in status_filter]
+                        # Separate active and completed VOCs
+                        active_vocs = [v for v in vocs if v['status'] in ['New', 'In Progress']]
+                        completed_vocs = [v for v in vocs if v['status'] == 'Done']
                         
-                        st.caption(f"총 {len(filtered_vocs)}건 표시 중")
-                        for v in filtered_vocs:
-                            badge = voc_manager.get_status_badge(v['status'])
-                            with st.expander(f"[{badge}] {v['subject']} ({v['user_name']})"):
-                                st.write(f"**내용**: {v['content']}")
-                                st.caption(f"작성: {v['timestamp']} | 중요도: {v['priority']}")
-                                
-                                c_up1, c_up2 = st.columns([3, 1])
-                                with c_up1:
-                                    admin_note = st.text_input("관리자 메모", value=v.get('admin_comment',''), key=f"note_{v['id']}")
-                                with c_up2:
-                                    new_stat = st.selectbox("상태", ["New", "In Progress", "Done"], index=["New", "In Progress", "Done"].index(v['status']), key=f"stat_{v['id']}")
-                                
-                                col_btn1, col_btn2 = st.columns([1, 1])
-                                with col_btn1:
-                                    if st.button("✅ 업데이트", key=f"btn_{v['id']}", use_container_width=True):
-                                        voc_manager.update_voc_status(v['id'], new_stat, admin_note)
-                                        st.success("업데이트 완료")
-                                        st.rerun()
-                                
-                                with col_btn2:
-                                    # Only show delete button for completed items
-                                    if v['status'] == 'Done':
-                                        if st.button("🗑️ 삭제", key=f"del_{v['id']}", type="secondary", use_container_width=True):
-                                            if voc_manager.delete_voc_request(v['id']):
-                                                st.success("요청이 삭제되었습니다.")
+                        # Tab for active and completed
+                        voc_tab1, voc_tab2 = st.tabs([f"🔥 진행중 ({len(active_vocs)}건)", f"✅ 완료 이력 ({len(completed_vocs)}건)"])
+                        
+                        with voc_tab1:
+                            st.caption("새로 접수되었거나 처리 중인 요청사항입니다.")
+                            if not active_vocs:
+                                st.info("처리할 요청사항이 없습니다.")
+                            else:
+                                for v in active_vocs:
+                                    badge = voc_manager.get_status_badge(v['status'])
+                                    priority_badge = "🔴" if v['priority'] == "High" else "🟡" if v['priority'] == "Normal" else "🟢"
+                                    
+                                    with st.expander(f"{badge} {priority_badge} {v['subject']} - {v['user_name']} ({v['region']})", expanded=True):
+                                        st.write(f"**내용**: {v['content']}")
+                                        st.caption(f"📅 작성: {v['timestamp']} | ⚠️ 중요도: {v['priority']} | 👤 요청자: {v['user_name']} ({v['user_role']})")
+                                        
+                                        c_up1, c_up2 = st.columns([3, 1])
+                                        with c_up1:
+                                            admin_note = st.text_area("💬 관리자 답변", value=v.get('admin_comment',''), key=f"note_{v['id']}", height=100)
+                                        with c_up2:
+                                            new_stat = st.selectbox("📊 상태", ["New", "In Progress", "Done"], 
+                                                                   index=["New", "In Progress", "Done"].index(v['status']), 
+                                                                   key=f"stat_{v['id']}")
+                                        
+                                        if st.button("✅ 업데이트", key=f"btn_{v['id']}", type="primary", use_container_width=True):
+                                            voc_manager.update_voc_status(v['id'], new_stat, admin_note)
+                                            st.success("업데이트 완료!")
+                                            st.rerun()
+                        
+                        with voc_tab2:
+                            st.caption("처리 완료된 요청사항 이력입니다. 삭제하면 영구적으로 제거됩니다.")
+                            if not completed_vocs:
+                                st.info("완료된 요청사항이 없습니다.")
+                            else:
+                                for v in completed_vocs:
+                                    badge = voc_manager.get_status_badge(v['status'])
+                                    priority_badge = "🔴" if v['priority'] == "High" else "🟡" if v['priority'] == "Normal" else "🟢"
+                                    
+                                    with st.expander(f"{badge} {priority_badge} {v['subject']} - {v['user_name']} ({v['region']})"):
+                                        st.write(f"**요청 내용**: {v['content']}")
+                                        st.caption(f"📅 작성: {v['timestamp']} | ⚠️ 중요도: {v['priority']} | 👤 요청자: {v['user_name']} ({v['user_role']})")
+                                        
+                                        if v.get('admin_comment'):
+                                            st.success(f"**💬 관리자 답변**\n\n{v['admin_comment']}")
+                                        else:
+                                            st.warning("답변이 등록되지 않았습니다.")
+                                        
+                                        st.divider()
+                                        
+                                        col_edit, col_del = st.columns([1, 1])
+                                        with col_edit:
+                                            if st.button("📝 답변 수정", key=f"edit_{v['id']}", use_container_width=True):
+                                                st.session_state[f"editing_{v['id']}"] = True
                                                 st.rerun()
-                                            else:
-                                                st.error("삭제 실패")
+                                        
+                                        with col_del:
+                                            if st.button("🗑️ 완전 삭제", key=f"del_{v['id']}", type="secondary", use_container_width=True):
+                                                if voc_manager.delete_voc_request(v['id']):
+                                                    st.success("요청이 삭제되었습니다.")
+                                                    st.rerun()
+                                                else:
+                                                    st.error("삭제 실패")
+                                        
+                                        # Edit mode
+                                        if st.session_state.get(f"editing_{v['id']}", False):
+                                            st.markdown("---")
+                                            st.markdown("**답변 수정 모드**")
+                                            edit_note = st.text_area("답변 수정", value=v.get('admin_comment',''), key=f"edit_note_{v['id']}", height=100)
+                                            
+                                            col_save, col_cancel = st.columns([1, 1])
+                                            with col_save:
+                                                if st.button("💾 저장", key=f"save_{v['id']}", type="primary", use_container_width=True):
+                                                    voc_manager.update_voc_status(v['id'], v['status'], edit_note)
+                                                    st.session_state[f"editing_{v['id']}"] = False
+                                                    st.success("답변이 수정되었습니다.")
+                                                    st.rerun()
+                                            with col_cancel:
+                                                if st.button("❌ 취소", key=f"cancel_{v['id']}", use_container_width=True):
+                                                    st.session_state[f"editing_{v['id']}"] = False
+                                                    st.rerun()
 
                 with adm_tab3: # View & Logs
                     st.info("대시보드 뷰 컨트롤")
@@ -2107,7 +2159,11 @@ if raw_df is not None:
                 voc_cont = st.text_area("📄 내용", placeholder="상세 내용을 입력하세요...", height=200)
                 voc_pri = st.select_slider("⚠️ 중요도", options=["Low", "Normal", "High"], value="Normal")
                 
-                submitted = st.form_submit_button("📤 요청 등록", type="primary", use_container_width=True)
+                col_submit, col_reset = st.columns([1, 1])
+                with col_submit:
+                    submitted = st.form_submit_button("📤 요청 등록", type="primary", use_container_width=True)
+                with col_reset:
+                    reset = st.form_submit_button("🔄 초기화", use_container_width=True)
                 
                 if submitted:
                     if voc_subj and voc_cont:

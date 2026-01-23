@@ -33,26 +33,26 @@ def load_manual():
     # Optional Debug
     # st.caption(f"System Path Check: {root_dir}")
     
-    # 2. Find 'reports' folder
-    reports_real_path = find_real_path(root_dir, "reports")
-    if not reports_real_path:
+    # 2. Find 'static' folder
+    static_real_path = find_real_path(root_dir, "static")
+    if not static_real_path:
         # Fallback: Try CWD if script location is weird (e.g. symlinks)
         cwd = os.getcwd()
-        reports_real_path = find_real_path(cwd, "reports")
+        static_real_path = find_real_path(cwd, "static")
     
-    if not reports_real_path:
-        st.error(f"❌ 'reports' 폴더를 찾을 수 없습니다.")
+    if not static_real_path:
+        st.error(f"❌ 'static' 폴더를 찾을 수 없습니다.")
         st.code(f"Search Root: {root_dir}\nCWD: {os.getcwd()}")
         return
 
-    # 3. Find manual file inside reports
-    manual_real_path = find_real_path(reports_real_path, "premium_user_manual.html")
+    # 3. Find manual file inside static
+    manual_real_path = find_real_path(static_real_path, "premium_user_manual.html")
     
     if not manual_real_path:
         st.error(f"❌ 'premium_user_manual.html' 파일을 찾을 수 없습니다.")
-        st.code(f"Inside: {reports_real_path}")
+        st.code(f"Inside: {static_real_path}")
         st.write("폴더 내용:")
-        st.write(os.listdir(reports_real_path))
+        st.write(os.listdir(static_real_path))
         return
 
     # 4. Load & Display
@@ -72,7 +72,7 @@ def load_manual():
             html_content = f.read()
         
         # Embed images (Base Path must be the Real Path we found)
-        html_content = embed_local_images(html_content, base_path=reports_real_path)
+        html_content = embed_local_images(html_content, base_path=static_real_path)
         
         st.components.v1.html(html_content, height=1200, scrolling=True)
         

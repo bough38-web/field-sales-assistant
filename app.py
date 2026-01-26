@@ -1004,6 +1004,17 @@ if raw_df is not None:
         
         st.divider()
         
+        # [FEATURE] Global Date Range Filter (Common for All Roles)
+        st.markdown("##### 🕵️ 기간 조회 (최종수정일 기준)")
+        st.caption("전체 탭(지도, 통계, 리스트)에 공통 적용됩니다.")
+        global_date_range = st.date_input(
+            "조회 기간 선택",
+            value=(),
+            label_visibility="collapsed",
+            key="global_date_range"
+        )
+        st.divider()
+        
         # [FIX] Initialize filter variables globally (Default: All)
         sel_branch = "전체"
         sel_manager = "전체"
@@ -1164,6 +1175,39 @@ if raw_df is not None:
             
             # 4. Date
             st.markdown("##### 📅 날짜 필터 (연-월)")
+
+            # [FEATURE] Quick Filters (New/Closed 7 Days)
+            # Initialize Session State for Quick Filter
+            if 'admin_quick_filter' not in st.session_state:
+                st.session_state.admin_quick_filter = None
+
+            qf_col1, qf_col2 = st.columns(2)
+            # Use pandas for robust date handling
+            today_ref = pd.Timestamp.now().date()
+            target_date = (pd.Timestamp.now() - pd.Timedelta(days=7)).date()
+            
+            with qf_col1:
+                # Toggle logic
+                is_active_new = st.session_state.admin_quick_filter == 'new_7d'
+                if st.button(f"✨ 신규 (7일){' ✅' if is_active_new else ''}", use_container_width=True, help="최근 7일 이내 개업(인허가)된 건만 봅니다."):
+                    st.session_state.admin_quick_filter = None if is_active_new else 'new_7d'
+                    st.rerun()
+            with qf_col2:
+                is_active_closed = st.session_state.admin_quick_filter == 'closed_7d'
+                if st.button(f"🚪 폐업 (7일){' ✅' if is_active_closed else ''}", use_container_width=True, help="최근 7일 이내 폐업된 건만 봅니다."):
+                    st.session_state.admin_quick_filter = None if is_active_closed else 'closed_7d'
+                    st.rerun()
+
+            # Apply Quick Filter Logic
+            if st.session_state.admin_quick_filter == 'new_7d':
+                 st.info(f"✨ 최근 7일 ({target_date} ~) 신규 인허가 건")
+                 if '인허가일자' in filter_df.columns:
+                     filter_df = filter_df[filter_df['인허가일자'].dt.date >= target_date]
+                 
+            elif st.session_state.admin_quick_filter == 'closed_7d':
+                 st.info(f"🚪 최근 7일 ({target_date} ~) 폐업 건")
+                 if '폐업일자' in filter_df.columns:
+                     filter_df = filter_df[filter_df['폐업일자'].dt.date >= target_date]
 
             def get_ym_options(column):
                 if column not in raw_df.columns: return []
@@ -1389,6 +1433,27 @@ if raw_df is not None:
     if only_with_phone:
         base_df = base_df[base_df['소재지전화'].notna() & (base_df['소재지전화'] != "")]
     
+    # [FEATURE] Apply Global Date Range Filter
+    # Applied to base_df so it affects ALL tabs (Map, Stats, Mobile, Grid)
+    if 'global_date_range' in st.session_state and len(st.session_state.global_date_range) == 2:
+        g_start, g_end = st.session_state.global_date_range
+        
+        # Ensure '최종수정시점' is valid datetime (it was created via apply(), so likely mixed or timestamp)
+        # We created it at line 1342 using max() of dates or now(). It should be Timestamp.
+        # But safest to coerce just in case.
+        if '최종수정시점' in base_df.columns:
+             # Fast check type
+             if not pd.api.types.is_datetime64_any_dtype(base_df['최종수정시점']):
+                  base_df['최종수정시점'] = pd.to_datetime(base_df['최종수정시점'], errors='coerce')
+             
+             base_df = base_df[
+                 (base_df['최종수정시점'].dt.date >= g_start) & 
+                 (base_df['최종수정시점'].dt.date <= g_end)
+             ]
+             
+             if st.session_state.user_role == 'admin':
+                 st.sidebar.caption(f"🗓️ 기간 필터: {g_start} ~ {g_end} ({len(base_df)}건)")
+
     
     # [FEATURE] Address search filter - simplified with OR logic
     if address_search:
@@ -1796,8 +1861,8 @@ if raw_df is not None:
         # [FEATURE] Condition View Toolbar (Quick Filters)
         st.caption("조건별 빠른 조회 (지도 위에 표시됩니다)")
         c_q1, c_q2, c_q3, c_q4 = st.columns(4)
-        with c_q1: q_new = st.checkbox("🆕 신규(15일)", value=False)
-        with c_q2: q_closed = st.checkbox("🚫 폐업(15일)", value=False)
+        with c_q1: q_new = st.checkbox("🆕 신규(7일)", value=False, help="최근 7일 이내 개업(인허가)된 건")
+        with c_q2: q_closed = st.checkbox("🚫 폐업(7일)", value=False, help="최근 7일 이내 폐업된 건")
         with c_q3: q_hosp = st.checkbox("🏥 병원만", value=False)
         with c_q4: q_large = st.checkbox("🏗️ 100평↑", value=False)
         
@@ -1814,14 +1879,16 @@ if raw_df is not None:
              has_date_filter = True
              if '인허가일자' in map_df_base.columns:
                  map_df_base['인허가일자'] = pd.to_datetime(map_df_base['인허가일자'], errors='coerce')
-                 cutoff_new = pd.Timestamp.now() - pd.Timedelta(days=15)
+                 # [FIX] Changed to 7 days
+                 cutoff_new = pd.Timestamp.now() - pd.Timedelta(days=7)
                  date_mask = date_mask | (map_df_base['인허가일자'] >= cutoff_new)
                  
         if q_closed:
              has_date_filter = True
              if '폐업일자' in map_df_base.columns:
                  map_df_base['폐업일자'] = pd.to_datetime(map_df_base['폐업일자'], errors='coerce')
-                 cutoff_closed = pd.Timestamp.now() - pd.Timedelta(days=15)
+                 # [FIX] Changed to 7 days
+                 cutoff_closed = pd.Timestamp.now() - pd.Timedelta(days=7)
                  date_mask = date_mask | (map_df_base['폐업일자'] >= cutoff_closed)
         
         if has_date_filter:
@@ -1971,25 +2038,26 @@ if raw_df is not None:
         if not df.empty:
             c3, c4 = st.columns([1,1])
             
-            pie_base = alt.Chart(df).encode(
-                theta=alt.Theta("count()", stack=True),
-                color=alt.Color("관리지사", legend=alt.Legend(title="지사")),
-                tooltip=["관리지사", "count()", alt.Tooltip("count()", format=".1%", title="비율")]
+            bar_chart_base = alt.Chart(df).encode(
+                y=alt.Y("관리지사", sort="-x", title=" "),
+                x=alt.X("count()", title="업체 수"),
+                color=alt.Color("관리지사", legend=None), 
+                tooltip=["관리지사", "count()"]
             )
             
-            pie = pie_base.mark_arc(outerRadius=120).encode(
-                order=alt.Order("count()", sort="descending")
-            )
+            bar_chart = bar_chart_base.mark_bar(cornerRadius=3)
             
-            pie_text = pie_base.mark_text(radius=140).encode(
-                text=alt.Text("count()", format=",.0f"),
-                order=alt.Order("count()", sort="descending"),
-                color=alt.value("black") 
+            bar_text = bar_chart_base.mark_text(
+                align='left', 
+                dx=5,
+                color='black'
+            ).encode(
+                text=alt.Text("count()", format=",.0f")
             )
             
             with c3:
-                st.markdown("**지사별 점유율 (Pie)**")
-                st.altair_chart((pie + pie_text), use_container_width=True)
+                st.markdown("**지사별 점유율 (Rank)**")
+                st.altair_chart((bar_chart + bar_text), use_container_width=True)
                 
             bar_base = alt.Chart(df).encode(
                 x=alt.X("관리지사", sort=custom_branch_order, title=None),
@@ -2125,6 +2193,8 @@ if raw_df is not None:
         df['관리지사'] = pd.Categorical(df['관리지사'], categories=custom_branch_order, ordered=True)
         
         grid_df = df.copy()
+        
+        start_row_count = len(grid_df)
         
         # Add activity status and notes from storage
         grid_df['record_key'] = grid_df.apply(lambda row: activity_logger.get_record_key(row), axis=1)

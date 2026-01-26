@@ -229,7 +229,12 @@ def render_kakao_map(map_df, kakao_key):
     </html>
     '''
     
-    components.html(html_content, height=470)
+    import hashlib
+    # Create a unique key based on the data to force remount and avoid "removeChild" errors
+    # Truncate json to avoid huge string hashing if needed, but hashing full string is safer for correctness
+    data_hash = hashlib.md5(json_data.encode('utf-8')).hexdigest()
+    
+    components.html(html_content, height=470, key=f"kakao_map_{data_hash}")
 
 def render_folium_map(map_df):
     """

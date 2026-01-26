@@ -1860,11 +1860,15 @@ if raw_df is not None:
         
         # [FEATURE] Condition View Toolbar (Quick Filters)
         st.caption("조건별 빠른 조회 (지도 위에 표시됩니다)")
-        c_q1, c_q2, c_q3, c_q4 = st.columns(4)
-        with c_q1: q_new = st.checkbox("🆕 신규(7일)", value=False, help="최근 7일 이내 개업(인허가)된 건")
-        with c_q2: q_closed = st.checkbox("🚫 폐업(7일)", value=False, help="최근 7일 이내 폐업된 건")
-        with c_q3: q_hosp = st.checkbox("🏥 병원만", value=False)
-        with c_q4: q_large = st.checkbox("🏗️ 100평↑", value=False)
+        
+        # [UX] Mobile-Friendly Layout: 2x2 Grid for Checkboxes
+        c_q_r1_1, c_q_r1_2 = st.columns(2)
+        with c_q_r1_1: q_new = st.checkbox("🆕 신규(7일)", value=False, help="최근 7일 이내 개업(인허가)된 건")
+        with c_q_r1_2: q_closed = st.checkbox("🚫 폐업(7일)", value=False, help="최근 7일 이내 폐업된 건")
+        
+        c_q_r2_1, c_q_r2_2 = st.columns(2)
+        with c_q_r2_1: q_hosp = st.checkbox("🏥 병원만", value=False)
+        with c_q_r2_2: q_large = st.checkbox("🏗️ 100평↑", value=False)
         
         # Remove divider to save space
         
@@ -1906,7 +1910,8 @@ if raw_df is not None:
         
         # Reduced spacing here
         
-        c_f1, c_f2, c_f3, c_f4 = st.columns(4)
+        # [UX] Mobile-Friendly Layout: 2x2 Grid for Selectboxes
+        c_f_r1_1, c_f_r1_2 = st.columns(2)
         
         # [Dynamic Dropdowns]
         # Logic: Type Selection should filter Region/Manager lists.
@@ -1918,11 +1923,11 @@ if raw_df is not None:
         if current_map_type != "전체" and '업태구분명' in options_source_df.columns:
             options_source_df = options_source_df[options_source_df['업태구분명'] == current_map_type]
             
-        with c_f1:
+        with c_f_r1_1:
             # Dropdowns use filtered data for options
             map_region_opts = ["전체"] + sorted(list(options_source_df['관리지사'].dropna().unique()))
             sel_map_region = st.selectbox("관리지사", map_region_opts, key="map_region")
-        with c_f2:
+        with c_f_r1_2:
             # Filter Sales options based on Region (if selected) + Type (already applied to options_source_df)
             temp_sales_source = options_source_df
             if sel_map_region != "전체": 
@@ -1931,7 +1936,8 @@ if raw_df is not None:
             map_sales_opts = ["전체"] + sorted(list(temp_sales_source['SP담당'].dropna().unique()))
             sel_map_sales = st.selectbox("담당자", map_sales_opts, key="map_sales")
             
-        with c_f3:
+        c_f_r2_1, c_f_r2_2 = st.columns(2)
+        with c_f_r2_1:
             # Business Type Options - Should these be filtered by Region?
             # User asked for "Type selection -> Dynamic".
             # Usually, Type list comes from the Quick-filtered Base.
@@ -1949,7 +1955,7 @@ if raw_df is not None:
                 map_type_opts = ["전체"]
             sel_map_type = st.selectbox("업종(업태)", map_type_opts, key="map_biz_type")
         
-        with c_f4:
+        with c_f_r2_2:
              # Status Dropdown
              # Usually "Active" vs "Closed".
              map_status_opts = ["전체", "영업/정상", "폐업"]

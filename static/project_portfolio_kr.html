@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영업 기회 발굴 시스템: Project Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #2563eb, #0891b2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tech-bg {
+            background-color: #1e293b;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <span class="font-bold text-slate-800">Sales Opportunity System</span>
+            <div class="space-x-4 text-sm font-medium">
+                <a href="#story" class="hover:text-blue-600 transition">Why</a>
+                <a href="#business" class="hover:text-blue-600 transition">Business</a>
+                <a href="#tech" class="hover:text-blue-600 transition">Tech</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="py-20 md:py-32 text-center px-6 relative overflow-hidden">
+        <div
+            class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-100 rounded-full blur-3xl opacity-50 -z-10 mt-[-400px]">
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            데이터를 <span class="gradient-text">행동(Action)</span>으로 바꾸다.
+        </h1>
+        <p class="text-xl text-slate-500 max-w-2xl mx-auto mb-10">
+            공공 데이터의 홍수 속에서 '진짜 돈이 되는 기회'만 찾아내는<br>
+            차세대 영업 DX(Digital Transformation) 솔루션
+        </p>
+        <div class="flex justify-center gap-4">
+            <span class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-bold">#자체개발</span>
+            <span class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-bold">#비용절감 93%</span>
+            <span class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-bold">#특허급 알고리즘</span>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 pb-20">
+
+        <!-- Part 1: Story (General Public) -->
+        <section id="story" class="mb-24 scroll-mt-24">
+            <div class="flex items-center mb-8">
+                <span class="bg-orange-100 text-orange-600 text-xs font-bold px-2 py-1 rounded mr-3">Story</span>
+                <h2 class="text-3xl font-bold">왜 이 시스템을 만들었나?</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <p class="text-lg text-slate-600 leading-relaxed mb-6">
+                        "오늘 어디로 영업 가세요?"<br>
+                        이 질문에 대부분의 영업 사원은 <strong>"일단 나가봐야 알죠"</strong>라고 대답합니다.
+                    </p>
+                    <p class="text-lg text-slate-600 leading-relaxed">
+                        하지만 '감'에 의존한 영업은 <strong>하루 평균 1시간의 이동 시간 낭비</strong>를 만듭니다.<br>
+                        그래서 생각했습니다. <br>
+                        <span class="font-bold text-slate-900 bg-yellow-100 px-1">"지도 위에 '지금 당장 영업할 곳'만 찍어주면
+                            어떨까?"</span>
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 relative">
+                    <div
+                        class="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                        Before</div>
+                    <div class="space-y-4 opacity-50">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-4 bg-slate-200 rounded w-full"></div>
+                        <div class="h-4 bg-slate-200 rounded w-5/6"></div>
+                    </div>
+                    <div class="mt-8 text-center font-bold text-slate-400">
+                        <i class="fa-solid fa-file-excel text-4xl mb-2"></i><br>
+                        보기 힘든 엑셀 리스트
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 2: Business (Executives) -->
+        <section id="business" class="mb-24 scroll-mt-24">
+            <div class="flex items-center mb-8">
+                <span class="bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded mr-3">Business</span>
+                <h2 class="text-3xl font-bold">경영진을 위한 핵심 성과 (ROI)</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div
+                    class="bg-white p-8 rounded-2xl border border-slate-200 shadow-lg hover:-translate-y-2 transition duration-300">
+                    <div
+                        class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-2">개발 비용 혁신</h3>
+                    <p class="text-4xl font-bold text-slate-900 mb-2">93% <span
+                            class="text-sm font-normal text-slate-500">절감</span></p>
+                    <p class="text-sm text-slate-500">외주 견적 3,000만원 <i class="fa-solid fa-arrow-right text-xs mx-1"></i>
+                        자체 개발 200만원</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="bg-white p-8 rounded-2xl border border-slate-200 shadow-lg hover:-translate-y-2 transition duration-300">
+                    <div
+                        class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-2">영업 효율 증대</h3>
+                    <p class="text-4xl font-bold text-slate-900 mb-2">2x <span
+                            class="text-sm font-normal text-slate-500">리드 확보</span></p>
+                    <p class="text-sm text-slate-500">이동 시간 50% 단축으로 하루 방문 고객 수 2배 증가</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="bg-white p-8 rounded-2xl border border-slate-200 shadow-lg hover:-translate-y-2 transition duration-300">
+                    <div
+                        class="w-12 h-12 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-2">신규 비즈니스</h3>
+                    <p class="text-4xl font-bold text-slate-900 mb-2">SaaS <span
+                            class="text-sm font-normal text-slate-500">확장성</span></p>
+                    <p class="text-sm text-slate-500">보험, 제약, 유통 등 타 업종 B2B 솔루션 판매 가능</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 3: Tech (Experts) -->
+        <section id="tech" class="scroll-mt-24 tech-bg p-8 md:p-12 rounded-3xl text-white">
+            <div class="flex items-center mb-8">
+                <span class="bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1 rounded mr-3">Tech Spec</span>
+                <h2 class="text-3xl font-bold">개발자를 위한 기술 아키텍처</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- Code Logic -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-blue-400">1. 대용량 좌표 벡터 변환 (Vectorization)</h3>
+                    <p class="text-slate-400 mb-4 text-sm">
+                        공공데이터의 GRS80 좌표계를 웹 표준 WGS84로 변환할 때, 일반적인 반복문(Loop) 대신
+                        <strong>Vectorized Operation</strong>을 사용하여 10만 건 이상의 데이터를 0.1초 내에 처리합니다.
+                    </p>
+                    <div class="rounded-lg overflow-hidden text-sm shadow-2xl border border-slate-700">
+                        <pre><code class="language-python"># PyProj + NumPy Vectorization
+def transform_coordinates(df):
+    proj_src = Proj('epsg:5174') # GRS80
+    proj_dst = Proj('epsg:4326') # WGS84
+    
+    # Transform entire array at once (No Loop)
+    vals_x = df['x_coord'].values
+    vals_y = df['y_coord'].values
+    lon, lat = transformer.transform(vals_x, vals_y)
+    
+    return df.assign(lat=lat, lon=lon)</code></pre>
+                    </div>
+                </div>
+
+                <!-- Architecture -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400">2. 데이터 파이프라인 (ETL)</h3>
+                    <p class="text-slate-400 mb-4 text-sm">
+                        원시 데이터에서 '폐업' 및 '신축 공사' 상태를 정확히 필터링하기 위해
+                        다단계 필터링 로직을 적용하여 데이터 정합성을 확보했습니다.
+                    </p>
+                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4">
+                        <div class="flex items-center">
+                            <div
+                                class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">
+                                1</div>
+                            <div class="ml-4">
+                                <span class="block text-slate-300 font-bold text-sm">Raw Data Ingestion</span>
+                                <span class="text-slate-500 text-xs">Public API / CSV Cleaning</span>
+                            </div>
+                        </div>
+                        <div class="w-0.5 h-4 bg-slate-700 ml-4"></div>
+                        <div class="flex items-center">
+                            <div
+                                class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">
+                                2</div>
+                            <div class="ml-4">
+                                <span class="block text-blue-200 font-bold text-sm">Status Classification Logic</span>
+                                <span class="text-slate-400 text-xs">Closed vs Active vs Construction</span>
+                            </div>
+                        </div>
+                        <div class="w-0.5 h-4 bg-slate-700 ml-4"></div>
+                        <div class="flex items-center">
+                            <div
+                                class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-xs font-bold">
+                                3</div>
+                            <div class="ml-4">
+                                <span class="block text-emerald-200 font-bold text-sm">Visualization (Streamlit)</span>
+                                <span class="text-slate-400 text-xs">Internal Map Rendering</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-12 text-center text-slate-500 text-sm">
+        <p class="mb-2 font-bold text-slate-800">Sales Opportunity System Project</p>
+        <p>Designed for Business Impact & Technical Excellence.</p>
+    </footer>
+
+</body>
+
+</html>

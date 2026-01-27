@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 가치 분석 보고서 (Cost & Value)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="gradient-header text-white py-16 shadow-2xl relative overflow-hidden">
+        <div
+            class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')]">
+        </div>
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <span
+                class="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">Financial
+                Impact Report</span>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 tracking-tight">프로젝트 비용 효율 및 시장 가치 분석</h1>
+            <p class="text-xl text-slate-300 font-light max-w-2xl mx-auto">개발 비용 절감 효과와 향후 시스템 확장에 따른 기대 가치 산출</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 -mt-10 pb-20 relative z-20">
+
+        <!-- 1. Development Efficiency (Cost Saving) -->
+        <section class="bg-white rounded-3xl p-8 md:p-12 mb-12 shadow-xl border-t-8 border-emerald-500">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-slate-100 pb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">💰 개발 비용 효율성 분석</h2>
+                    <p class="text-slate-500">통상적인 SI 외주 개발 대비 AI 협업 개발의 경제적 효용성</p>
+                </div>
+                <div class="text-right mt-4 md:mt-0">
+                    <span class="text-sm text-slate-400 block mb-1">Cost Saving Ratio</span>
+                    <span class="text-4xl font-bold text-emerald-600">93%</span>
+                    <span class="text-emerald-500 text-sm font-bold">▼ 절감</span>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Chart -->
+                <div class="h-80 relative">
+                    <canvas id="costChart"></canvas>
+                </div>
+
+                <!-- Text Breakdown -->
+                <div>
+                    <div class="space-y-6">
+                        <!-- Traditional -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 opacity-60">
+                            <h4 class="text-sm font-bold text-slate-500 uppercase mb-2">General SI Agency (외주)</h4>
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-2xl font-bold text-slate-700">약 3,000만원</p>
+                                    <p class="text-xs text-slate-400 mt-1">기획+디자인+개발(FE/BE)+서버구축<br>기간: 4~6주 / 인력: 3~4인
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Assisted -->
+                        <div
+                            class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 relative overflow-hidden shadow-sm">
+                            <div
+                                class="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                                Current Project</div>
+                            <h4 class="text-sm font-bold text-emerald-600 uppercase mb-2">AI Assisted Develop (자체)</h4>
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-3xl font-bold text-emerald-700">약 200만원</p>
+                                    <p class="text-xs text-emerald-600 mt-1">API 비용 + 서버 실비 + 인건비(1인)<br>기간: 1주 / 인력: 1인
+                                        + AI</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 2. Market Value Valuation -->
+        <section class="mb-12">
+            <div class="text-center mb-10">
+                <span class="text-violet-500 font-bold tracking-wider text-sm uppercase">Valuation Model</span>
+                <h2 class="text-3xl font-bold text-slate-800">📊 시장 기대 가치 (Market Value)</h2>
+                <p class="text-slate-500 mt-2">단순 도구(Tool)가 아닌 비즈니스 자산(Asset)으로서의 가치 평가</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Internal Value -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 relative overflow-hidden hover:-translate-y-2 transition-transform duration-300">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-50 rounded-full"></div>
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-6">
+                            <i class="fa-solid fa-stopwatch text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700 mb-2">내부 업무 효율 가치</h3>
+                        <p class="text-3xl font-bold text-slate-800 mb-4">500만원<span
+                                class="text-sm font-normal text-slate-400">/인·연간</span></p>
+                        <ul class="text-sm text-slate-500 space-y-2">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mt-1 mr-2"></i> 일 1시간
+                                이동/탐색 시간 절감</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mt-1 mr-2"></i> 연간 약
+                                240시간 × 시급 환산</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Asset Value -->
+                <div
+                    class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-8 rounded-2xl shadow-xl relative overflow-hidden transform md:-translate-y-4">
+                    <div
+                        class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10">
+                    </div>
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white mb-6 backdrop-blur-sm">
+                            <i class="fa-solid fa-database text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-200 mb-2">데이터 자산 가치</h3>
+                        <p class="text-3xl font-bold text-white mb-4">측정 불가<span
+                                class="text-sm font-normal text-slate-400">(Alpha)</span></p>
+                        <p class="text-sm text-slate-300 leading-relaxed mb-4">
+                            현장의 '폐업/공사' 정보는 지도 API도 실시간 반영 못하는 <strong>초고가치 독점 데이터</strong>임.
+                        </p>
+                        <div class="bg-white/10 rounded px-3 py-2 text-xs text-center">
+                            경쟁사 대비 영업 기회 선점 효과
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SaaS Value -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 relative overflow-hidden hover:-translate-y-2 transition-transform duration-300">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-violet-50 rounded-full"></div>
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center text-violet-600 mb-6">
+                            <i class="fa-solid fa-globe text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700 mb-2">SaaS 확장 가치</h3>
+                        <p class="text-3xl font-bold text-slate-800 mb-4">3억+<span
+                                class="text-sm font-normal text-slate-400">/초기</span></p>
+                        <ul class="text-sm text-slate-500 space-y-2">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-violet-500 mt-1 mr-2"></i>
+                                보험/통신 등 타 업종 적용</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-violet-500 mt-1 mr-2"></i> 구독형
+                                모델(User/Month) 전환 시</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Competitive Landscape (Differentiation) -->
+        <section class="mb-12">
+            <div class="text-center mb-10">
+                <span class="text-blue-500 font-bold tracking-wider text-sm uppercase">Market Positioning</span>
+                <h2 class="text-3xl font-bold text-slate-800">⚔️ 경쟁 솔루션 비교 분석</h2>
+                <p class="text-slate-500 mt-2">기존 시장 솔루션들의 한계를 극복한 'Action-Oriented' 차별성</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Competitor 1: CRM -->
+                <div
+                    class="bg-slate-50 p-6 rounded-2xl border border-slate-200 opacity-70 hover:opacity-100 transition-opacity">
+                    <div class="text-center mb-4">
+                        <div
+                            class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-200 text-slate-500 mb-3">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700">관리형 CRM</h3>
+                        <p class="text-xs text-slate-400">FingerSales, Shappl, Salesforce</p>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-minus text-red-400 mt-1 mr-2"></i>
+                            <span><strong>관리/감시 중심</strong><br>직원의 활동 내역 보고용</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-minus text-red-400 mt-1 mr-2"></i>
+                            <span><strong>기존 고객 관리</strong><br>신규 영업 기회 발굴 기능 부재</span>
+                        </li>
+                    </ul>
+                    <div class="mt-4 bg-slate-200 rounded px-2 py-1 text-xs text-center text-slate-500 font-bold">
+                        "어디 갔나 감시하는 도구"
+                    </div>
+                </div>
+
+                <!-- Competitor 2: Raw Data -->
+                <div
+                    class="bg-slate-50 p-6 rounded-2xl border border-slate-200 opacity-70 hover:opacity-100 transition-opacity">
+                    <div class="text-center mb-4">
+                        <div
+                            class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-200 text-slate-500 mb-3">
+                            <i class="fa-solid fa-table-list"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700">데이터 판매업체</h3>
+                        <p class="text-xs text-slate-400">LocalData, 공사정보서비스</p>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-minus text-red-400 mt-1 mr-2"></i>
+                            <span><strong>원천 데이터(Excel)</strong><br>가공되지 않아 현장 활용 불가</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-minus text-red-400 mt-1 mr-2"></i>
+                            <span><strong>No Mobile Map</strong><br>이동 중 확인 불가능</span>
+                        </li>
+                    </ul>
+                    <div class="mt-4 bg-slate-200 rounded px-2 py-1 text-xs text-center text-slate-500 font-bold">
+                        "보기 힘든 엑셀 파일"
+                    </div>
+                </div>
+
+                <!-- Our Solution -->
+                <div
+                    class="bg-white p-6 rounded-2xl shadow-xl border-2 border-emerald-500 relative transform md:-translate-y-2">
+                    <div
+                        class="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg shadow-sm">
+                        Blue Ocean</div>
+                    <div class="text-center mb-4">
+                        <div
+                            class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mb-3">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Action Map (본 솔루션)</h3>
+                        <p class="text-xs text-emerald-600 font-bold">New Opportunity Discovery</p>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-700">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check text-emerald-500 mt-1 mr-2"></i>
+                            <span><strong>기회 포착 중심</strong><br>공공 데이터(인허가) + 지도 결합</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check text-emerald-500 mt-1 mr-2"></i>
+                            <span><strong>즉시 행동(Action)</strong><br>모바일로 보며 바로 방문 가능</span>
+                        </li>
+                    </ul>
+                    <div
+                        class="mt-4 bg-emerald-100/50 rounded px-2 py-1 text-xs text-center text-emerald-700 font-bold">
+                        "돈 버는 곳을 알려주는 지도"
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. B2B Sales Strategy & Revenue Simulation -->
+        <section class="bg-indigo-900 rounded-3xl p-8 md:p-12 mb-12 shadow-2xl text-white relative overflow-hidden">
+            <!-- Background Decoration -->
+            <div
+                class="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 -mr-20 -mt-20 pointer-events-none">
+            </div>
+
+            <div
+                class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-indigo-700 pb-8 relative z-10">
+                <div>
+                    <span
+                        class="bg-indigo-700 text-indigo-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">B2B
+                        Business Model</span>
+                    <h2 class="text-3xl font-bold mb-2">💼 기업 판매 전략 시나리오</h2>
+                    <p class="text-indigo-200">단순 솔루션 판매를 넘어선 지속 가능한 구독 수익(SaaS) 모델 설계</p>
+                </div>
+            </div>
+
+            <!-- Pricing & Revenue Grid -->
+            <div class="grid md:grid-cols-2 gap-10 relative z-10">
+
+                <!-- Left: Pricing Strategy -->
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-6 flex items-center">
+                        <i class="fa-solid fa-tag text-indigo-400 mr-2"></i> 가격 정책 (Pricing Model)
+                    </h3>
+                    <div class="space-y-4">
+                        <!-- Standard Plan -->
+                        <div
+                            class="bg-indigo-800/50 p-5 rounded-xl border border-indigo-700/50 flex justify-between items-center hover:bg-indigo-800 transition-colors">
+                            <div>
+                                <span class="block text-indigo-300 text-xs font-bold uppercase mb-1">Standard</span>
+                                <strong class="text-white text-lg">기본형</strong>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-2xl font-bold text-white">19,000</span>
+                                <span class="text-indigo-400 text-xs">원 / 월 (User)</span>
+                            </div>
+                        </div>
+                        <!-- Pro Plan -->
+                        <div
+                            class="bg-gradient-to-r from-emerald-900/80 to-emerald-800/80 p-5 rounded-xl border border-emerald-500/30 flex justify-between items-center ring-2 ring-emerald-500/20">
+                            <div>
+                                <span
+                                    class="block text-emerald-400 text-xs font-bold uppercase mb-1">Professional</span>
+                                <strong class="text-white text-lg">고급형</strong>
+                                <p class="text-emerald-200/60 text-xs mt-1">실시간 알림 + CRM 연동</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-2xl font-bold text-emerald-400">49,000</span>
+                                <span class="text-emerald-200/60 text-xs">원 / 월 (User)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                            <i class="fa-solid fa-crosshairs text-indigo-400 mr-2"></i> 타겟 산업군 (Target)
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span
+                                class="bg-indigo-800 px-3 py-1.5 rounded-lg text-sm text-indigo-200 border border-indigo-700">보험영업
+                                (FP)</span>
+                            <span
+                                class="bg-indigo-800 px-3 py-1.5 rounded-lg text-sm text-indigo-200 border border-indigo-700">제약영업
+                                (MR)</span>
+                            <span
+                                class="bg-indigo-800 px-3 py-1.5 rounded-lg text-sm text-indigo-200 border border-indigo-700">신용카드
+                                모집</span>
+                            <span
+                                class="bg-indigo-800 px-3 py-1.5 rounded-lg text-sm text-indigo-200 border border-indigo-700">렌탈/정수기</span>
+                            <span
+                                class="bg-indigo-800 px-3 py-1.5 rounded-lg text-sm text-indigo-200 border border-indigo-700">방문학습지</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Revenue Simulation -->
+                <div class="bg-white/5 rounded-2xl p-6 border border-white/10 backdrop-blur-sm">
+                    <h3 class="text-lg font-bold text-white mb-6 flex items-center">
+                        <i class="fa-solid fa-calculator text-emerald-400 mr-2"></i> 연간 예상 매출 (Annual ARR)
+                    </h3>
+
+                    <div class="space-y-6">
+                        <!-- Simulation 1 -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-indigo-200">소규모 지점 도입 (50명)</span>
+                                <span class="text-white font-bold">Standard 기준</span>
+                            </div>
+                            <div class="bg-indigo-950 rounded-lg p-4 flex justify-between items-center group">
+                                <div class="text-xs text-indigo-400">
+                                    50명 × 1.9만 × 12개월
+                                </div>
+                                <div
+                                    class="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
+                                    ₩ 11,400,000
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Simulation 2 -->
+                        <div class="relative">
+                            <div class="absolute -left-2 top-8 w-1 h-12 bg-emerald-500 rounded-full"></div>
+                            <div class="flex justify-between text-sm mb-2 pl-3">
+                                <span class="text-emerald-300 font-bold">본부 단위 도입 (500명)</span>
+                                <span class="text-emerald-300 font-bold">Pro 기준 (Full)</span>
+                            </div>
+                            <div
+                                class="bg-gradient-to-r from-emerald-900 to-indigo-900 rounded-lg p-5 flex justify-between items-center border border-emerald-500/30 shadow-lg shadow-emerald-900/20">
+                                <div class="text-xs text-emerald-200/70">
+                                    500명 × 4.9만 × 12개월
+                                </div>
+                                <div class="text-2xl font-bold text-emerald-400">
+                                    ₩ 294,000,000
+                                </div>
+                            </div>
+                            <p class="text-right text-xs text-indigo-300 mt-2">
+                                * 매년 반복 발생하는 구독 수익 (ARR)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Metric -->
+        <footer class="bg-slate-200 rounded-xl p-6 text-center text-slate-500 text-sm">
+            <p>Analysis based on 2026.01 market standards · Costs estimated for comparison purposes.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // Cost Comparison Chart
+        const ctx = document.getElementById('costChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['일반 SI 외주 개발', 'AI 협업 자체 개발'],
+                datasets: [{
+                    label: '개발 비용 (단위: 만원)',
+                    data: [3000, 200],
+                    backgroundColor: [
+                        'rgba(148, 163, 184, 0.5)', // Slate 400
+                        'rgba(16, 185, 129, 0.8)'  // Emerald 500
+                    ],
+                    borderColor: [
+                        'rgba(148, 163, 184, 1)',
+                        'rgba(16, 185, 129, 1)'
+                    ],
+                    borderWidth: 1,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.raw.toLocaleString() + ' 만원';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { display: false }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

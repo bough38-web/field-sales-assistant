@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영업기회 발굴 시스템 현장 배포 및 운영 안내</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #525659;
+            /* 문서 배경색 (회색) */
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .page {
+            width: 210mm;
+            /* A4 width */
+            min-height: 297mm;
+            /* A4 height */
+            margin: 0 auto;
+            background-color: white;
+            padding: 25mm;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* 인쇄 시 설정 */
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+
+            .page {
+                width: 100%;
+                box-shadow: none;
+                margin: 0;
+                padding: 20mm;
+            }
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            border-bottom: 2px solid #003366;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #003366;
+            /* 남색 계열 */
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .header .meta {
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+        }
+
+        /* 본문 섹션 스타일 */
+        h2 {
+            font-size: 18px;
+            color: #333;
+            border-left: 5px solid #0056b3;
+            padding-left: 12px;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #444;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 15px;
+            text-align: justify;
+            margin-bottom: 10px;
+        }
+
+        ul {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            padding-left: 20px;
+            font-size: 15px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        /* 강조 박스 */
+        .info-box {
+            background-color: #eef4fa;
+            border: 1px solid #cce5ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .info-box strong {
+            color: #004085;
+        }
+
+        /* 이미지 스타일 */
+        .img-container {
+            text-align: center;
+            margin: 20px 0;
+            background: #fafafa;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .img-caption {
+            font-size: 13px;
+            color: #777;
+            margin-top: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            color: #333;
+            font-weight: bold;
+            padding: 10px;
+            border-top: 2px solid #333;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page">
+        <div class="header">
+            <h1>영업기회 발굴 시스템 현장 배포 안내</h1>
+            <div class="meta">
+                <strong>문서번호:</strong> 2026-OP-001<br>
+                <strong>날짜:</strong> 2026. 01. 22<br>
+                <strong>수신:</strong> 전사 영업 담당자
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>📌 배포 목적</strong><br>
+            현장 영업 담당자들이 <strong>잠재 영업 기회(인허가, 폐업 등)</strong>를 지도 기반으로 쉽고 빠르게 파악하여,
+            <strong>데이터 기반의 효율적인 영업 활동</strong>을 지원하기 위함입니다.
+        </div>
+
+        <h2>1. 시스템 개요</h2>
+        <p>
+            본 시스템(Field Sales Assistant)은 공공데이터(인허가 정보)를 활용하여 담당 구역 내의
+            신규 개업, 폐업, 대형 매장 정보를 시각화하여 제공하는 모바일/웹 지원 도구입니다.
+        </p>
+
+        <h2>2. 주요 기능 및 개선 사항</h2>
+
+        <h3>가. 직관적인 지도 시각화 (Targeting)</h3>
+        <p>영업 상태(영업중/폐업)와 매장 규모에 따라 색상을 구분하여, 방문 우선순위를 한눈에 파악할 수 있습니다.</p>
+        <ul>
+            <li>🔵 <strong>영업/정상</strong>: 현재 운영 중인 매장 (방문 대상)</li>
+            <li>🔴 <strong>폐업/정지</strong>: 폐업 또는 휴업 매장 (이력 관리)</li>
+            <li>🟣 <strong>대형 매장(New)</strong>: 100평 이상 대형 매장 특별 표시 (우선 공략)</li>
+            <li>🔒 <strong>정보 보호</strong>: 담당자 실명 마스킹 처리 (개인정보 보호 강화)</li>
+        </ul>
+
+        <div class="img-container">
+            <!-- 사용 가능한 지도 이미지 아티팩트로 대체 -->
+            <img src="/Users/heebonpark/.gemini/antigravity/brain/dddff7f8-a357-4993-a510-b6a230b71897/manual_map_section_1769057540305.png"
+                alt="지도 시각화 예시">
+            <div class="img-caption">▲ [지도 시각화] 매장 상태 및 규모별 마커 구분</div>
+        </div>
+
+        <h3>나. 사용자 편의성 강화 (User Experience)</h3>
+        <ul>
+            <li><strong>담당자 중심 접속</strong>: 앱 실행 시 <strong>'담당자(Manager)'</strong> 탭이 기본으로 설정되어 빠른 로그인이 가능합니다.</li>
+            <li><strong>모바일 최적화</strong>: 현장 이동 중에도 스마트폰으로 손쉽게 리스트와 지도를 확인할 수 있습니다.</li>
+        </ul>
+        <div class="img-container">
+            <img src="/Users/heebonpark/.gemini/antigravity/brain/dddff7f8-a357-4993-a510-b6a230b71897/verify_default_tab_1769060493307.webp"
+                alt="로그인 화면">
+            <div class="img-caption">▲ [접속 화면] 담당자 탭 기본 제공으로 접근성 향상</div>
+        </div>
+
+        <h3>다. 온라인 사용설명서 (Web Manual)</h3>
+        <p>복잡한 파일 다운로드 없이, <strong>[📖 사용설명서 보기]</strong> 버튼 클릭 한 번으로 상세 가이드를 열람할 수 있습니다.</p>
+        <ul>
+            <li>새 탭에서 전체 화면으로 매뉴얼 제공</li>
+            <li>모바일/PC 환경 자동 최적화 레이아웃</li>
+        </ul>
+
+        <h2>3. 이용 안내</h2>
+        <table>
+            <tr>
+                <th width="30%">접속 주소 (URL)</th>
+                <td><a href="#">http://field-sales-assistant.app</a> (예시)</td>
+            </tr>
+            <tr>
+                <th>로그인 계정</th>
+                <td>
+                    <ul>
+                        <li><strong>ID</strong>: 사번 또는 등록된 이메일</li>
+                        <li><strong>PW</strong>: 초기 비밀번호 (별도 공지)</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <th>지원 브라우저</th>
+                <td>Chrome, Safari, Edge (IE 미지원) / 모바일(iOS, Android) 지원</td>
+            </tr>
+        </table>
+
+        <div class="info-box" style="background-color: #fff3cd; border-color: #ffeeba; color:#856404">
+            <strong>⚠️ 문의처</strong><br>
+            시스템 사용 중 오류 발생 시 아래 채널로 문의 바랍니다.<br>
+            - <strong>담당 부서</strong>: 영업지원팀<br>
+            - <strong>이메일</strong>: support@company.com
+        </div>
+
+        <div class="footer">
+            Field Sales Assistant System | 영업지원팀 배포
+        </div>
+    </div>
+
+</body>
+
+</html>

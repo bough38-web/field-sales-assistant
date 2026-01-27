@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 포트폴리오: 영업기회 발굴 시스템</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            background-color: white;
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .section-title {
+            color: #3498db;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background: #f0f7ff;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .metric-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2980b9;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .tech-stack {
+            margin-top: 10px;
+        }
+
+        .tech-badge {
+            display: inline-block;
+            background-color: #eef2f5;
+            color: #4a5568;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #eee;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <span class="section-title">PROJECT CASE STUDY</span>
+        <h1>데이터 기반 영업기회 발굴 시스템 개발</h1>
+
+        <div class="highlight-box">
+            <strong>📌 요약</strong><br>
+            공공데이터(인허가 정보)를 활용해 잠재 영업 기회를 지도에 시각화하여 제공하는 'Field Sales Assistant' 시스템을 1인 개발했습니다. 기존 수작업 대비 업무 효율을 90%
+            개선하고, 연간 약 32억 원 상당의 영업 시간 절감 가치를 창출했습니다.
+        </div>
+
+        <h2>1. 문제 정의 (Problem)</h2>
+        <p>기존 영업 조직은 신규 매장이나 폐업 정보를 찾기 위해 엑셀 데이터를 수동으로 필터링하고 주소를 검색하는 비효율적인 방식을 사용했습니다. 한 건의 유효한 영업 기회를 찾는 데 평균 30분이
+            소요되었으며, 이는 현장 영업 활동 시간을 저해하는 주요 요인이었습니다.</p>
+
+        <h2>2. 해결 방안 (Solution)</h2>
+        <p>Python과 Streamlit을 활용하여 대용량 공공데이터를 자동으로 수집·가공하고, 이를 지도 위에 직관적으로 시각화하는 웹 애플리케이션을 구축했습니다.</p>
+
+        <ul>
+            <li><strong>자동화된 데이터 파이프라인</strong>: 수십만 건의 인허가 데이터를 자동 파싱하고 좌표 변환(Geo-coding)하여 영업 기회 DB 구축</li>
+            <li><strong>직관적 시각화</strong>: 영업/폐업 상태 및 매장 규모(100평 이상 대형 매장)에 따라 마커 색상을 구분하여 타겟팅 효율 극대화</li>
+            <li><strong>현장 중심 UX</strong>: 모바일 환경에 최적화된 반응형 UI 설계 및 직관적인 범례 제공</li>
+        </ul>
+
+        <h2>3. 기술적 도전 및 성과 (Technical Challenges)</h2>
+
+        <h3>🚀 대용량 데이터 처리 성능 최적화</h3>
+        <p>초기 데이터 로딩에 30초 이상 소요되던 문제를 해결하기 위해, <strong>Parquet 포맷 기반의 캐싱 시스템</strong>을 도입했습니다. 이를 통해 재접속 시 로딩 시간을 1초
+            미만으로 단축시켜 사용자 경험을 획기적으로 개선했습니다.</p>
+
+        <h3>☁️ 배포 환경 호환성 확보</h3>
+        <p>로컬 개발 환경과 클라우드 배포 환경(GitHub/Streamlit Cloud) 간의 정적 파일 경로 차이로 인한 이미지 깨짐 문제가 발생했습니다. 이를 해결하기 위해 <strong>Base64
+                이미지 임베딩 방식</strong>을 고안하여 적용함으로써, 외부 경로 의존성을 제거하고 어떤 환경에서도 안정적인 서비스를 제공하도록 구현했습니다.</p>
+
+        <h2>4. 비즈니스 임팩트 (Business Impact)</h2>
+        <div class="metric">
+            <div class="metric-item">
+                <span class="metric-value">90%</span>
+                <span class="metric-label">업무 시간 단축<br>(30분 → 3분)</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">32억 원</span>
+                <span class="metric-label">연간 비용 절감 가치<br>(100명 기준)</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">16,200%</span>
+                <span class="metric-label">투자 대비 수익률<br>(ROI)</span>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="tech-stack">
+            <span class="section-title">USED TECHNOLOGIES</span>
+            <span class="tech-badge">Python</span>
+            <span class="tech-badge">Streamlit</span>
+            <span class="tech-badge">Pandas</span>
+            <span class="tech-badge">Folium / Kakao Maps</span>
+            <span class="tech-badge">Git / GitHub</span>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

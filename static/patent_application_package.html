@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patent Application Disclosure Package</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .section-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            color: #334155;
+            display: flex;
+            align-items: center;
+        }
+
+        .doc-link {
+            transition: all 0.2s;
+        }
+
+        .doc-link:hover {
+            transform: translateX(5px);
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 py-10 px-6 print:hidden">
+        <div class="container mx-auto max-w-4xl flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 mb-2">특허 출원용 통합 자료 패키지</h1>
+                <p class="text-slate-500">Patent Attorney Review Package</p>
+            </div>
+            <div class="text-right">
+                <span class="bg-slate-100 text-slate-600 text-xs px-3 py-1 rounded-full font-bold">CONFIDENTIAL</span>
+                <p class="text-xs text-slate-400 mt-1">Date: 2026.01.28</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto max-w-4xl px-6 py-10">
+
+        <!-- 1. Invention Title -->
+        <section class="bg-white rounded-xl shadow-sm p-8 mb-8 border border-slate-200">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Invention Title</h2>
+            <div class="text-2xl font-bold text-slate-900">
+                공공데이터 기반의 영업 기회 발굴 시스템 및 그 방법<br>
+                <span class="text-lg font-normal text-slate-500">(System and Method for Sales Opportunity Discovery
+                    based on Public Data)</span>
+            </div>
+        </section>
+
+        <!-- 2. Document Index (Attachments) -->
+        <section class="bg-white rounded-xl shadow-sm p-8 mb-8 border border-slate-200">
+            <h2 class="section-header"><i class="fa-solid fa-folder-open mr-2 text-blue-500"></i> 첨부 자료 인덱스
+                (Attachments)</h2>
+            <p class="text-sm text-slate-500 mb-6">변리사 검토 및 명세서 작성을 위한 핵심 링크 모음입니다.</p>
+
+            <div class="space-y-4">
+                <!-- Doc 1 -->
+                <a href="patent_strategy.html" target="_blank"
+                    class="doc-link block border border-slate-200 rounded-lg p-5 group hover:border-blue-400">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div
+                                class="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 group-hover:text-blue-600">1. 특허 전략 보고서 (Patent
+                                    Strategy)</h3>
+                                <p class="text-sm text-slate-500">선행기술 조사 결과, 차별화 포인트, 핵심 청구항(Claims) 정의</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-slate-300 group-hover:text-blue-500"></i>
+                    </div>
+                </a>
+
+                <!-- Doc 2 -->
+                <a href="system_architecture.html" target="_blank"
+                    class="doc-link block border border-slate-200 rounded-lg p-5 group hover:border-blue-400">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div
+                                class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-diagram-project"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 group-hover:text-blue-600">2. 시스템 도면 (Drawings)</h3>
+                                <p class="text-sm text-slate-500">특허 도면 작성을 위한 논리 순서도(Flowchart) 및 시스템 구성도</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-slate-300 group-hover:text-blue-500"></i>
+                    </div>
+                </a>
+
+                <!-- Doc 3 -->
+                <a href="technical_whitepaper.html" target="_blank"
+                    class="doc-link block border border-slate-200 rounded-lg p-5 group hover:border-blue-400">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div
+                                class="w-10 h-10 bg-slate-100 text-slate-600 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-code"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 group-hover:text-blue-600">3. 발명 상세 설명 (Detailed
+                                    Description)</h3>
+                                <p class="text-sm text-slate-500">구체적인 구현 방법, 알고리즘 로직, 좌표 변환 코드 상세</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-slate-300 group-hover:text-blue-500"></i>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- 3. Summary of Invention -->
+        <section class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white rounded-xl shadow-sm p-8 border border-slate-200">
+                <h2 class="section-header"><i class="fa-solid fa-circle-exclamation mr-2 text-red-500"></i> 해결하고자 하는 과제
+                    (Problem)</h2>
+                <ul class="list-disc list-outside ml-5 space-y-2 text-sm text-slate-600">
+                    <li>기존 영업 방식은 오프라인 탐색에 의존하여 유효 방문률이 낮음.</li>
+                    <li>공공데이터(인허가)는 존재하나, 비정형 텍스트 및 이종 좌표계(GRS80)로 인해 실시간 활용이 불가능함.</li>
+                    <li>일반 지도 서비스는 '현재 영업중인 가게'만 표시하여, '미래의 영업 기회'(공사중, 폐업 공실)를 파악할 수 없음.</li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-8 border border-slate-200">
+                <h2 class="section-header"><i class="fa-solid fa-lightbulb mr-2 text-blue-500"></i> 과제 해결 수단 (Solution)
+                </h2>
+                <ul class="list-disc list-outside ml-5 space-y-2 text-sm text-slate-600">
+                    <li><strong>자동 상태 분류:</strong> '신축 공사중', '폐업(1년 미만)' 등의 키워드를 분석하여 '영업 리드'로 자동 태깅.</li>
+                    <li><strong>벡터 좌표 변환:</strong> 대용량 공공데이터 좌표를 클라이언트/서버에서 벡터 연산으로 즉시 변환하여 지도 매핑.</li>
+                    <li><strong>타겟팅 UI:</strong> 영업 가치가 높은 지점을 시각적으로 구별(Highlight)하여 동선 최적화 유도.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-10 text-slate-400 text-sm">
+        <p>본 페이지는 법률 대리인(변리사) 제공용입니다.</p>
+    </footer>
+
+</body>
+
+</html>

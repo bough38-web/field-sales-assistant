@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영업기회 가이드 | Field Sales Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #e8f5e9;
+            --secondary: #424242;
+            --accent: #FFC107;
+            --danger: #d32f2f;
+            --text-dark: #333333;
+            --text-light: #757575;
+            --border: #e0e0e0;
+            --bg-light: #f8f9fa;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            background-color: #fff;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #1e2124;
+            color: #fff;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 2.5rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 14px 1rem;
+            color: #bdc3c7;
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: var(--primary);
+            color: #fff;
+            transform: translateX(4px);
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+        }
+
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+            margin-right: 12px;
+        }
+
+        .nav-group {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            margin: 2rem 0 0.8rem 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 4rem 5rem;
+            max-width: 1400px;
+        }
+
+        /* Headers */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 4rem 0 2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 3px solid var(--primary);
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+
+        p {
+            margin-bottom: 1.2rem;
+            color: #555;
+            font-size: 1rem;
+        }
+
+        /* Images */
+        .screenshot-container {
+            margin: 20px 0 40px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid #eee;
+        }
+
+        .screenshot-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* Feature Cards */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .visual-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .visual-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 6rem;
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-light);
+            background: #fafafa;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 0;
+                padding: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 2rem;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Print Styles --- */
+        @media print {
+            @page {
+                margin: 10mm 15mm;
+                size: A4 landscape;
+            }
+
+            .sidebar,
+            .download-btn-container {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            body {
+                background-color: #fff !important;
+                font-size: 10pt;
+                color: #333;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            h2.section-title {
+                page-break-before: auto;
+                margin-top: 1.5rem !important;
+                padding-top: 0 !important;
+                border-bottom: 2px solid var(--primary);
+                color: var(--primary) !important;
+            }
+
+            .screenshot-container {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                page-break-inside: avoid;
+                margin: 10px 0 !important;
+                max-height: 400px;
+                overflow: hidden;
+            }
+
+            .screenshot-container img {
+                max-height: 380px;
+                width: auto;
+                display: block;
+                margin: 0 auto;
+            }
+
+            .visual-card {
+                box-shadow: none !important;
+                border: 1px solid #eee !important;
+                page-break-inside: avoid;
+                background-color: #fcfcfc !important;
+                padding: 10px !important;
+            }
+
+            .grid-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            section {
+                margin-bottom: 1.2rem !important;
+            }
+
+            h1 {
+                font-size: 1.8rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            h2 {
+                font-size: 1.4rem !important;
+            }
+
+            p {
+                margin-bottom: 0.5rem !important;
+            }
+
+            ul,
+            ol {
+                margin-bottom: 0.5rem !important;
+            }
+
+            a {
+                text-decoration: none !important;
+                color: #000 !important;
+            }
+
+            footer {
+                border-top: 1px solid #eee !important;
+                background: none !important;
+                padding: 20px 0 !important;
+            }
+        }
+
+        /* --- Floating Download Button --- */
+        .download-btn-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 2000;
+        }
+
+        .download-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            background-color: #1b5e20;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Floating Download Button -->
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()">
+            <i class="fas fa-file-pdf"></i> PDF 다운로드
+        </button>
+    </div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo"><i class="fas fa-rocket"></i> 영업기회 비서</div>
+
+        <div class="nav-group">가이드 메뉴</div>
+        <a href="#intro" class="nav-item active"><i class="fas fa-star"></i> 시스템 개요</a>
+        <a href="#login-guide" class="nav-item"><i class="fas fa-user-lock"></i> 로그인 및 권한</a>
+        <a href="#usage-notice" class="nav-item"><i class="fas fa-book-open"></i> 상세 사용안내</a>
+        <a href="#dashboard" class="nav-item"><i class="fas fa-chart-pie"></i> 대시보드 활용</a>
+        <a href="#map" class="nav-item"><i class="fas fa-map-marked-alt"></i> 지도 및 타겟팅</a>
+        <a href="#mobile" class="nav-item"><i class="fas fa-mobile-alt"></i> 모바일 리스트</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Intro -->
+        <section id="intro">
+            <h1>현장 영업 마스터 가이드</h1>
+            <p class="lead" style="font-size: 1.25rem; color: #666; font-weight: 300;">
+                데이터 기반의 스마트한 영업 기회 포착, <br>
+                <strong>영업기회 비서</strong>가 함께합니다.
+            </p>
+
+            <div
+                style="background:var(--primary-light); padding:20px 30px; border-radius:12px; border-left:5px solid var(--primary); margin: 30px 0;">
+                <h3 style="margin:0 0 10px 0; color:var(--primary);">🎯 핵심 워크플로우</h3>
+                <ol style="margin-left: 20px; color:#444; font-weight:500;">
+                    <li><strong>조회</strong>: 지사별 현황판에서 우리 지사와 내 실적을 확인합니다.</li>
+                    <li><strong>타겟팅</strong>: 지도 필터로 '신규 오픈' 및 '폐업' 매장을 구분합니다.</li>
+                    <li><strong>실행</strong>: 모바일 리스트에서 바로 전화하고 찾아갑니다.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Login & Access -->
+        <section id="login-guide">
+            <h2 class="section-title"><i class="fas fa-user-shield"></i> 🔐 로그인 및 권한 관리</h2>
+            <div class="grid-2" style="grid-template-columns: 1.2fr 0.8fr; align-items: center; gap: 20px;">
+                <div class="screenshot-container" style="margin:0 !important;">
+                    <img src="assets/uploaded_image_landing_1769046667006.png" alt="웹 로그인 화면">
+                    <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">💻 웹 버전</p>
+                </div>
+                <div class="screenshot-container" style="margin:0 !important; max-width: 200px; justify-self: center;">
+                    <img src="assets/mobile_login.png" alt="모바일 로그인 화면">
+                    <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">📱 모바일</p>
+                </div>
+            </div>
+            <div style="margin-top:20px;">
+                <h3 style="margin-top:0;"><i class="fas fa-id-card"></i> 사용자 권한별 맞춤 데이터</h3>
+                <p>본 시스템은 철저한 <strong>역할 기반 보안</strong>을 적용하여, 로그인 정보에 따라 조회 가능한 데이터 범위가 자동으로 제한됩니다.</p>
+                <ul style="margin-left: 15px; color: #444; font-size: 0.9rem;">
+                    <li><strong>관리자(Admin)</strong>: 전 지사 및 모든 영업 구역의 데이터를 통합 관리합니다.</li>
+                    <li><strong>지사(Branch)</strong>: <span class="highlight">소속 지사</span>의 데이터만 조회 및 관리할 수 있습니다.</li>
+                    <li><strong>담당자(Manager)</strong>: 본인이 배정받은 <span class="highlight">특정 영업 구역</span>의 데이터만 열람 가능하여
+                        개인별 보안을 유지합니다.</li>
+                </ul>
+                <div
+                    style="margin-top: 10px; padding: 8px 12px; background: #e8f5e9; border-left: 4px solid var(--primary); font-size: 0.85rem; color: var(--primary);">
+                    <strong>🛡️ 개인정보 보호(마스킹)</strong>: 담당자 성함은 성만 표시되고 나머지는 마스킹 처리됩니다 (예: 홍*동).
+                </div>
+                <div
+                    style="margin-top: 15px; padding: 10px; background: #FFF9C4; border-left: 4px solid #FBC02D; font-size: 0.85rem; color: #574B0C;">
+                    <strong>🔑 패스워드 안내</strong>: 지사 및 담당자별 접속 패스워드는 <strong>관리자가 별도로 안내</strong>해 드릴 예정입니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Notice -->
+        <section id="usage-notice">
+            <h2 class="section-title"><i class="fas fa-bullhorn"></i> 📖 상세 사용안내</h2>
+            <div class="visual-card" style="display: block; border-left: 5px solid var(--accent);">
+                <div style="margin-bottom: 15px;">
+                    <h3 style="margin-top:0;"><i class="fas fa-database"></i> 데이터 출처 및 활용 (행정안전부 공개데이터)</h3>
+                    <div class="grid-2" style="align-items: center; margin-top: 10px;">
+                        <div>
+                            <ul style="margin-left: 15px; color: #444; font-size: 0.95rem;">
+                                <li><strong>신뢰할 수 있는 소스</strong>: <span class="highlight">행정안전부</span> 제공 대한민국 공식 공공데이터를
+                                    기반으로 합니다.</li>
+                                <li><strong>핵심 활용 데이터</strong>: 전체 데이터 중 <span
+                                        style="color:#d32f2f; font-weight:bold; text-decoration: underline;">'변동분'</span>
+                                    데이터를 집중 활용하여 매일 최신 영업 기회를 포착합니다.</li>
+                                <li><strong>업데이트 주기</strong>: 실시간이 아닌 <strong>약 2일의 지연(D-2)</strong> 후 업데이트됩니다.</li>
+                                <li><strong>데이터 범위</strong>: 행안부 195개 업종 데이터를 <strong>지사/담당 구역별</strong>로 자동 추출 및 배분합니다.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="screenshot-container"
+                            style="margin:0 !important; border: 3px solid #d32f2f; position: relative;">
+                            <div
+                                style="position: absolute; top: -12px; left: 10px; background: #d32f2f; color: white; padding: 2px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 4px;">
+                                변동분 데이터 집중 활용</div>
+                            <img src="assets/uploaded_image_change_data_1769046394897.png" alt="행정안전부 변동분 데이터 강조"
+                                style="max-height: 250px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3><i class="fas fa-search-plus"></i> 정교한 필터링 로직</h3>
+                    <ul style="margin-left: 20px; color: #444;">
+                        <li><strong>15일 필터</strong>: <span class="highlight">신규(15일)</span> 또는 <span
+                                class="highlight">폐업(15일)</span> 체크박스 선택 시, 이슈 발생일로부터 <strong>15일 이내</strong>인 데이터만
+                            필터링되어 노출됩니다.</li>
+                        <li><strong>특수 조건</strong>: 병원 전용 검색, 100평 이상 대형 사업장 등의 특수 조건 필터링 기능도 즉시 사용 가능합니다.</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3><i class="fas fa-map-marker-alt"></i> 지도 및 네비게이션 연동</h3>
+                    <p>웹 지도에서 <strong>정지/폐업 표시</strong> 기능을 통해 대상 업체의 기본 정보를 확인하고, <strong>카카오 네비게이션</strong> 연동 버튼으로
+                        현장까지의 최적 경로를 안내받으실 수 있습니다.</p>
+                </div>
+
+                <div>
+                    <h3><i class="fas fa-download"></i> 멀티 플랫폼 지원 및 데이터 활용</h3>
+                    <p>웹과 모바일 모두에서 최적화된 <strong>모바일 리스트</strong> 및 <strong>데이터 그리드</strong> 기능을 제공하며, 엑셀 다운로드를 통해 보고서 작성
+                        및 영업 리스트 관리에 활용할 수 있습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard -->
+        <section id="dashboard">
+            <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> 직관적인 현황판</h2>
+            <p>로그인 후 가장 먼저 마주하는 화면입니다. 지사별/담당자별 실적을 카드로 한눈에 볼 수 있습니다.</p>
+
+            <div class="grid-2" style="grid-template-columns: 1.2fr 0.8fr; align-items: start; gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="screenshot-container">
+                        <img src="assets/uploaded_image_1_1769043792988.png" alt="웹 지사별 현황">
+                        <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">💻 웹 대시보드</p>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="assets/uploaded_image_2_1769043792988.png" alt="웹 담당자별 현황">
+                        <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">💻 담당자 상세 실적 (웹)</p>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="screenshot-container" style="max-width: 250px; align-self: center;">
+                        <img src="assets/mobile_charts.png" alt="모바일 대시보드">
+                        <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">📱 모바일 대시보드</p>
+                    </div>
+                    <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee;">
+                        <p style="font-size: 0.9rem; margin-bottom: 10px;">
+                            <strong>📊 실시간 실적 관리</strong><br>
+                            지사별/담당자별 실적을 차트로 한눈에 분석할 수 있습니다.
+                        </p>
+                        <p style="font-size: 0.9rem; margin: 0;">
+                            <strong>📌 지사 퀵 버튼</strong><br>
+                            <span style="color:#E91E63; font-weight:bold;">'중앙'</span> 등 버튼 클릭 시 지사 데이터로 즉시 전환됩니다.<br>
+                            <small style="color:#666;">* 담당자 실적 차트에서도 성함은 마스킹 처리됩니다.</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map & Filtering -->
+        <section id="map">
+            <h2 class="section-title"><i class="fas fa-filter"></i> 지도 시각화와 필터링</h2>
+            <p>원하는 조건의 매장만 쏙쏙 골라내어 지도 위에 뿌려줍니다. 더 이상 무작위 방문은 없습니다.</p>
+
+            <div class="grid-2" style="grid-template-columns: 1.3fr 0.7fr; gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="screenshot-container">
+                        <img src="assets/uploaded_image_4_1769043792988.png" alt="웹 지도 화면">
+                        <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">💻 웹 지도 (대형 화면 최적화)
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="screenshot-container" style="max-width: 250px; align-self: center;">
+                        <img src="assets/mobile_map.png" alt="모바일 지도 화면">
+                        <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">📱 모바일 지도 (현장용)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-top:20px;">
+                <div class="visual-card">
+                    <h3><i class="fas fa-search-plus"></i> 정교한 필터링</h3>
+                    <ul style="font-size:0.85rem; padding-left:15px; color:#444;">
+                        <li><strong>웹 필터</strong>: 상단 필터바를 통해 대량의 데이터를 정교하게 분류 (신규/폐업/업종 등)</li>
+                        <li><strong>모바일 액션</strong>: 마커 클릭 시 즉시 <strong>카카오 네비게이션</strong> 연동</li>
+                    </ul>
+                </div>
+                <div class="visual-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> 마커 가이드</h3>
+                    <div style="font-size:0.85rem;">
+                        <span style="color:#29b6f6;">● 파랑</span>: 영업 | <span style="color:#ef5350;">● 빨강</span>: 폐업<br>
+                        <span style="color:#ab47bc;">● 보라</span>: <strong>100평 이상 대형 매장</strong><br>
+                        <span style="font-size: 0.75rem; color: #777; display: block; margin-top: 5px;">* 팝업 정보 내 담당자명은
+                            마스킹 적용 (홍*동)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mobile List -->
+        <section id="mobile">
+            <h2 class="section-title"><i class="fas fa-mobile"></i> 멀티 플랫폼 지원 (리스트/그리드)</h2>
+            <p><strong>웹</strong>에서는 정교한 데이터 관리를, <strong>현장</strong>에서는 모바일 리스트를 통한 빠른 액션을 실행하세요.</p>
+
+            <div class="grid-2" style="grid-template-columns: 1.2fr 0.8fr; gap: 20px;">
+                <div class="screenshot-container">
+                    <img src="assets/mobile_grid.png" alt="웹 데이터 그리드">
+                    <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">💻 데이터 그리드 & 엑셀 다운로드 (웹)
+                    </p>
+                </div>
+                <div class="screenshot-container" style="max-width: 250px; align-self: center;">
+                    <img src="assets/mobile_list.png" alt="모바일 영업 리스트">
+                    <p style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">📱 모바일 리스트 (전화/이동 최적화)
+                    </p>
+                </div>
+            </div>
+
+            <div class="visual-card" style="background:#f1f8e9; border-left:5px solid #33691e; margin-top: 15px;">
+                <h3 style="margin-top:0;">⚡️ 현장 액션 버튼 3종 세트</h3>
+                <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:15px;">
+                    <div style="flex:1; text-align:center;">
+                        <div style="font-size:1.5rem;">📞</div>
+                        <strong>전화</strong>
+                        <div style="font-size:0.8rem; color:#666;">등록된 번호 자동 연결</div>
+                    </div>
+                    <div style="flex:1; text-align:center;">
+                        <div style="font-size:1.5rem;">🗺</div>
+                        <strong>길찾기</strong>
+                        <div style="font-size:0.8rem; color:#666;">위치 기반 네비 연동</div>
+                    </div>
+                    <div style="flex:1; text-align:center;">
+                        <div style="font-size:1.5rem;">🔍</div>
+                        <strong>검색</strong>
+                        <div style="font-size:0.8rem; color:#666;">포털 상세 정보 확인</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="logo" style="justify-content:center; color:#555; margin-bottom:10px;"><i
+                    class="fas fa-rocket"></i> 영업기회 비서</div>
+            <p>&copy; 2026 Field Sales Assistant Platform. All rights reserved.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        function downloadPDF() {
+            // Optional: Alert the user to select 'Save as PDF'
+            if (confirm("인쇄 창이 열리면 '대상'을 'PDF로 저장'으로 선택해 주세요.")) {
+                window.print();
+            }
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

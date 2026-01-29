@@ -723,6 +723,39 @@ def render_folium_map(display_df):
                 map.fitBounds(group.getBounds(), {{ padding: [50, 50] }});
             }}
 
+            // Current Location Button
+            var locBtn = document.createElement('div');
+            locBtn.innerHTML = '🎯 내 위치';
+            locBtn.style.cssText = 'position:absolute;bottom:30px;left:10px;z-index:1000;background:white;padding:8px 12px;border-radius:4px;border:1px solid #ccc;cursor:pointer;font-weight:bold;box-shadow:0 1px 3px rgba(0,0,0,0.2);';
+            locBtn.onclick = function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var lat = position.coords.latitude; 
+                        var lon = position.coords.longitude; 
+                        var locPosition = [lat, lon];
+                        
+                        map.setView(locPosition, 16);
+                        
+                        var locMarker = L.marker(locPosition).addTo(map)
+                            .bindTooltip("현재 내 위치", { permanent: true, direction: 'top' })
+                            .openTooltip();
+                            
+                        document.getElementById('detail-content').innerHTML = `
+                            <div class="placeholder-box">
+                                <div style="font-size:48px; margin-bottom:10px;">📍</div>
+                                <div style="font-size:18px; font-weight:600;">현재 내 위치입니다</div>
+                                <div style="font-size:14px; margin-top:10px;">위도: ${lat.toFixed(6)}<br>경도: ${lon.toFixed(6)}</div>
+                            </div>
+                        `;
+                    }, function(err) {
+                        alert('위치 정보를 가져올 수 없습니다: ' + err.message);
+                    });
+                } else {
+                    alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
+                }
+            };
+            document.getElementById('map-container').appendChild(locBtn);
+
         </script>
     </body>
     </html>

@@ -121,8 +121,11 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
     final_df['평수'] = (use_area / 3.3058).round(1)
     
     # 7. Final Cleanup
-    final_df = final_df.dropna(subset=['관리지사'])
-    final_df = final_df[final_df['관리지사'] != '미지정']
+    # [FIX] Do not drop unassigned branches (`관리지사` is null or `미지정`). Keep them for Admin review.
+    final_df['관리지사'] = final_df['관리지사'].fillna('미지정')
+    # final_df = final_df.dropna(subset=['관리지사']) # Removed to keep unassigned
+    # final_df = final_df[final_df['관리지사'] != '미지정'] # Removed to keep unassigned
+    
     final_df['SP담당'] = final_df['SP담당'].fillna('미지정')
     if '영업구역 수정' in final_df.columns:
         final_df['영업구역 수정'] = final_df['영업구역 수정'].fillna('')

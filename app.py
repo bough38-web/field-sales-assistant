@@ -1802,7 +1802,9 @@ if raw_df is not None:
         tab1, tab_stats, tab2, tab3, tab_voc = st.tabs(["🗺️ 지도 & 분석", "📈 상세통계", "📱 모바일 리스트", "📋 데이터 그리드", "🗣️ 관리자에게 요청하기"])
 
     with tab1:
-        st.subheader("🗺️ 지사/담당자 조회")
+        with st.expander("🗺️ 지사/담당자 조회", expanded=True):
+            # st.subheader("🗺️ 지사/담당자 조회") # Removed subheader as it's now the expander title
+        
         
         # [FEATURE] Local AI Activity Guide
         # Only show for Manager/Branch roles to provide personalized insight
@@ -1861,6 +1863,11 @@ if raw_df is not None:
         # [FEATURE] Condition View Toolbar (Quick Filters)
         st.caption("조건별 빠른 조회 (지도 위에 표시됩니다)")
         
+        # [ADMIN] Unassigned Filter
+        q_unassigned = False
+        if st.session_state.get('user_role') == 'admin':
+            q_unassigned = st.checkbox("🔍 미지정만 보기", value=False, help="지사 또는 담당자가 배정되지 않은 건만 조회")
+        
         # [UX] Mobile-Friendly Layout: 2x2 Grid for Checkboxes
         c_q_r1_1, c_q_r1_2 = st.columns(2)
         with c_q_r1_1: q_new = st.checkbox("🆕 신규(7일)", value=False, help="최근 7일 이내 개업(인허가)된 건")
@@ -1873,6 +1880,15 @@ if raw_df is not None:
         # Remove divider to save space
         
         map_df_base = df.dropna(subset=['lat', 'lon']).copy()
+        
+        # [ADMIN] Filter Unassigned
+        if q_unassigned:
+            map_df_base = map_df_base[
+                (map_df_base['관리지사'] == '미지정') | 
+                (map_df_base['관리지사'].isna()) | 
+                (map_df_base['SP담당'] == '미지정') | 
+                (map_df_base['SP담당'].isna())
+            ]
         
         # [FEATURE] Apply Quick Filters (Pre-Filtering for Dynamic Dropdowns)
         # 1. Date Filters (OR Logic: New OR Closed)
@@ -1982,9 +1998,9 @@ if raw_df is not None:
         
         # Reduced Spacing
         
-        if len(map_df) > 5000:
-            st.info(f"ℹ️ 데이터가 많아({len(map_df):,}건) 클러스터링되어 표시됩니다. 지도를 확대하면 개별 마커가 보입니다.")
-            
+            if len(map_df) > 5000:
+                st.info(f"ℹ️ 데이터가 많아({len(map_df):,}건) 클러스터링되어 표시됩니다. 지도를 확대하면 개별 마커가 보입니다.")
+                    
         st.markdown("#### 🗺️ 지도")
         if not map_df.empty:
             if kakao_key:

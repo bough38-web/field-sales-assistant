@@ -22,17 +22,13 @@ def normalize_str(s: Any) -> Optional[str]:
     b_norm = unicodedata.normalize('NFC', str(s)).strip()
     known_branches = ['중앙', '강북', '서대문', '고양', '의정부', '남양주', '강릉', '원주']
     if b_norm in known_branches:
-        return b_norm + '지사'
-    return b_norm
-
-def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path_or_obj: Any) -> Tuple[pd.DataFrame, List[Dict], Optional[str]]:
+      def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path_or_obj: Any) -> Tuple[pd.DataFrame, List[Dict], Optional[str]]:
     """
     Common logic to process district file, match addresses, and merge with target_df.
     """
     # 1. Load District File
     try:
         if isinstance(district_file_path_or_obj, str) and district_file_path_or_obj.startswith("http"):
-            # Use requests to download for potentially better error handling with GSheets
             import requests
             import io
             response = requests.get(district_file_path_or_obj, timeout=15)
@@ -43,25 +39,22 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
     except Exception as e:
         return target_df, [], f"Error reading District file: {e}"
 
-    # 2. Normalize District Data with Robust Column Mapping
+    # 2. Normalize District Data
     if '주소시' in df_district.columns:
         df_district['full_address'] = df_district[['주소시', '주소군구', '주소동']].astype(str).agg(' '.join, axis=1)
     else:
-        # Try candidate names for address
         addr_col = next((c for c in df_district.columns if any(p in c for p in ['설치주소', '도로명주소', '소재지주소', '주소'])), None)
         if addr_col:
             df_district['full_address'] = df_district[addr_col]
         else:
-            return target_df, [], "District file must contain an address column (e.g., '주소' or '설치주소')."
+            return target_df, [], "District file must contain an address column."
 
-    # Try candidate names for Branch
     branch_col = next((c for c in df_district.columns if any(p in c for p in ['관리지사', '지사'])), None)
     if branch_col:
         df_district['관리지사'] = df_district[branch_col].apply(normalize_str)
     else:
         df_district['관리지사'] = '미지정'
 
-    # Try candidate names for Manager
     mgr_col = next((c for c in df_district.columns if any(p in c for p in ['SP담당', '구역담당영업사원', '담당'])), None)
     if mgr_col:
         df_district['SP담당'] = df_district[mgr_col].apply(normalize_str)
@@ -69,32 +62,22 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
         df_district['SP담당'] = '미지정'
 
     df_district['full_address'] = df_district['full_address'].apply(normalize_str)
-    
     df_district['full_address_norm'] = df_district['full_address'].apply(normalize_address)
     df_district = df_district.dropna(subset=['full_address_norm'])
-    
-    # Deduplicate District Data
     df_district = df_district.drop_duplicates(subset=['full_address_norm'], keep='first')
     
-    # 3. Prepare Target Data for Matching
-    # Ensure target_df has '소재지전체주소'
-    if '소재지전체주소' not in target_df.columns:
-        pass
-
+    # 3. Prepare Target Data
     target_df['소재지전체주소_norm'] = target_df['소재지전체주소'].astype(str).apply(normalize_address)
     target_df = target_df.dropna(subset=['소재지전체주소_norm'])
 
-    # 4. Batch Matching Logic
     if df_district.empty or target_df.empty:
         return target_df, [], "District or Target data is empty after normalization."
 
+    # 4. Batch Matching Logic
     vectorizer = TfidfVectorizer(analyzer='char', ngram_range=(2, 3)).fit(df_district['full_address_norm'])
     district_matrix = vectorizer.transform(df_district['full_address_norm'])
-    
-    # Prepare Query (Target)
     target_addrs = target_df['소재지전체주소_norm'].tolist()
     target_matrix = vectorizer.transform(target_addrs)
-    
     cosine_sim = cosine_similarity(target_matrix, district_matrix)
     
     results = []
@@ -102,13 +85,23 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
         best_match_idx = cosine_sim[i].argmax()
         best_score = cosine_sim[i][best_match_idx]
         
-        if best_score >= 0.7:
-             results.append({
-                 '관리지사': df_district.iloc[best_match_idx]['관리지사'],
-                 'SP담당': df_district.iloc[best_match_idx]['SP담당']
-             })
+        # [Hierarchical Region Guard]
+        matched_branch = df_district.iloc[best_match_idx]['관리지사']
+        row_addr = str(target_df.iloc[i].get('소재지전체주소', '')).lower()
+        
+        is_region_mismatch = False
+        if '부산' in matched_branch and '부산' not in row_addr:
+            is_region_mismatch = True
+        elif '서울' in matched_branch and '서울' not in row_addr:
+            is_region_mismatch = True
+             
+        if best_score >= 0.7 and not is_region_mismatch:
+            results.append({
+                '관리지사': matched_branch,
+                'SP담당': df_district.iloc[best_match_idx]['SP담당']
+            })
         else:
-             results.append({'관리지사': '미지정', 'SP담당': '미지정'})
+            results.append({'관리지사': '미지정', 'SP담당': '미지정'})
              
     results_df = pd.DataFrame(results, index=target_df.index)
     target_df = pd.concat([target_df, results_df], axis=1)
@@ -117,6 +110,13 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
     mgr_info = []
     for branch in target_df['관리지사'].unique():
         if branch == '미지정': continue
+        branch_df = target_df[target_df['관리지사'] == branch]
+        for mgr in branch_df['SP담당'].unique():
+            if mgr == '미지정': continue
+            mgr_info.append({'branch': branch, 'name': mgr, 'count': len(branch_df[branch_df['SP담당'] == mgr])})
+            
+    return target_df, mgr_info, None
+ch == '미지정': continue
         branch_df = target_df[target_df['관리지사'] == branch]
         for mgr in branch_df['SP담당'].unique():
             if mgr == '미지정': continue

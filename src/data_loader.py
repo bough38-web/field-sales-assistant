@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 import unicodedata
 import shutil
 import numpy as np
+import hashlib
 from typing import Optional, Tuple, List, Dict, Any, Union
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -22,7 +23,10 @@ def normalize_str(s: Any) -> Optional[str]:
     b_norm = unicodedata.normalize('NFC', str(s)).strip()
     known_branches = ['중앙', '강북', '서대문', '고양', '의정부', '남양주', '강릉', '원주']
     if b_norm in known_branches:
-      def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path_or_obj: Any) -> Tuple[pd.DataFrame, List[Dict], Optional[str]]:
+        return b_norm + '지사'
+    return b_norm
+
+def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path_or_obj: Any) -> Tuple[pd.DataFrame, List[Dict], Optional[str]]:
     """
     Common logic to process district file, match addresses, and merge with target_df.
     """
@@ -116,14 +120,6 @@ def normalize_str(s: Any) -> Optional[str]:
             mgr_info.append({'branch': branch, 'name': mgr, 'count': len(branch_df[branch_df['SP담당'] == mgr])})
             
     return target_df, mgr_info, None
-ch == '미지정': continue
-        branch_df = target_df[target_df['관리지사'] == branch]
-        for mgr in branch_df['SP담당'].unique():
-            if mgr == '미지정': continue
-            mgr_info.append({'branch': branch, 'name': mgr, 'count': len(branch_df[branch_df['SP담당'] == mgr])})
-            
-    return target_df, mgr_info, None
-
 
 @st.cache_data(show_spinner=False)
 def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, salt: str = ""):
@@ -141,25 +137,20 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
         for zip_obj in zip_tasks:
             with zipfile.ZipFile(zip_obj, 'r') as zip_ref:
                 for member in zip_ref.infolist():
-                    if member.is_dir():
-                        continue
+                    if member.is_dir(): continue
                     
                     filename = os.path.basename(member.filename)
-                    if not filename.lower().endswith('.csv'):
-                        continue
+                    if not filename.lower().endswith('.csv'): continue
                         
-                    # [FIX] Truncate extremely long filenames to avoid OS limits (Errno 36)
-                    # Use a max base length of 60 chars + .csv extension
+                    # [FIX] Truncate extremely long filenames (Errno 36)
                     base_name, ext = os.path.splitext(filename)
                     if len(base_name) > 60:
-                        import hashlib
                         h = hashlib.md5(base_name.encode()).hexdigest()[:8]
                         base_name = base_name[:50] + "_" + h
                     
                     target_name = base_name + ext
                     target_path = os.path.join(temp_dir, target_name)
                     
-                    # Extract single file
                     with zip_ref.open(member) as source, open(target_path, "wb") as target:
                         shutil.copyfileobj(source, target)
                         
@@ -192,12 +183,12 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
         }
         
         def v_clean(ser):
-            import re
+            res = ser.copy()
             for k, v in replacements.items():
-                ser = ser.str.replace(k, v, regex=False)
-            ser = ser.str.replace('"', '', regex=False).str.replace("'", "", regex=False).str.replace('\n', '', regex=False)
-            ser = ser.str.replace(r'\s+', ' ', regex=True).str.strip()
-            return ser
+                res = res.str.replace(k, v, regex=False)
+            res = res.str.replace('"', '', regex=False).str.replace("'", "", regex=False).str.replace('\n', '', regex=False)
+            res = res.str.replace(r'\s+', ' ', regex=True).str.strip()
+            return res
 
         df_in['record_key'] = v_clean(t_ser) + "_" + v_clean(a_ser)
         return df_in
@@ -217,7 +208,6 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                          if first_val.isdigit() or first_val.startswith('20'):
                              df = pd.read_csv(file, encoding=enc, on_bad_lines='skip', dtype=str, low_memory=False, header=None)
                              num_cols = len(df.columns)
-                             # Mapping based on common [26-column] LocalData structure
                              x_idx, y_idx = None, None
                              for col_idx in range(min(num_cols, 30)):
                                  sample_vals = pd.to_numeric(df.iloc[:20, col_idx], errors='coerce').dropna()
@@ -227,11 +217,9 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                                      if 400000 < med < 650000: y_idx = col_idx
                                      if 124 < med < 132: x_idx = col_idx 
                                      if 33 < med < 43: y_idx = col_idx   
-                             
                              h_map = {}
                              if x_idx is not None: h_map[x_idx] = '좌표정보(X)'
                              if y_idx is not None: h_map[y_idx] = '좌표정보(Y)'
-                             # Address heuristic
                              for a_idx in [15, 16, 17, 18, 14]:
                                  if a_idx < num_cols:
                                      sample_a = str(df.iloc[0, a_idx])
@@ -240,8 +228,7 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                                          break
                              if h_map: df.rename(columns=h_map, inplace=True)
                              break
-                except Exception:
-                    continue
+                except Exception: continue
             
             if df is None or df.empty: continue
             
@@ -259,8 +246,7 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                         raw_close_dates = df['폐업일자'].fillna('').astype(str).str.replace(r'[^0-9]', '', regex=True)
                         close_years = pd.to_numeric(raw_close_dates.str[:4], errors='coerce').fillna(0).astype(int)
                         is_valid_close_date = close_years >= 2026
-                    else:
-                        is_valid_close_date = False
+                    else: is_valid_close_date = False
                     
                     mask_active = is_active & is_valid_date
                     mask_closed = ~is_active & is_valid_close_date
@@ -272,22 +258,15 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                     df_filtered = df[temp_years >= 2026].copy()
 
             if not df_filtered.empty:
-                # [FIX] Per-file Coordinate Normalization
+                # Per-file Coordinate Detection
                 all_f_cols = df_filtered.columns
                 x_c = next((c for c in all_f_cols if '좌표' in c and ('x' in c.lower() or 'X' in c)), None)
-                if not x_c: x_c = next((c for c in all_f_cols if 'epsg' in c.lower() and 'x' in c.lower()), None)
                 y_c = next((c for c in all_f_cols if '좌표' in c and ('y' in c.lower() or 'Y' in c)), None)
-                if not y_c: y_c = next((c for c in all_f_cols if 'epsg' in c.lower() and 'y' in c.lower()), None)
-                
                 rename_f = {}
                 if x_c: rename_f[x_c] = '좌표정보(X)'
                 if y_c: rename_f[y_c] = '좌표정보(Y)'
-                
-                # Check for address normalization
                 addr_c = next((c for c in all_f_cols if c in ['소재지전체주소', '도로명전체주소', '주소']), None)
-                if not addr_c: addr_c = next((c for c in all_f_cols if '주소' in c and '전체' in c), None)
                 if addr_c: rename_f[addr_c] = '소재지전체주소'
-                
                 if rename_f: df_filtered.rename(columns=rename_f, inplace=True)
 
                 df_filtered = generate_vectorized_record_key(df_filtered)
@@ -298,8 +277,7 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                 
                 df_filtered.drop_duplicates(subset=['record_key'], keep='first', inplace=True)
                 dfs.append(df_filtered)
-        except Exception:
-            continue
+        except Exception: continue
             
     if not dfs: return None, [], "No valid CSV files found.", {}
         
@@ -345,7 +323,6 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
     if '소재지전체주소' not in target_df.columns:
         if '지번주소' in target_df.columns: target_df.rename(columns={'지번주소': '소재지전체주소'}, inplace=True)
         elif '도로명전체주소' in target_df.columns: target_df['소재지전체주소'] = target_df['도로명전체주소']
-        elif '주소' in target_df.columns: target_df['소재지전체주소'] = target_df['주소']
     
     if '소재지전화' not in target_df.columns and '소재지전화번호' in target_df.columns:
         target_df.rename(columns={'소재지전화번호': '소재지전화'}, inplace=True)
@@ -377,9 +354,7 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                  try:
                      lon_v, lat_v = transformer.transform(xs[valid], ys[valid])
                      lats[valid], lons[valid] = lat_v, lon_v
-                 except Exception as e:
-                     if 'diagnostic_errors' not in target_df.attrs: target_df.attrs['diagnostic_errors'] = []
-                     target_df.attrs['diagnostic_errors'].append(f"Transform error: {e}")
+                 except Exception: pass
              else:
                  lats[valid], lons[valid] = ys[valid], xs[valid]
         
@@ -392,38 +367,23 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
     final_df, mgr_info, err = _process_and_merge_district_data(target_df, district_file_path_or_obj)
     return final_df, mgr_info, err, stats
 
-
 def fetch_openapi_data(auth_key: str, local_code: str, start_date: str, end_date: str) -> Tuple[Optional[pd.DataFrame], Optional[str]]:
-    """
-    Fetches data from localdata.go.kr API.
-    """
+    """Fetches data from localdata.go.kr API."""
     base_url = "http://www.localdata.go.kr/platform/rest/TO0/openDataApi"
-    params = {
-        "authKey": auth_key,
-        "localCode": local_code,
-        "bgnYmd": start_date,
-        "endYmd": end_date,
-        "resultType": "xml", 
-        "numOfRows": 1000, 
-        "pageNo": 1
-    }
+    params = {"authKey": auth_key, "localCode": local_code, "bgnYmd": start_date, "endYmd": end_date, "resultType": "xml", "numOfRows": 1000, "pageNo": 1}
     all_rows = []
     try:
         response = requests.get(base_url, params=params, timeout=20)
-        if response.status_code != 200: return None, f"API Error: Status {response.status_code}"
+        if response.status_code != 200: return None, f"API Error: {response.status_code}"
         root = ET.fromstring(response.content)
         header = root.find("header")
         if header is not None:
              code = header.find("resultCode")
              msg = header.find("resultMsg")
              if code is not None and code.text != '00': return None, f"API Logic Error: {msg.text if msg is not None else 'Unknown'}"
-                 
         body = root.find("body")
         items = body.find("items") if body is not None else root.findall("row")
-        if items is None or len(items) == 0: items = root.findall("row")
-        if not items: items = root.findall("row")
-        if not items and hasattr(items, 'findall'): items = items.findall("item")
-        if not items: return None, "No specific data found."
+        if items is None: items = []
 
         def get_val(item, tags):
             for tag in tags:
@@ -435,137 +395,54 @@ def fetch_openapi_data(auth_key: str, local_code: str, start_date: str, end_date
             row_data = {}
             row_data['개방자치단체코드'] = get_val(item, ["opnSfTeamCode", "OPN_SF_TEAM_CODE"])
             row_data['관리번호'] = get_val(item, ["mgtNo", "MGT_NO"])
-            row_data['개방서비스아이디'] = get_val(item, ["opnSvcId", "OPN_SVC_ID"])
-            row_data['개방서비스명'] = get_val(item, ["opnSvcNm", "OPN_SVC_NM"])
             row_data['사업장명'] = get_val(item, ["bplcNm", "BPLC_NM"])
             row_data['소재지전체주소'] = get_val(item, ["siteWhlAddr", "SITE_WHL_ADDR"])
             row_data['도로명전체주소'] = get_val(item, ["rdnWhlAddr", "RDN_WHL_ADDR"])
             row_data['소재지전화'] = get_val(item, ["siteTel", "SITE_TEL"])
             row_data['인허가일자'] = get_val(item, ["apvPermYmd", "APV_PERM_YMD"])
             row_data['폐업일자'] = get_val(item, ["dcbYmd", "DCB_YMD"])
-            row_data['휴업시작일자'] = get_val(item, ["clgStdt", "CLG_STDT"])
-            row_data['휴업종료일자'] = get_val(item, ["clgEnddt", "CLG_ENDDT"])
-            row_data['재개업일자'] = get_val(item, ["ropnYmd", "ROPN_YMD"])
             row_data['영업상태명'] = get_val(item, ["trdStateNm", "TRD_STATE_NM"])
             row_data['업태구분명'] = get_val(item, ["uptaeNm", "UPTAE_NM"])
             row_data['좌표정보(X)'] = get_val(item, ["x", "X"])
             row_data['좌표정보(Y)'] = get_val(item, ["y", "Y"])
-            row_data['소재지면적'] = get_val(item, ["siteArea", "SITE_AREA"])
-            row_data['총면적'] = get_val(item, ["totArea", "TOT_AREA"])
             all_rows.append(row_data)
-    except Exception as e: return None, f"Fetch Exception: {e}"
+    except Exception as e: return None, f"Fetch Error: {e}"
     if not all_rows: return None, "Parsed 0 rows."
     return pd.DataFrame(all_rows), None
 
-
 @st.cache_data
 def process_api_data(target_df: pd.DataFrame, district_file_path_or_obj: Any) -> Tuple[Union[pd.DataFrame, None], List[Dict], Optional[str], Dict[str, int]]:
-    """
-    Processes API data and merges with district.
-    """
+    """Processes API data and merges with district."""
     if target_df is None or target_df.empty: return None, [], "API DataFrame is empty.", {}
     x_col, y_col = '좌표정보(X)', '좌표정보(Y)'
     if x_col in target_df.columns and y_col in target_df.columns:
          target_df['lat'], target_df['lon'] = zip(*target_df.apply(lambda row: parse_coordinates_row(row, x_col, y_col), axis=1))
-    else:
-         target_df['lat'], target_df['lon'] = None, None
-    for col in ['인허가일자', '폐업일자', '휴업시작일자', '휴업종료일자', '재개업일자']:
+    else: target_df['lat'], target_df['lon'] = None, None
+    for col in ['인허가일자', '폐업일자', '재개업일자']:
         if col in target_df.columns: target_df[col] = pd.to_datetime(target_df[col], format='%Y%m%d', errors='coerce')
-    if '인허가일자' in target_df.columns: target_df.sort_values(by='인허가일자', ascending=False, inplace=True)
     if 'record_key' not in target_df.columns:
         from . import utils
-        addr_cols = ['소재지전체주소', '도로명전체주소', '주소']
-        target_df['record_key'] = target_df.apply(
-            lambda row: utils.generate_record_key(
-                row.get('사업장명', ''),
-                next((row.get(c) for c in addr_cols if row.get(c)), '')
-            ), axis=1
-        )
+        target_df['record_key'] = target_df.apply(lambda row: utils.generate_record_key(row.get('사업장명', ''), row.get('소재지전체주소', '')), axis=1)
     final_df, mgr_info, err = _process_and_merge_district_data(target_df, district_file_path_or_obj)
-    stats = {'before': len(target_df) if target_df is not None else 0, 'after': len(final_df) if final_df is not None else 0}
+    stats = {'before': len(target_df), 'after': len(final_df)}
     return final_df, mgr_info, err, stats
 
-def load_fixed_coordinates_data(file_path: str):
-    """
-    [NEW] Fast-path to load fixed coordinate data from Excel.
-    """
-    try:
-        import unicodedata
-        import numpy as np
-        from . import utils
-        df = pd.read_excel(file_path)
-        target_map = {
-            '사업장명': ['상호', '사업장명', '상호명'],
-            '소재지전체주소': ['설치주소', '소재지전체주소', '주소'],
-            'lat': ['위도', 'lat', 'latitude'],
-            'lon': ['경도', 'lon', 'longitude'],
-            '관리지사': ['지사', '관리지사', '본부'],
-            'SP담당': ['담당', 'SP담당', '배정'],
-            '영업상태명': ['계약상태(중)', '영업상태명', '상태'],
-            '정지상태': ['정지..', '정지상태']
-        }
-        norm_cols = {unicodedata.normalize('NFC', c).strip(): c for c in df.columns}
-        final_rename = {}
-        for target, aliases in target_map.items():
-            for alias in aliases:
-                norm_alias = unicodedata.normalize('NFC', alias)
-                if norm_alias in norm_cols:
-                    final_rename[norm_cols[norm_alias]] = target
-                    break
-        df.rename(columns=final_rename, inplace=True)
-        def clean_lat(x):
-            if pd.isna(x) or x is None: return np.nan
-            try:
-                v = float(str(x).replace(',', '.'))
-                return v if (33 < v < 43) else np.nan
-            except: return np.nan
-        def clean_lon(x):
-            if pd.isna(x) or x is None: return np.nan
-            try:
-                v = float(str(x).replace(',', '.'))
-                return v if (124 < v < 132) else np.nan
-            except: return np.nan
-        if 'lat' in df.columns: df['lat'] = df['lat'].apply(clean_lat)
-        if 'lon' in df.columns: df['lon'] = df['lon'].apply(clean_lon)
-        df['record_key'] = df.apply(lambda row: utils.generate_record_key(str(row.get('사업장명', '')), str(row.get('소재지전체주소', '') or '')), axis=1)
-        expected_cols = ['사업장명', '소재지전체주소', 'lat', 'lon', '관리지사', 'SP담당', '영업상태명', '정지상태', '업태구분명', '소재지전화', '인허가일자', '폐업일자', '소재지면적']
-        for c in expected_cols:
-            if c not in df.columns: df[c] = "-"
-        return df, {}, "", {}
-    except Exception as e: return None, {}, f"Fixed load error: {e}", {}
-
 def merge_activity_status(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    [RESTORED] Merges persistent activity status from JSON into the current DataFrame.
-    """
+    """Merges persistent activity status from JSON."""
     from src.activity_logger import ACTIVITY_STATUS_FILE, load_json_file
-    
-    if df is None or df.empty:
-        return df
-        
+    if df is None or df.empty: return df
     statuses = load_json_file(ACTIVITY_STATUS_FILE)
-    if not statuses:
-        return df
-        
+    if not statuses: return df
     rows = []
     for k, v in statuses.items():
         if not isinstance(v, dict): continue
         row = {"record_key": k}
         row.update(v)
         rows.append(row)
-    
     status_df = pd.DataFrame(rows)
-    if status_df.empty:
-        return df
-        
-    if 'record_key' not in df.columns:
-        return df
-        
+    if status_df.empty: return df
+    if 'record_key' not in df.columns: return df
     cols_to_overwrite = ['활동진행상태', '특이사항', '변경일시', '변경자', 'photo_path1', 'photo_path2', 'photo_path3']
     df = df.drop(columns=[c for c in cols_to_overwrite if c in df.columns])
-    
-    # Ensure status_df has only relevant columns for merge
     merge_cols = ['record_key'] + [c for c in cols_to_overwrite if c in status_df.columns]
-    merged_df = pd.merge(df, status_df[merge_cols], on='record_key', how='left')
-    
-    return merged_df
+    return pd.merge(df, status_df[merge_cols], on='record_key', how='left')

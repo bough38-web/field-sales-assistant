@@ -72,7 +72,8 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
     
     # 3. Prepare Target Data
     target_df['소재지전체주소_norm'] = target_df['소재지전체주소'].astype(str).apply(normalize_address)
-    target_df = target_df.dropna(subset=['소재지전체주소_norm'])
+    # Don't drop NaN here to avoid losing records, but matching will fail for them
+    # target_df = target_df.dropna(subset=['소재지전체주소_norm'])
 
     if df_district.empty or target_df.empty:
         return target_df, [], "District or Target data is empty after normalization."
@@ -80,7 +81,7 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
     # 4. Batch Matching Logic
     vectorizer = TfidfVectorizer(analyzer='char', ngram_range=(2, 3)).fit(df_district['full_address_norm'])
     district_matrix = vectorizer.transform(df_district['full_address_norm'])
-    target_addrs = target_df['소재지전체주소_norm'].tolist()
+    target_addrs = target_df['소재지전체주소_norm'].fillna('').tolist()
     target_matrix = vectorizer.transform(target_addrs)
     cosine_sim = cosine_similarity(target_matrix, district_matrix)
     
@@ -237,25 +238,13 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                 status_cols = [c for c in df.columns if '상태명' in c]
                 if status_cols:
                     status_col = status_cols[0]
-                    raw_dates = df['인허가일자'].fillna('').astype(str).str.replace(r'[^0-9]', '', regex=True)
-                    df['parsed_temp_year'] = pd.to_numeric(raw_dates.str[:4], errors='coerce').fillna(0).astype(int)
                     is_active = df[status_col].str.contains('영업|정상', na=False)
-                    is_valid_date = df['parsed_temp_year'] >= 2026
                     
-                    if '폐업일자' in df.columns:
-                        raw_close_dates = df['폐업일자'].fillna('').astype(str).str.replace(r'[^0-9]', '', regex=True)
-                        close_years = pd.to_numeric(raw_close_dates.str[:4], errors='coerce').fillna(0).astype(int)
-                        is_valid_close_date = close_years >= 2026
-                    else: is_valid_close_date = False
-                    
-                    mask_active = is_active & is_valid_date
-                    mask_closed = ~is_active & is_valid_close_date
-                    df_filtered = df[mask_active | mask_closed].copy()
-                    if 'parsed_temp_year' in df_filtered.columns: df_filtered.drop(columns=['parsed_temp_year'], inplace=True)
+                    # [RESTORE] Remove restrictive 2026+ filter
+                    # We show all active facilities, and recently modified closed ones
+                    df_filtered = df.copy() 
                 else:
-                    raw_dates = df['인허가일자'].fillna('').astype(str).str.replace(r'[^0-9]', '', regex=True)
-                    temp_years = pd.to_numeric(raw_dates.str[:4], errors='coerce').fillna(0).astype(int)
-                    df_filtered = df[temp_years >= 2026].copy()
+                    df_filtered = df.copy()
 
             if not df_filtered.empty:
                 # Per-file Coordinate Detection
@@ -267,14 +256,16 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                 if y_c: rename_f[y_c] = '좌표정보(Y)'
                 addr_c = next((c for c in all_f_cols if c in ['소재지전체주소', '도로명전체주소', '주소']), None)
                 if addr_c: rename_f[addr_c] = '소재지전체주소'
+                
+                # Identify modification date columns early
+                mod_c = next((c for c in all_f_cols if '수정' in c or '데이터기준' in c), None)
+                if mod_c: rename_f[mod_c] = '최종수정시점'
+                
                 if rename_f: df_filtered.rename(columns=rename_f, inplace=True)
 
                 df_filtered = generate_vectorized_record_key(df_filtered)
-                if '인허가일자' in df_filtered.columns:
-                    df_filtered['인허가일자_dt'] = pd.to_datetime(df_filtered['인허가일자'], errors='coerce')
-                    df_filtered.sort_values(by='인허가일자_dt', ascending=False, inplace=True)
-                    df_filtered.drop(columns=['인허가일자_dt'], inplace=True)
                 
+                # Global sorts happen later, but per-file clean deduplication
                 df_filtered.drop_duplicates(subset=['record_key'], keep='first', inplace=True)
                 dfs.append(df_filtered)
         except Exception: continue
@@ -284,10 +275,22 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
     concatenated_df = pd.concat(dfs, ignore_index=True)
     count_before = len(concatenated_df)
     
+    # [OPTIMIZED DEDUPLICATION] 
+    # Prioritize: 1. 최종수정시점, 2. 데이터기준일자, 3. 인허가일자
+    sort_cols = []
+    if '최종수정시점' in concatenated_df.columns:
+        concatenated_df['__mod_dt'] = pd.to_datetime(concatenated_df['최종수정시점'], errors='coerce')
+        sort_cols.append('__mod_dt')
+    if '데이터기준일자' in concatenated_df.columns:
+        concatenated_df['__base_dt'] = pd.to_datetime(concatenated_df['데이터기준일자'], errors='coerce')
+        sort_cols.append('__base_dt')
     if '인허가일자' in concatenated_df.columns:
-        concatenated_df['인허가일자_dt'] = pd.to_datetime(concatenated_df['인허가일자'], errors='coerce')
-        concatenated_df.sort_values(by='인허가일자_dt', ascending=False, inplace=True, na_position='last')
-        concatenated_df.drop(columns=['인허가일자_dt'], inplace=True)
+        concatenated_df['__apv_dt'] = pd.to_datetime(concatenated_df['인허가일자'], errors='coerce')
+        sort_cols.append('__apv_dt')
+
+    if sort_cols:
+        concatenated_df.sort_values(by=sort_cols, ascending=False, inplace=True, na_position='last')
+        for c in sort_cols: concatenated_df.drop(columns=[c], inplace=True)
 
     concatenated_df.drop_duplicates(subset=['record_key'], keep='first', inplace=True)
     count_after = len(concatenated_df)
@@ -323,9 +326,6 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
     if '소재지전체주소' not in target_df.columns:
         if '지번주소' in target_df.columns: target_df.rename(columns={'지번주소': '소재지전체주소'}, inplace=True)
         elif '도로명전체주소' in target_df.columns: target_df['소재지전체주소'] = target_df['도로명전체주소']
-    
-    if '소재지전화' not in target_df.columns and '소재지전화번호' in target_df.columns:
-        target_df.rename(columns={'소재지전화번호': '소재지전화'}, inplace=True)
 
     if '영업상태명' in target_df.columns:
         target_df['영업상태명'] = target_df['영업상태명'].fillna('').astype(str).str.strip()
@@ -342,8 +342,6 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
     avail_dates = [c for c in date_cols if c in target_df.columns]
     if avail_dates: target_df['최종수정시점'] = target_df[avail_dates].max(axis=1)
     
-    if '인허가일자' in target_df.columns: target_df.sort_values(by='인허가일자', ascending=False, inplace=True)
-        
     if '좌표정보(X)' in target_df.columns and '좌표정보(Y)' in target_df.columns:
         xs = pd.to_numeric(target_df['좌표정보(X)'], errors='coerce').values
         ys = pd.to_numeric(target_df['좌표정보(Y)'], errors='coerce').values
@@ -361,8 +359,7 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
         bad = (lats < 30) | (lats > 45) | (lons < 120) | (lons > 140)
         lats[bad], lons[bad] = np.nan, np.nan
         target_df['lat'], target_df['lon'] = lats, lons
-    else:
-        target_df['lat'], target_df['lon'] = None, None
+    else: target_df['lat'], target_df['lon'] = None, None
         
     final_df, mgr_info, err = _process_and_merge_district_data(target_df, district_file_path_or_obj)
     return final_df, mgr_info, err, stats
@@ -384,27 +381,16 @@ def fetch_openapi_data(auth_key: str, local_code: str, start_date: str, end_date
         body = root.find("body")
         items = body.find("items") if body is not None else root.findall("row")
         if items is None: items = []
-
-        def get_val(item, tags):
-            for tag in tags:
-                node = item.find(tag)
-                if node is not None and node.text: return node.text
-            return None
-
         for item in items:
             row_data = {}
-            row_data['개방자치단체코드'] = get_val(item, ["opnSfTeamCode", "OPN_SF_TEAM_CODE"])
-            row_data['관리번호'] = get_val(item, ["mgtNo", "MGT_NO"])
-            row_data['사업장명'] = get_val(item, ["bplcNm", "BPLC_NM"])
-            row_data['소재지전체주소'] = get_val(item, ["siteWhlAddr", "SITE_WHL_ADDR"])
-            row_data['도로명전체주소'] = get_val(item, ["rdnWhlAddr", "RDN_WHL_ADDR"])
-            row_data['소재지전화'] = get_val(item, ["siteTel", "SITE_TEL"])
-            row_data['인허가일자'] = get_val(item, ["apvPermYmd", "APV_PERM_YMD"])
-            row_data['폐업일자'] = get_val(item, ["dcbYmd", "DCB_YMD"])
-            row_data['영업상태명'] = get_val(item, ["trdStateNm", "TRD_STATE_NM"])
-            row_data['업태구분명'] = get_val(item, ["uptaeNm", "UPTAE_NM"])
-            row_data['좌표정보(X)'] = get_val(item, ["x", "X"])
-            row_data['좌표정보(Y)'] = get_val(item, ["y", "Y"])
+            row_data['사업장명'] = item.findtext("bplcNm")
+            row_data['소재지전체주소'] = item.findtext("siteWhlAddr")
+            row_data['도로명전체주소'] = item.findtext("rdnWhlAddr")
+            row_data['인허가일자'] = item.findtext("apvPermYmd")
+            row_data['폐업일자'] = item.findtext("dcbYmd")
+            row_data['영업상태명'] = item.findtext("trdStateNm")
+            row_data['좌표정보(X)'] = item.findtext("x")
+            row_data['좌표정보(Y)'] = item.findtext("y")
             all_rows.append(row_data)
     except Exception as e: return None, f"Fetch Error: {e}"
     if not all_rows: return None, "Parsed 0 rows."

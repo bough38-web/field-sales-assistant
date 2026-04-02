@@ -18,6 +18,25 @@ import re
 # Import from local utils
 from src.utils import normalize_address, parse_coordinates_row, get_best_match, calculate_area, transformer, HAS_PYPROJ
 
+# [SPEED OPTIMIZATION] Global cache for branch configuration to prevent redundant file I/O
+_KNOWN_BRANCHES_CACHE = None
+
+def get_known_branches() -> List[str]:
+    global _KNOWN_BRANCHES_CACHE
+    if _KNOWN_BRANCHES_CACHE is not None:
+        return _KNOWN_BRANCHES_CACHE
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), 'branch_config.json')
+        if os.path.exists(config_path):
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                _KNOWN_BRANCHES_CACHE = [b['name'].replace('지사', '') for b in config['branches']]
+        else:
+            _KNOWN_BRANCHES_CACHE = ['중앙', '강북', '서대문', '고양', '의정부', '남양주', '강릉', '원주', '춘천']
+    except:
+        _KNOWN_BRANCHES_CACHE = ['중앙', '강북', '서대문', '고양', '의정부', '남양주', '강릉', '원주', '춘천']
+    return _KNOWN_BRANCHES_CACHE
+
 def normalize_str(s: Any) -> Optional[str]:
     if pd.isna(s): return s
     # [STRICT] Enforce NFC and standardized naming
@@ -46,16 +65,8 @@ def normalize_str(s: Any) -> Optional[str]:
     for k, v in replacements.items():
         if b_norm == k: return v
         
-    # Load branches from config
-    try:
-        config_path = os.path.join(os.path.dirname(__file__), 'branch_config.json')
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            known_branches = [b['name'].replace('지사', '') for b in config['branches']]
-    except:
-        known_branches = ['중앙', '강북', '서대문', '고양', '의정부', '남양주', '강릉', '원주', '춘천']
-        
-    if b_norm in known_branches:
+    # Use cached branch list to avoid redundant file I/O
+    if b_norm in get_known_branches():
         return b_norm + '지사'
     return b_norm
 
@@ -94,8 +105,8 @@ CITY_FALLBACK_MAP = {
 
 def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path_or_obj: Any) -> Tuple[pd.DataFrame, List[Dict], Optional[str]]:
     """
-    Common logic to process district file, match addresses, and merge with target_df.
-    Updated for precise (City, Gu, Dong) matching.
+    High-Performance Vectorized Matching Engine. 
+    Reduces complexity from O(N*M) to O(N+M) using Pandas vectorized operations.
     """
     # 1. Load District File
     try:
@@ -111,208 +122,134 @@ def _process_and_merge_district_data(target_df: pd.DataFrame, district_file_path
     except Exception as e:
         return target_df, [], f"Error reading District file: {e}"
 
-    # 2. Normalize District Data with Robust Column Mapping
+    # 2. Normalize District Data (Vectorized)
     region_cols = ['주소시', '주소군구', '주소동']
     has_regional_cols = all(c in df_district.columns for c in region_cols)
     
-    mapping_dict = {}
-    if has_regional_cols:
-        # Build strict mapping dictionary from regional columns
-        for _, r in df_district.iterrows():
-            city = normalize_str(r['주소시'])
-            gu = normalize_str(r['주소군구'])
-            dong = normalize_str(r['주소동'])
-            if city and gu and dong:
-                key = (city, gu, dong)
-                mapping_dict[key] = {
-                    '관리지사': normalize_str(r.get('관리지사', '미지정')),
-                    'SP담당': normalize_str(r.get('SP담당', '미지정'))
-                }
-    else:
-        # Fallback to column searching if exact columns missing
-        addr_col = next((c for c in df_district.columns if any(p in c for p in ['설치주소', '도로명주소', '소재지주소', '주소'])), None)
-        if addr_col:
-            df_district['full_address_norm'] = df_district[addr_col].astype(str).apply(normalize_address)
-            # Create a simplified mapping if possible, though exact match is preferred by USER
-            pass
+    if not has_regional_cols:
+        return target_df, [], "District file missing required regional columns (주소시, 주소군구, 주소동)."
 
-    # 3. Apply Mapping to Target Data (Exact Match on Address Parts)
-    results = []
-    for i in range(len(target_df)):
-        addr_str = str(target_df.iloc[i].get('소재지전체주소', '')).strip()
-        addr_parts = addr_str.split()
-        matched_info = None
-
-        if mapping_dict and len(addr_parts) >= 2:
-            # [DEEP VALIDATION] Sliding Window Approach
-            # Check all possible (City, Gu, Dong) combinations within the first 6 words.
-            # This handles addresses like "Gyeonggi-do Goyang-si Ilsandong-gu Janghang-dong"
-            # combinations: (Gyeonggi, Goyang, Ilsandong), (Goyang, Ilsandong, Janghang), etc.
+    # Standardize District Columns
+    dist_map = df_district[region_cols + ['관리지사', 'SP담당']].copy()
+    for col in region_cols + ['관리지사', 'SP담당']:
+        dist_map[col] = dist_map[col].apply(normalize_str)
             
-            for start in range(min(4, len(addr_parts) - 1)):
-                if matched_info: break
-                
-                c = normalize_str(addr_parts[start])
-                
-                # Case 1: Triple check (C, G, D) with combined parts (Si + Gu)
-                if len(addr_parts) >= start + 3:
-                    g = normalize_str(addr_parts[start+1])
-                    d = normalize_str(addr_parts[start+2])
-                    
-                    # Try direct (C, G, D)
-                    keys_to_try = [(c, g, d)]
-                    
-                    # Try combined (C, G1+G2, D) - handles "Goyang-si Ilsandong-gu"
-                    if len(addr_parts) >= start + 4:
-                        g_combined = normalize_str(addr_parts[start+1] + " " + addr_parts[start+2])
-                        d_next = normalize_str(addr_parts[start+3])
-                        keys_to_try.append((c, g_combined, d_next))
-                    
-                    for k_try in keys_to_try:
-                        if k_try in mapping_dict:
-                            matched_info = mapping_dict[k_try]
-                            break
-                    if matched_info: break
-                    
-                    # Case 2: Base Dong Match (on any of the above keys)
-                    for k_try in keys_to_try:
-                        tc, tg, td = k_try
-                        td_str = str(td)
-                        td_base = re.sub(r'\d+동$', '동', td_str) if td_str.endswith('동') else td_str
-                        for (mc, mg, md), info in mapping_dict.items():
-                            if mc == tc and mg == tg:
-                                md_str = str(md)
-                                md_base = re.sub(r'\d+동$', '동', md_str) if md_str.endswith('동') else md_str
-                                if md_base == td_base:
-                                    matched_info = info
-                                    break
-                        if matched_info: break
-                    if matched_info: break
+    # Drop duplicates to ensure unique mapping
+    dist_map = dist_map.drop_duplicates(subset=region_cols)
 
-                    # Case 4: Wildcard/Masked Match (e.g. "Seongsu-dong*ga" -> "Seongsu-dong1ga")
-                    for k_try in keys_to_try:
-                        tc, tg, td = k_try
-                        td_str = str(td)
-                        if '*' in td_str:
-                            clean_td = td_str.split('*')[0]
-                            if len(clean_td) >= 2: # At least 2 chars for safety
-                                for (mc, mg, md), info in mapping_dict.items():
-                                    if mc == tc and mg == tg and str(md).startswith(clean_td):
-                                        matched_info = info
-                                        break
-                        if matched_info: break
-                    if matched_info: break
-
-                # Case 3: Double check (G, D) if unique in dictionary for this City
-                # Helpful for skipping intermediary "Si" or "Gu" segments.
-                if not matched_info and len(addr_parts) >= start + 2:
-                    g2 = normalize_str(addr_parts[start+1])
-                    d2 = normalize_str(addr_parts[start+2]) if len(addr_parts) >= start + 3 else ""
-                    # If we find a Gu/Dong pair that uniquely maps in this city
-                    possible_matches = [info for (mc, mg, md), info in mapping_dict.items() if mc == c and (mg == g2 or md == g2)]
-                    if len(possible_matches) == 1:
-                        matched_info = possible_matches[0]
-                        break
-        # [FEATURE] Case 5: Road Name Address Fallback (도로명주소 활용)
-        # If still unassigned, try extracting Dong from parentheses in '도로명전체주소'
-        if not matched_info:
-            road_addr = str(target_df.iloc[i].get('도로명전체주소', '')).strip()
-            if road_addr and road_addr != 'nan':
-                # Extract content in brackets: "성수동1가" from "... (성수동1가)"
-                # Handle cases like (성수동, 래미안) by splitting at comma
-                match = re.search(r'\(([^)]+)\)$', road_addr)
-                if match:
-                    bracket_content = match.group(1)
-                    dong_candidates = [d.strip() for d in bracket_content.split(',')]
-                    
-                    # Try matching with extracted dong names
-                    for d_cand in dong_candidates:
-                        # Extract City/Gu from road address start
-                        road_parts = road_addr.split()
-                        if len(road_parts) >= 2:
-                            c_road = normalize_str(road_parts[0])
-                            g_road = normalize_str(road_parts[1])
-                            d_road = normalize_str(d_cand)
-                            
-                            key_road = (c_road, g_road, d_road)
-                            if key_road in mapping_dict:
-                                matched_info = mapping_dict[key_road]
-                                break
-                                
-                            # Try base-dong match for wildcard support in road names
-                            d_road_base = re.sub(r'\d+동$', '동', d_road) if d_road.endswith('동') else d_road
-                            for (mc, mg, md), info in mapping_dict.items():
-                                if mc == c_road and mg == g_road:
-                                    md_base = re.sub(r'\d+동$', '동', str(md)) if str(md).endswith('동') else str(md)
-                                    if md_base == d_road_base:
-                                        matched_info = info
-                                        break
-                            if matched_info: break
-
-        # [FEATURE] City-level Fallback Match (e.g., Paju -> Goyang Branch)
-        # This triggers if strict (City, Gu, Dong) match failed.
-        if not matched_info and len(addr_parts) >= 2:
-            city_name = normalize_str(addr_parts[0])
-            # Skip Metropolitan/Province name and check the secondary city name
-            if city_name in ['서울', '경기', '인천', '강원', '충청', '전라', '경상', '제주']:
-                city_name = normalize_str(addr_parts[1])
-            
-            if city_name in CITY_FALLBACK_MAP:
-                fallback_info = CITY_FALLBACK_MAP[city_name]
-                if isinstance(fallback_info, dict):
-                    matched_info = {
-                        '관리지사': fallback_info.get('branch', '미지정'),
-                        'SP담당': fallback_info.get('mgr', '미지정')
-                    }
-                else:
-                    matched_info = {
-                        '관리지사': fallback_info,
-                        'SP담당': '미지정'
-                    }
-                    
-        # [FEATURE] Default non-matching records to '미지정'
-        if matched_info:
-            results.append(matched_info)
-        else:
-            results.append({'관리지사': '미지정', 'SP담당': '미지정'})
-
-    results_df = pd.DataFrame(results, index=target_df.index)
+    # 3. Vectorized Pre-processing of Target Data
+    addr_ser = target_df['소재지전체주소'].fillna('').astype(str).str.strip()
+    addr_split = addr_ser.str.split(n=3)
     
-    # Clean up existing mapping columns if present before merging
+    target_df['_tmp_city'] = addr_split.str[0].apply(normalize_str)
+    target_df['_tmp_gu'] = addr_split.str[1].apply(normalize_str)
+    target_df['_tmp_dong'] = addr_split.str[2].apply(normalize_str)
+
+    # 4. [PHASE 1] Strict Vectorized Merge (City, Gu, Dong)
     for col in ['관리지사', 'SP담당']:
         if col in target_df.columns:
             target_df = target_df.drop(columns=[col])
             
-    target_df = pd.concat([target_df, results_df], axis=1)
-    
-            
-    # [FIX] Robust User Request: Reassign all Chuncheon Branch records to Wonju (Representative: Kim Sang-tae)
-    # Using strict NFC normalization and stripping to handle potential Unicode/whitespace inconsistencies.
-    import unicodedata
-    def _robust_norm(val):
-        if pd.isna(val): return ""
-        return unicodedata.normalize('NFC', str(val)).strip()
+    target_df = target_df.merge(
+        dist_map, 
+        left_on=['_tmp_city', '_tmp_gu', '_tmp_dong'], 
+        right_on=['주소시', '주소군구', '주소동'], 
+        how='left'
+    ).drop(columns=['주소시', '주소군구', '주소동'])
+
+    # 5. [PHASE 2] Road Address Fallback (Vectorized)
+    unmatched_mask = target_df['관리지사'].isna()
+    if unmatched_mask.any():
+        road_addr = target_df.loc[unmatched_mask, '도로명전체주소'].fillna('').astype(str)
+        extracted_dong = road_addr.str.extract(r'\(([^,)]+)').iloc[:, 0].apply(normalize_str)
+        road_split = road_addr.str.split(n=2)
+        extracted_city = road_split.str[0].apply(normalize_str)
+        extracted_gu = road_split.str[1].apply(normalize_str)
         
-    c_mask = target_df['관리지사'].apply(_robust_norm) == '춘천지사'
-    if c_mask.any():
-        target_df.loc[c_mask, '관리지사'] = '원주지사'
-        target_df.loc[c_mask, 'SP담당'] = '김상태'
+        fallback_df = pd.DataFrame({
+            '__idx': target_df.index[unmatched_mask],
+            'f_city': extracted_city,
+            'f_gu': extracted_gu,
+            'f_dong': extracted_dong
+        })
+        
+        fallback_results = fallback_df.merge(
+            dist_map,
+            left_on=['f_city', 'f_gu', 'f_dong'],
+            right_on=['주소시', '주소군구', '주소동'],
+            how='inner'
+        )
+        
+        if not fallback_results.empty:
+            target_df.loc[fallback_results['__idx'], '관리지사'] = fallback_results['관리지사'].values
+            target_df.loc[fallback_results['__idx'], 'SP담당'] = fallback_results['SP담당'].values
+
+    # 6. [PHASE 3] Wildcard/Base Dong Merge
+    unmatched_mask = target_df['관리지사'].isna()
+    if unmatched_mask.any():
+        def strip_dong_num(s):
+            if not isinstance(s, str): return s
+            return re.sub(r'\d+동$', '동', s) if s.endswith('동') else s
             
-    # 4. Generate Manager Info for statistics (Recalculated after override)
-    mgr_info = []
-    if '관리지사' in target_df.columns and 'SP담당' in target_df.columns:
-        for branch in target_df['관리지사'].unique():
-            if branch == '미지정': continue
-            branch_df = target_df[target_df['관리지사'] == branch]
-            for mgr in branch_df['SP담당'].unique():
-                if mgr == '미지정': continue
-                mgr_info.append({
-                    'branch': branch, 
-                    'name': mgr, 
-                    'count': len(branch_df[branch_df['SP담당'] == mgr])
-                })
+        target_df.loc[unmatched_mask, '_tmp_dong_base'] = target_df.loc[unmatched_mask, '_tmp_dong'].apply(strip_dong_num)
+        dist_map['_tmp_dong_base'] = dist_map['주소동'].apply(strip_dong_num)
+        
+        base_map = dist_map.drop_duplicates(subset=['주소시', '주소군구', '_tmp_dong_base'])
+        
+        fallback_df = target_df.loc[unmatched_mask, ['_tmp_city', '_tmp_gu', '_tmp_dong_base']].copy()
+        fallback_df['__idx'] = fallback_df.index
+        
+        base_results = fallback_df.merge(
+            base_map,
+            left_on=['_tmp_city', '_tmp_gu', '_tmp_dong_base'],
+            right_on=['주소시', '주소군구', '_tmp_dong_base'],
+            how='inner'
+        )
+        
+        if not base_results.empty:
+            target_df.loc[base_results['__idx'], '관리지사'] = base_results['관리지사'].values
+            target_df.loc[base_results['__idx'], 'SP담당'] = base_results['SP담당'].values
+
+    # 7. [PHASE 4] City-level Fallback (Vectorized)
+    unmatched_mask = target_df['관리지사'].isna()
+    if unmatched_mask.any():
+        prov_mask = target_df['_tmp_city'].isin(['서울', '경기', '인천', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'])
+        fallback_city_keys = target_df['_tmp_city'].copy()
+        fallback_city_keys.loc[prov_mask] = target_df.loc[prov_mask, '_tmp_gu']
+        
+        # Apply the fallback mapping dictionary
+        city_fallbacks = fallback_city_keys.loc[unmatched_mask].map(lambda x: CITY_FALLBACK_MAP.get(x, None))
+        
+        def process_fallback_val(val, field):
+            if not val: return '미지정'
+            if isinstance(val, dict): return val.get(field, '미지정')
+            return val if field == '관리지사' else '미지정'
+
+        target_df.loc[unmatched_mask, '관리지사'] = city_fallbacks.apply(lambda x: process_fallback_val(x, 'branch'))
+        target_df.loc[unmatched_mask, 'SP담당'] = city_fallbacks.apply(lambda x: process_fallback_val(x, 'mgr'))
+
+    # 8. [FINAL OVERRIDE] Chuncheon to Wonju
+    c_mask = target_df['관리지사'].astype(str).str.strip() == '춘천지사'
+    target_df.loc[c_mask, '관리지사'] = '원주지사'
+    target_df.loc[c_mask, 'SP담당'] = '김상태'
+
+    # Fill NaNs and Cleanup
+    target_df['관리지사'] = target_df['관리지사'].fillna('미지정')
+    target_df['SP담당'] = target_df['SP담당'].fillna('미지정')
+    
+    cols_to_drop = [c for c in target_df.columns if c.startswith('_tmp_')]
+    target_df = target_df.drop(columns=cols_to_drop)
+
+    # 9. Generate Stats
+    valid_mgrs = target_df[target_df['관리지사'] != '미지정']
+    if not valid_mgrs.empty:
+        mgr_info_df = valid_mgrs.groupby(['관리지사', 'SP담당']).size().reset_index(name='count')
+        mgr_info = mgr_info_df.rename(columns={'관리지사': 'branch', 'SP담당': 'name'}).to_dict('records')
+    else:
+        mgr_info = []
             
     return target_df, mgr_info, None
+
 
 @st.cache_data(show_spinner=False)
 def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, salt: str = ""):

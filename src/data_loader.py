@@ -16,7 +16,7 @@ import json
 import re
 
 # Import from local utils
-from src.utils import normalize_address, parse_coordinates_row, get_best_match, calculate_area, transformer, HAS_PYPROJ
+from src.utils import normalize_address, parse_coordinates_row, get_best_match, calculate_area, transformer, HAS_PYPROJ, safe_normalize
 
 # [SPEED OPTIMIZATION] Global cache for branch configuration to prevent redundant file I/O
 _KNOWN_BRANCHES_CACHE = None
@@ -39,8 +39,8 @@ def get_known_branches() -> List[str]:
 
 def normalize_str(s: Any) -> Optional[str]:
     if pd.isna(s): return s
-    # [STRICT] Enforce NFC and standardized naming
-    b_norm = unicodedata.normalize('NFC', str(s)).strip()
+    # [STRICT] Enforce NFC and standardized naming using centralized util
+    b_norm = safe_normalize(s)
     
     # Standardize Seoul/Metropolitan names
     replacements = {
@@ -331,39 +331,52 @@ def load_and_process_data(zip_file_path: str, district_file_path_or_obj: Any, sa
                     if any('주소' in str(c) for c in df.columns): break
                 except: continue
             if df is None or df.empty: continue
+            
+            # [ROBUSTNESS] Map column names to standard keys
+            col_map = {
+                '인허가일자': next((c for c in df.columns if '인허가일자' in c or 'LICENS_DATE' in c), '인허가일자'),
+                '영업상태명': next((c for c in df.columns if '영업상태명' in c or 'TRD_STATE_NM' in c or ('상태' in c and '코드' not in c)), '영업상태명'),
+                '폐업일자': next((c for c in df.columns if '폐업일자' in c or 'CLS_DATE' in c), '폐업일자'),
+                '사업장명': next((c for c in df.columns if '사업장명' in c or 'BPLC_NM' in c), '사업장명'),
+                '소재지전체주소': next((c for c in df.columns if '소재지전체주소' in c or 'SITE_WHL_ADDR' in c), '소재지전체주소'),
+                '도로명전체주소': next((c for c in df.columns if '도로명전체주소' in c or 'RDN_WHL_ADDR' in c), '도로명전체주소')
+            }
+            
             df_filtered = df.copy()
-            if '인허가일자' in df.columns:
-                # [FIX] Broaden search to '상태' to catch '영업상태', '상태명' etc.
-                status_cols = [c for c in df.columns if '상태' in c and '코드' not in c]
-                if not status_cols: # Fallback if nothing found
-                    status_cols = [c for c in df.columns if '상태' in c]
-                
-                if status_cols:
-                    s_col = status_cols[0]
-                    # [FIX] Standardize year parsing for both license and closure
-                    df['parsed_open_year'] = pd.to_numeric(df['인허가일자'].fillna('').astype(str).str.replace(r'[^0-9]', '', regex=True).str[:4], errors='coerce').fillna(0).astype(int)
-                    
-                    p_col = next((c for c in df.columns if '폐업일자' in c), None)
-                    df['parsed_close_year'] = pd.to_numeric(df[p_col].fillna('').astype(str).str.replace(r'[^0-9]', '', regex=True).str[:4], errors='coerce').fillna(0).astype(int) if p_col else 0
+            # Ensure standard column names for processing internal logic
+            for std_col, orig_col in col_map.items():
+                if orig_col in df.columns and std_col != orig_col:
+                    df_filtered[std_col] = df[orig_col]
 
-                    is_active = df[s_col].str.contains('영업|정상', na=False)
-                    is_closed = df[s_col].str.contains('폐업|정지', na=False)
+            if '인허가일자' in df_filtered.columns:
+                s_col = '영업상태명'
+                if s_col in df_filtered.columns:
+                    # [FIX] Standardize year parsing
+                    df_filtered['parsed_open_dt'] = pd.to_datetime(df_filtered['인허가일자'], errors='coerce')
+                    df_filtered['parsed_open_year'] = df_filtered['parsed_open_dt'].dt.year.fillna(0).astype(int)
                     
-                    # [CRITICAL FIX] Allow recently opened ACTIVE businesses OR any CLOSED businesses with recent activity
-                    # Active: Must be opened 2024+
-                    # Closed: Can be old (opened before 2024) but MUST have closed/opened recently (2024+)
-                    is_recent_open = (df['parsed_open_year'] >= 2024)
-                    is_recent_close = (df['parsed_close_year'] >= 2024)
+                    p_col = '폐업일자'
+                    if p_col in df_filtered.columns:
+                        df_filtered['parsed_close_dt'] = pd.to_datetime(df_filtered[p_col], errors='coerce')
+                        df_filtered['parsed_close_year'] = df_filtered['parsed_close_dt'].dt.year.fillna(0).astype(int)
+                    else:
+                        df_filtered['parsed_close_dt'] = pd.NaT
+                        df_filtered['parsed_close_year'] = 0
+
+                    is_active = df_filtered[s_col].str.contains('영업|정상', na=False)
+                    is_closed = df_filtered[s_col].str.contains('폐업|정지', na=False)
+                    
+                    is_recent_open = (df_filtered['parsed_open_year'] >= 2024)
+                    is_recent_close = (df_filtered['parsed_close_year'] >= 2024)
                     
                     is_valid = (is_active & is_recent_open) | (is_closed & (is_recent_open | is_recent_close))
+                    df_filtered = df_filtered[is_valid].copy()
+
+                    # [NEW] Calculate '최종수정시점' (Last Modified)
+                    df_filtered['최종수정시점'] = df_filtered[['parsed_open_dt', 'parsed_close_dt']].max(axis=1)
                     
-                    # [FALLBACK] If no closure date is available but it's marked as CLOSED, 
-                    # and it's in a recent dataset, we might still want it. 
-                    # But for now, strict recentness (2024+) is better to prevent data bloat.
-                    
-                    df_filtered = df[is_valid].copy()
-                    # [FIX] Standardize status column name for UI/Reporting compatibility
-                    df_filtered['영업상태명'] = df_filtered[s_col]
+                    # Cleanup temp columns
+                    df_filtered = df_filtered.drop(columns=['parsed_open_dt', 'parsed_close_dt', 'parsed_open_year', 'parsed_close_year'])
 
             if not df_filtered.empty:
                 df_filtered = generate_vectorized_record_key(df_filtered)

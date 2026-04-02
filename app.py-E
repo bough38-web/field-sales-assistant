@@ -18,16 +18,23 @@ from datetime import datetime, timedelta
 
 # Import modularized components
 from src import utils
-from src.utils import load_system_config, save_system_config, embed_local_images, safe_normalize, mask_name, get_manager_password
+from src.utils import load_system_config, save_system_config, embed_local_images
 from src import data_loader
 from src import map_visualizer
 from src import report_generator
 from src import activity_logger  # Activity logging and status tracking
 from src import usage_logger  # Usage tracking for admin monitoring
 from src import voc_manager  # VOC / Request Manager
-from src import ui_components  # [NEW] UI Components for CSS/JS
 
 # [SYSTEM] Configuration & Theme (MUST BE FIRST)
+def safe_normalize(x):
+    """Safely normalize strings to NFC, handling NaN, None, and empty values."""
+    if pd.isna(x) or x is None:
+        return ""
+    s = str(x).strip()
+    if not s or s.lower() in ['nan', 'none']:
+        return ""
+    return unicodedata.normalize('NFC', s)
 st.set_page_config(
     page_title="영업기회 관리 시스템",
     page_icon="💼",
@@ -54,8 +61,9 @@ if 'initial_sync_done' not in st.session_state:
     st.session_state.initial_sync_done = True
 from src.ai_scoring import calculate_ai_scores # [NEW] Expert Feat 1: AI Scoring
 
+# --- Global Constants & Normalization ---
 GLOBAL_BRANCH_ORDER = ['서대문지사', '중앙지사', '강북지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사', '춘천지사', '미지정']
-GLOBAL_BRANCH_ORDER = [safe_normalize(b) for b in GLOBAL_BRANCH_ORDER]
+GLOBAL_BRANCH_ORDER = [unicodedata.normalize('NFC', b) for b in GLOBAL_BRANCH_ORDER]
 
 # [NEW] Phase 5: Initial Sync from Google Sheets (Persistent Data Recovery)
 # Only runs once per session to populate local JSON storage from the cloud
@@ -94,7 +102,147 @@ if is_maintenance and st.session_state.user_role != 'admin':
     st.stop()
 
 # [DESIGN] Inject Custom CSS for Modern UI
-ui_components.inject_custom_css()
+def inject_custom_css():
+    st.markdown("""
+    <style>
+        div[data-testid="stExpander"] details {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .dashboard-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 10px;
+            text-align: center; /* [FIX] Center Alignment */
+        }
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a237e; /* Deep Blue */
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column; /* [FIX] Vertical Stack for Centering */
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #333;
+            margin: 4px 0;
+        }
+        
+        .stat-sub {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            gap: 8px;
+            justify-content: center; /* [FIX] Center Alignment */
+        }
+        
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .dot-green { background-color: #4CAF50; }
+        .dot-red { background-color: #F44336; }
+        .dot-gray { background-color: #9E9E9E; }
+        
+        /* Button Tweaks */
+        .stButton button {
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .stButton button:hover {
+            transform: translateY(-1px);
+        }
+        
+        /* Active Branch Highlight */
+        .branch-active {
+            border: 2px solid #3F51B5 !important;
+            background-color: #E8EAF6 !important;
+        }
+        
+        /* [FIX] Feature Box Vertical Centering */
+        .feature-box-centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+            border: 1px solid rgba(49, 51, 63, 0.2);
+            border-radius: 8px;
+            background-color: white;
+            color: #31333F;
+            font-weight: 800;
+            font-size: 0.85rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* Mobile Grid Card Styles */
+        .card-tile {
+            background-color: white;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #3F51B5;
+        }
+        .card-title-grid {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #222;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-meta-grid {
+            font-size: 0.75rem;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 5px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 4px;
+        }
+        .status-open { background-color: #4CAF50; }
+        .status-closed { background-color: #F44336; }
+    </style>
+    """, unsafe_allow_html=True)
+
+inject_custom_css()
 
 # [SYSTEM] Master Reset Handler (Factory Reset for Session/Cache)
 if "reset" in st.query_params:
@@ -358,13 +506,77 @@ BRANCH_PASSWORDS = {
 
 # For managers, use a simple pattern: first 3 chars of name + 1234
 # Example: 김철수 -> kim1234, 이영희 -> lee1234
-# [ROBUSTNESS] Moved get_manager_password to src.utils
-# [ROBUSTNESS] Moved mask_name to src.utils
+def get_manager_password(manager_name):
+    """
+    Generate simple password for manager.
+    Uses first 3 characters (in lowercase romanization approximation) + 1234
+    """
+    # Simple Korean to English first syllable mapping
+    first_syllable_map = {
+        '김': 'kim', '이': 'lee', '박': 'park', '최': 'choi', '정': 'jung',
+        '강': 'kang', '조': 'jo', '윤': 'yoon', '장': 'jang', '임': 'lim',
+        '한': 'han', '오': 'oh', '서': 'seo', '신': 'shin', '권': 'kwon',
+        '황': 'hwang', '안': 'ahn', '송': 'song', '류': 'ryu', '홍': 'hong',
+        '전': 'jeon', '고': 'go', '문': 'moon', '양': 'yang', '손': 'son',
+        '배': 'bae', '백': 'baek', '허': 'heo', '남': 'nam', '심': 'shim'
+    }
+    
+    if manager_name and len(manager_name) > 0:
+        first_char = manager_name[0]
+        prefix = first_syllable_map.get(first_char, 'user')
+        return f"{prefix}1234"
+    return "user1234"
 
 def inject_button_color_script():
-    ui_components.inject_button_color_script()
+    js = """
+    <script>
+        function applyStatusColors() {
+            try {
+                const buttons = window.parent.document.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    const txt = btn.innerText.trim(); // [FIX] Trim whitespace
+                    if (txt === '영업') {
+                        btn.style.backgroundColor = '#AED581 !important';
+                        btn.style.color = '#1B5E20 !important';
+                        btn.style.borderColor = '#AED581 !important';
+                    } else if (txt === '폐업') {
+                        btn.style.backgroundColor = '#EF9A9A !important';
+                        btn.style.color = '#B71C1C !important';
+                        btn.style.borderColor = '#EF9A9A !important';
+                    }
+                });
+            } catch(e) {}
+        }
+        
+        // Initial Apply
+        applyStatusColors();
+        
+        // Use a global variable on parent to track observer and prevent duplicates
+        if (window.parent.statusButtonObserver) {
+            window.parent.statusButtonObserver.disconnect();
+        }
+        
+        window.parent.statusButtonObserver = new MutationObserver(() => {
+            applyStatusColors();
+        });
+        
+        window.parent.statusButtonObserver.observe(window.parent.document.body, { childList: true, subtree: true });
+    </script>
+    """
+    components.html(js, height=0, width=0)
 
-# [ROBUSTNESS] Moved mask_name to src.utils
+def mask_name(name):
+    """
+    Masks Korean names: 홍길동 -> 홍**, 이철 -> 이*
+    """
+    if not name or pd.isna(name):
+        return name
+    name_str = str(name)
+    if len(name_str) <= 1:
+        return name_str
+    if len(name_str) == 2:
+        return name_str[0] + "*"
+    return name_str[0] + "*" * (len(name_str) - 2) + name_str[-1]
 
 # State Update Callbacks
 def update_branch_state(name):
@@ -526,7 +738,8 @@ with st.sidebar:
     st.header("⚙️ 설정 & 데이터")
     
     # [FEATURE] Placeholder for Admin Global Chart (Populated after data load)
-    admin_chart_placeholder = st.sidebar.empty()
+    # Use a stable container instead of .empty() to prevent 'removeChild' JS errors
+    admin_chart_placeholder = st.sidebar.container()
     
     st.sidebar.markdown("---")
 
@@ -1094,7 +1307,7 @@ if raw_df is not None:
         # [STRICT] Enforce '지사' suffix at data level
         def standardize_branch(b):
             if not b or b in ['미지정', '전체', 'None', 'nan']: return '미지정'
-            b_norm = safe_normalize(b)
+            b_norm = unicodedata.normalize('NFC', str(b)).strip()
             # If it's a known branch name without '지사', add it
             known_branches = ['서대문', '중앙', '강북', '고양', '의정부', '남양주', '강릉', '원주', '춘천']
             if b_norm in known_branches:
@@ -1102,57 +1315,10 @@ if raw_df is not None:
             return b_norm
 
         raw_df['관리지사'] = raw_df['관리지사'].apply(standardize_branch)
-
-    # [GLOBAL INITIALIZATION] Bulk Load activity status for all views (Map, Sidebar, Grid)
-    if raw_df is not None:
-        try:
-            # 1. Initialize record_key if missing
-            if 'record_key' not in raw_df.columns:
-                temp_names = raw_df['사업장명'].fillna("").astype(str)
-                temp_addrs = raw_df['소재지전체주소'].fillna("").astype(str)
-                raw_df['record_key'] = [utils.generate_record_key(n, a) for n, a in zip(temp_names, temp_addrs)]
-            
-            # 2. Load latest statuses
-            status_data = activity_logger.load_json_file(activity_logger.ACTIVITY_STATUS_FILE)
-            if not isinstance(status_data, dict): status_data = {}
-            
-            # 3. Create mapping and apply to raw_df
-            status_map = {k: v.get('활동진행상태', '') for k, v in status_data.items() if isinstance(v, dict)}
-            date_map = {k: v.get('변경일시', '') for k, v in status_data.items() if isinstance(v, dict)}
-            
-            raw_df['활동진행상태'] = raw_df['record_key'].map(status_map).fillna('').astype(str)
-            # Normalize status (Emojis)
-            raw_df['활동진행상태'] = raw_df['활동진행상태'].apply(activity_logger.normalize_status)
-            
-            # [NEW] Merge Activity Date into '최종수정시점'
-            # If '최종수정시점' missing, initialize from License/Closure (already done in data_loader)
-            if '최종수정시점' not in raw_df.columns:
-                # Fallback if loader didn't do it
-                d_open = pd.to_datetime(raw_df['인허가일자'], errors='coerce') if '인허가일자' in raw_df.columns else pd.Series(pd.NaT, index=raw_df.index)
-                d_close = pd.to_datetime(raw_df['폐업일자'], errors='coerce') if '폐업일자' in raw_df.columns else pd.Series(pd.NaT, index=raw_df.index)
-                raw_df['최종수정시점'] = pd.concat([d_open, d_close], axis=1).max(axis=1)
-            else:
-                 # Ensure it is datetime
-                 raw_df['최종수정시점'] = pd.to_datetime(raw_df['최종수정시점'], errors='coerce')
-
-            # Now update with Activity Date (Priority)
-            activity_dates = pd.to_datetime(raw_df['record_key'].map(date_map), errors='coerce')
-            raw_df['최종수정시점'] = pd.concat([raw_df['최종수정시점'], activity_dates], axis=1).max(axis=1)
-            
-            # Final Fallback to current time if still NaT (extremely old data without dates)
-            raw_df['최종수정시점'] = raw_df['최종수정시점'].fillna(utils.get_now_kst())
-            
-        except Exception as e:
-            # Fallback to empty column if everything fails
-            raw_df['활동진행상태'] = ''
-            if '최종수정시점' not in raw_df.columns:
-                raw_df['최종수정시점'] = utils.get_now_kst()
-
-        raw_df['관리지사'] = raw_df['관리지사'].apply(standardize_branch)
     else:
         raw_df['관리지사'] = '미지정'
 
-    # [FIX] Global NFC Normalization (Safe)
+    # [FIX] Global NFC Normalization 
     for col in ['관리지사', 'SP담당', '사업장명', '소재지전체주소', '영업상태명', '업태구분명']:
         if col in raw_df.columns:
             raw_df[col] = raw_df[col].apply(safe_normalize)
@@ -1207,7 +1373,7 @@ if raw_df is not None:
         GLOBAL_MAX_DATE = max_allowed_date
 
     if raw_df is not None and not raw_df.empty:
-        current_branches_raw = [safe_normalize(b) for b in raw_df['관리지사'].unique() if pd.notna(b)]
+        current_branches_raw = [unicodedata.normalize('NFC', str(b)) for b in raw_df['관리지사'].unique() if pd.notna(b)]
         
         global_branch_opts = [b for b in GLOBAL_BRANCH_ORDER if b in current_branches_raw]
         others = [b for b in current_branches_raw if b not in GLOBAL_BRANCH_ORDER]
@@ -1220,7 +1386,7 @@ if raw_df is not None:
     if st.session_state.get('user_role') == 'admin':
          # [FIX] Removed locals() check that might fail in Streamlit runtime
          try:
-             target_container = admin_chart_placeholder.container()
+             target_container = admin_chart_placeholder
          except NameError:
              # Fallback: Render at bottom but visible
              target_container = st.sidebar
@@ -2743,7 +2909,12 @@ if raw_df is not None:
     if st.session_state.user_role == 'admin':
         st.sidebar.caption(f"🔍 전체 데이터: {len(base_df)}건 (미지정 필터 후)")
     
-    # [OPTIMIZATION] '최종수정시점' is now pre-calculated and merged with activity dates in global init
+    # [FEATURE] Add 최종수정시점 column (Last Modified Date)
+    # Use the most recent date from 인허가일자 or 폐업일자, or current date if both are missing
+    # [OPTIMIZATION] '최종수정시점' is now pre-calculated in data_loader using vectorized operations
+    # We no longer need the slow row-by-row apply here.
+    if '최종수정시점' not in base_df.columns:
+        base_df['최종수정시점'] = utils.get_now_kst()
 
     # [SECURITY] Hard Filter for Manager Role (Main Data)
     # [FIX] Also include records where the user has logged activity (e.g. Recommended Course visits)
@@ -2789,7 +2960,7 @@ if raw_df is not None:
     if st.session_state.user_role == 'branch':
         if st.session_state.user_branch:
              # Normalize just in case
-             u_branch = safe_normalize(st.session_state.user_branch)
+             u_branch = unicodedata.normalize('NFC', st.session_state.user_branch)
              
              mask_assigned = (base_df['관리지사'] == u_branch)
              
@@ -2825,7 +2996,7 @@ if raw_df is not None:
         
         if current_branch_filter != "전체":
             # [FIX] Normalize comparison for Mac/Excel compatibility
-            norm_sel_branch = safe_normalize(current_branch_filter)
+            norm_sel_branch = unicodedata.normalize('NFC', current_branch_filter)
             base_df = base_df[base_df['관리지사'] == norm_sel_branch]
             
             # Debug log for admin
@@ -2835,7 +3006,7 @@ if raw_df is not None:
         if selected_area_code:
             base_df = base_df[base_df['영업구역 수정'] == selected_area_code]
         elif sel_manager != "전체": 
-            norm_sel_manager = safe_normalize(sel_manager)
+            norm_sel_manager = unicodedata.normalize('NFC', sel_manager)
             base_df = base_df[base_df['SP담당'] == norm_sel_manager]
             
     # Common Filters (Applied to both modes)
@@ -2907,7 +3078,7 @@ if raw_df is not None:
         # Split search keywords by / or space
         import re
         # [FIX] Normalize input for Mac users (NFD -> NFC)
-        search_norm = safe_normalize(address_search)
+        search_norm = unicodedata.normalize('NFC', address_search.strip())
         keywords = re.split(r'[/\s]+', search_norm)
         keywords = [k for k in keywords if k]  # Remove empty strings
         
@@ -3032,7 +3203,7 @@ if raw_df is not None:
         else:
              target_source = base_df # Maintain security lockdown if 'All' is selected
              
-        current_branches = [safe_normalize(b) for b in target_source['관리지사'].unique() if pd.notna(b)]
+        current_branches = [unicodedata.normalize('NFC', str(b)) for b in target_source['관리지사'].unique() if pd.notna(b)]
         sorted_branches = [b for b in GLOBAL_BRANCH_ORDER if b in current_branches]
         others = [b for b in current_branches if b not in GLOBAL_BRANCH_ORDER]
         sorted_branches.extend(others)
@@ -3089,54 +3260,61 @@ if raw_df is not None:
                     raw_dashboard_branch = sel_branch
                 else:
                     raw_dashboard_branch = st.session_state.get('sb_branch', "전체")
-                sel_dashboard_branch = safe_normalize(raw_dashboard_branch)
+                sel_dashboard_branch = unicodedata.normalize('NFC', raw_dashboard_branch)
 
-                for i in range(0, len(sorted_branches), GRID_COLS):
-                    cols = st.columns(GRID_COLS)
-                    for j in range(GRID_COLS):
-                        if i + j >= len(sorted_branches):
-                            break
+                # [STABILITY FIX] Wrap in container and use row keys to prevent 'removeChild' error
+                with st.container(key="branch_grid_outer"):
+                    for i in range(0, len(sorted_branches), GRID_COLS):
+                        # [FIX] Use key for st.columns to stabilize virtual DOM
+                        try:
+                            cols = st.columns(GRID_COLS, key=f"br_row_{i}")
+                        except TypeError:
+                            cols = st.columns(GRID_COLS)
                             
-                        b_name = sorted_branches[i + j]
-                        with cols[j]:
-                            # 1. Calculate Stats 
-                            # [FIX] Force all roles (including Admin) to use base_df for Branch Cards
-                            # This ensures that the cards reflect the Global Date Range filter.
-                            b_source = base_df
-                            b_df = b_source[b_source['관리지사'].astype(str).apply(safe_normalize) == b_name]
-                            b_total = len(b_df)
-                            count_active = len(b_df[b_df['영업상태명'].str.contains('영업|정상', na=False)])
-                            count_closed = len(b_df[b_df['영업상태명'].str.contains('폐업', na=False)])
+                        for j in range(GRID_COLS):
+                            if i + j >= len(sorted_branches):
+                                break
                             
-                            # 2. Determine Style
-                            is_selected = (b_name == sel_dashboard_branch)
-                            card_class = "dashboard-card branch-active" if is_selected else "dashboard-card"
-                            
-                            # 3. Render Card HTML
-                            disp_name = b_name
-                            card_html = f"""
-                            <div class="{card_class}">
-                                <div class="card-header">
-                                    {disp_name}
-                                    <span style="font-size:1.2rem; color:#333;">{b_total}</span>
+                            b_name = sorted_branches[i + j]
+                            with cols[j]:
+                                # 1. Calculate Stats 
+                                # [FIX] Force all roles (including Admin) to use base_df for Branch Cards
+                                # This ensures that the cards reflect the Global Date Range filter.
+                                b_source = base_df
+                                b_df = b_source[b_source['관리지사'].apply(safe_normalize) == b_name]
+                                b_total = len(b_df)
+                                count_active = len(b_df[b_df['영업상태명'].str.contains('영업|정상', na=False)])
+                                count_closed = len(b_df[b_df['영업상태명'].str.contains('폐업', na=False)])
+                                
+                                # 2. Determine Style
+                                is_selected = (b_name == sel_dashboard_branch)
+                                card_class = "dashboard-card branch-active" if is_selected else "dashboard-card"
+                                
+                                # 3. Render Card HTML
+                                disp_name = b_name
+                                card_html = f"""
+                                <div class="{card_class}">
+                                    <div class="card-header">
+                                        {disp_name}
+                                        <span style="font-size:1.2rem; color:#333;">{b_total}</span>
+                                    </div>
+                                    <div class="stat-sub">
+                                        <span style="color:#2E7D32; font-weight:600;"><span class="status-dot dot-green"></span>{count_active}</span>
+                                        <span style="color:#F44336; font-weight:600; margin-left:8px;"><span class="status-dot dot-red"></span>{count_closed}</span>
+                                    </div>
                                 </div>
-                                <div class="stat-sub">
-                                    <span style="color:#2E7D32; font-weight:600;"><span class="status-dot dot-green"></span>{count_active}</span>
-                                    <span style="color:#F44336; font-weight:600; margin-left:8px;"><span class="status-dot dot-red"></span>{count_closed}</span>
-                                </div>
-                            </div>
-                            """
-                            st.markdown(card_html, unsafe_allow_html=True)
-                            
-                            # 4. Interaction Buttons
-                            if is_selected:
-                                b_c1, b_c2 = st.columns(2)
-                                with b_c1:
-                                    st.button("영업", key=f"btn_act_{b_name}", on_click=update_branch_with_status, args=(b_name, '영업/정상'), use_container_width=True, type="primary")
-                                with b_c2:
-                                    st.button("폐업", key=f"btn_cls_{b_name}", on_click=update_branch_with_status, args=(b_name, '폐업'), use_container_width=True)
-                            else:
-                                st.button("👆 선택", key=f"btn_sel_{b_name}", on_click=update_branch_state, args=(b_name,), use_container_width=True)
+                                """
+                                st.markdown(card_html, unsafe_allow_html=True)
+                                
+                                # 4. Interaction Buttons
+                                if is_selected:
+                                    b_c1, b_c2 = st.columns(2)
+                                    with b_c1:
+                                        st.button("영업", key=f"btn_act_{b_name}", on_click=update_branch_with_status, args=(b_name, '영업/정상'), use_container_width=True, type="primary")
+                                    with b_c2:
+                                        st.button("폐업", key=f"btn_cls_{b_name}", on_click=update_branch_with_status, args=(b_name, '폐업'), use_container_width=True)
+                                else:
+                                    st.button("👆 선택", key=f"btn_sel_{b_name}", on_click=update_branch_state, args=(b_name,), use_container_width=True)
 
     # [FEATURE] Local AI Activity Guide (Restored & Moved)
     # Only show for Manager/Branch roles to provide personalized insight
@@ -3199,7 +3377,7 @@ if raw_df is not None:
             current_br_name = sel_dashboard_branch if sel_dashboard_branch and sel_dashboard_branch != "전체" else "전체"
         
         # [FIX] Strict Normalization for Manager Section
-        current_br_name = safe_normalize(current_br_name)
+        current_br_name = unicodedata.normalize('NFC', current_br_name)
         
         
         with st.expander(f"👤 {current_br_name} 영업담당 현황", expanded=True):
@@ -3210,7 +3388,7 @@ if raw_df is not None:
                 # This bypasses any Sidebar lag that might have filtered base_df to the wrong branch. (e.g. Gangbuk)
                 
                 # 1. Start with Raw (but respect Role!)
-                mgr_df = raw_df[raw_df['관리지사'].astype(str).apply(safe_normalize) == current_br_name].copy()
+                mgr_df = raw_df[raw_df['관리지사'].apply(safe_normalize) == current_br_name].copy()
                 
                 # [SECURITY] Re-apply Manager Filter here because we started from raw_df
                 if st.session_state.user_role == 'manager':

@@ -3,6 +3,7 @@ import re
 import unicodedata
 import os
 import json
+from typing import Any
 from sklearn.metrics.pairwise import cosine_similarity
 from difflib import SequenceMatcher
 from datetime import datetime, timedelta, timezone
@@ -14,6 +15,13 @@ def get_now_kst():
 def get_now_kst_str():
     """Returns KST time as formatted string"""
     return get_now_kst().strftime("%Y-%m-%d %H:%M:%S")
+
+def safe_normalize(text: Any) -> str:
+    """Robust Unicode normalization that handles nulls and non-string types safely."""
+    if pd.isna(text) or text is None:
+        return ""
+    # Enforce NFC for consistency across Korean characters
+    return unicodedata.normalize('NFC', str(text)).strip()
 
 # Check for rapidfuzz for better performance, fallback to difflib
 try:
@@ -312,3 +320,36 @@ def generate_record_key(title, addr):
     c_title = clean(title)
     c_addr = clean(addr)
     return f"{c_title}_{c_addr}"
+
+def get_manager_password(manager_name):
+    """
+    Generate simple password for manager.
+    Uses first 3 characters (in lowercase romanization approximation) + 1234
+    """
+    first_syllable_map = {
+        '김': 'kim', '이': 'lee', '박': 'park', '최': 'choi', '정': 'jung',
+        '강': 'kang', '조': 'jo', '윤': 'yoon', '장': 'jang', '임': 'lim',
+        '한': 'han', '오': 'oh', '서': 'seo', '신': 'shin', '권': 'kwon',
+        '황': 'hwang', '안': 'ahn', '송': 'song', '류': 'ryu', '홍': 'hong',
+        '전': 'jeon', '고': 'go', '문': 'moon', '양': 'yang', '손': 'son',
+        '배': 'bae', '백': 'baek', '허': 'heo', '남': 'nam', '심': 'shim'
+    }
+    
+    if manager_name and len(manager_name) > 0:
+        first_char = manager_name[0]
+        prefix = first_syllable_map.get(first_char, 'user')
+        return f"{prefix}1234"
+    return "user1234"
+
+def mask_name(name):
+    """
+    Masks Korean names: 홍길동 -> 홍**, 이철 -> 이*
+    """
+    if not name or pd.isna(name):
+        return name
+    name_str = str(name)
+    if len(name_str) <= 1:
+        return name_str
+    if len(name_str) == 2:
+        return name_str[0] + "*"
+    return name_str[0] + "*" * (len(name_str) - 2) + name_str[-1]

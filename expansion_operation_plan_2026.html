@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 영업기회 시스템 확대 운영 및 고도화 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Outfit:wght@300;400;600;700;900&family=Pretendard:wght@100..900&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --dark-bg: #0f172a;
+            --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Pretendard', 'Inter', sans-serif;
+            background-color: #f8fafc;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4, .nav-item {
+            font-family: 'Outfit', 'Pretendard', sans-serif;
+        }
+
+        .premium-gradient {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+        }
+
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 2rem;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15);
+            border-color: #2563eb;
+        }
+
+        .btn-premium {
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            transition: all 0.3s ease;
+        }
+
+        .btn-premium:hover {
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: scale(1.02);
+        }
+
+        /* Nav underline effect */
+        .nav-item {
+            position: relative;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        .nav-item:hover::after {
+            width: 100%;
+        }
+
+        /* Print Layout Optimization */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; color: black; }
+            .glass-card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; transform: none !important; }
+            .premium-gradient { background: #0f172a !important; color: white !important; }
+            .container { max-width: 100% !important; width: 100%; margin: 0; padding: 0; }
+        }
+
+        .active-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 900;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .active-status i {
+            font-size: 6px;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+
+<body class="text-slate-950">
+
+    <!-- Sticky Navigation -->
+    <nav class="sticky-nav no-print">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="bg-blue-600 text-white p-2 rounded-xl shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-cube text-lg"></i>
+                </span>
+                <span class="text-white font-black text-2xl tracking-tighter">FIELD SALES <span class="text-blue-500">PRO</span></span>
+            </div>
+            <div class="hidden lg:flex space-x-10 text-xs font-black text-slate-400 uppercase tracking-widest">
+                <a href="#summary" class="nav-item hover:text-white transition-colors py-2">핵심 운영계획</a>
+                <a href="#system-status" class="nav-item hover:text-white transition-colors py-2">시스템 개발현황</a>
+                <a href="#roadmap" class="nav-item hover:text-white transition-colors py-2">고도화 로드맵</a>
+                <a href="#report-suite" class="nav-item hover:text-white transition-colors py-2">분야별 보고서</a>
+                <a href="#history" class="nav-item hover:text-white transition-colors py-2">추진 경과</a>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="window.print()" class="bg-white/5 text-white px-5 py-2.5 rounded-xl text-[10px] font-black hover:bg-white/10 transition-all border border-white/10 uppercase tracking-widest">
+                    <i class="fa-solid fa-file-pdf mr-2 text-red-500 font-normal"></i> Export PDF
+                </button>
+                <button onclick="alert('PPT 템플릿 다운로드를 준비 중입니다.')" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 uppercase tracking-widest">
+                    <i class="fa-solid fa-file-powerpoint mr-2 text-orange-400 font-normal"></i> Export PPT
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="premium-gradient text-white pb-32 pt-20 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+        <!-- Decorative blobs -->
+        <div class="absolute top-20 right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-emerald-600/10 rounded-full blur-[100px]"></div>
+        
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-4xl">
+                <div class="flex items-center gap-3 mb-8">
+                    <span class="bg-blue-600/20 text-blue-400 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.3em] border border-blue-500/30 backdrop-blur-md">
+                        Executive Strategy 2026
+                    </span>
+                    <span class="active-status"><i class="fa-solid fa-circle"></i> SYSTEM ONLINE</span>
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black mb-10 leading-[1] tracking-tight">
+                    영업기회 가동 가이드 <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-200">8개 지사 확대 및 고도화</span>
+                </h1>
+                <p class="text-lg text-slate-400 font-normal leading-relaxed max-w-3xl mb-0">
+                    강북/강원본부 8개 지점 데이터 통합 가동을 위한 **'실시간 데이터 동기화'**와 <br> 
+                    사용자 **'활동 로그 인사이트'** 중심의 4월 운영 최적화 전략 보고서입니다.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 -mt-16 pb-32 relative z-20">
+
+        <!-- 1. 핵심 운영 전략 (Plan) -->
+        <section id="summary" class="mb-24 scroll-mt-24">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Info Summary -->
+                <div class="lg:col-span-1 glass-card p-10 flex flex-col justify-between overflow-hidden relative">
+                    <div class="absolute -right-10 -top-10 opacity-5">
+                        <i class="fa-solid fa-compass text-[200px]"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-950 mb-6 tracking-tighter uppercase">핵심 운영 계획</h2>
+                        <p class="text-slate-500 text-sm leading-relaxed">
+                            데이터의 신선함(Freshness)과 <br>활동의 밀도(Density)를 <br>동시에 관리합니다.
+                        </p>
+                    </div>
+                    <div class="mt-12 pt-8 border-t border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Focus Areas</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-bold">API Sync</span>
+                            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-bold">Log Analysis</span>
+                            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-bold">Weekly Audit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Detail Boxes -->
+                <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Cycle 1 -->
+                    <div class="glass-card p-10 group">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="bg-blue-100 p-4 rounded-2xl text-blue-700 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                <i class="fa-solid fa-cloud-bolt text-2xl"></i>
+                            </div>
+                            <span class="text-[40px] font-black text-slate-100">01</span>
+                        </div>
+                        <h4 class="text-xl font-black text-slate-900 mb-4">데이터 수집 및 자동 반영</h4>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-blue-500 mt-1"></i>
+                                <span>**2~3일 단위** 공공데이터 API 정기 수집</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-blue-500 mt-1"></i>
+                                <span>수집 데이터의 **시스템 자동 마이그레이션**</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-blue-500 mt-1"></i>
+                                <span>누락/오류 데이터 상시 교정 및 엔진 업그레이드</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Cycle 2 -->
+                    <div class="glass-card p-10 group">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="bg-emerald-100 p-4 rounded-2xl text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                <i class="fa-solid fa-chart-line text-2xl"></i>
+                            </div>
+                            <span class="text-[40px] font-black text-slate-100">02</span>
+                        </div>
+                        <h4 class="text-xl font-black text-slate-900 mb-4">활동 모니터링 및 실적 취합</h4>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i>
+                                <span>**영업 로그 분석**을 통한 실사용 패턴 파악</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i>
+                                <span>저활동 담당자 대상 **맞춤형 활용 코칭** (1:1)</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i>
+                                <span>성과 취합 및 **주 1회 이상** Success 사례 공유</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 시스템 개발 현황 (System Status) -->
+        <section id="system-status" class="mb-24 scroll-mt-24">
+            <div class="bg-slate-950 rounded-[3rem] p-12 md:p-20 text-white relative overflow-hidden shadow-3xl">
+                <div class="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-blue-600/10 to-transparent"></div>
+                <div class="relative z-10">
+                    <div class="flex flex-col lg:flex-row gap-16">
+                        <div class="lg:w-1/2">
+                            <span class="text-blue-500 font-black tracking-widest text-[10px] uppercase block mb-6">Current Progress</span>
+                            <h3 class="text-5xl font-black mb-10 tracking-tighter">시스템 개발 및 <br>인프라 구축 현황</h3>
+                            <p class="text-slate-400 leading-relaxed mb-12">
+                                지사별로 할당된 8만여 건의 데이터를 관리하기 위해 전용 추출 엔진과 고성능 필터링 기술을 적용했습니다. 특히 자모 분리나 마스킹 주소와 같은 데이터 현안을 시스템적으로 해결했습니다.
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
+                                    <p class="text-slate-500 text-[10px] font-black mb-2 uppercase">Data Scale</p>
+                                    <p class="text-3xl font-black text-blue-400">84,855</p>
+                                    <p class="text-[10px] mt-1 text-slate-400">Managed Entities</p>
+                                </div>
+                                <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
+                                    <p class="text-slate-500 text-[10px] font-black mb-2 uppercase">Sync Status</p>
+                                    <p class="text-3xl font-black text-emerald-400">100%</p>
+                                    <p class="text-[10px] mt-1 text-slate-400">Date Integrity</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:w-1/2">
+                            <div class="glass-card p-4 bg-slate-900 border-white/10 shadow-3xl">
+                                <div class="flex justify-between items-center mb-6 pl-2">
+                                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">System Interface Preview</span>
+                                    <div class="flex gap-1.5">
+                                        <div class="w-2 h-2 rounded-full bg-red-500/30"></div>
+                                        <div class="w-2 h-2 rounded-full bg-yellow-500/30"></div>
+                                        <div class="w-2 h-2 rounded-full bg-emerald-500/30"></div>
+                                    </div>
+                                </div>
+                                <img src="file:///Users/heebonpark/.gemini/antigravity/brain/0a3e27d4-3778-4550-9534-5c6743566ccb/dashboard_ui_preview_1775084005335.png" alt="Intelligence System Dashboard" class="w-full h-auto rounded-2xl shadow-2xl">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 향후 고도화 계획 (Future Roadmap) -->
+        <section id="roadmap" class="mb-24 scroll-mt-24">
+            <div class="text-center mb-16">
+                <span class="text-blue-600 font-black tracking-[0.4em] text-[10px] uppercase mb-4 block">Future Vision</span>
+                <h2 class="text-5xl font-black text-slate-950 tracking-tighter">데이터 기반 세일즈 고도화 로드맵</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Roadmap Item 1 -->
+                <div class="glass-card p-10 relative overflow-hidden group">
+                    <div class="absolute -right-6 -bottom-6 text-slate-50 text-8xl font-black group-hover:text-blue-50 transition-colors">01</div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-10 shadow-lg shadow-blue-500/20">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <h4 class="text-xl font-black text-slate-900 mb-6">AI 세일즈 코칭 리포트</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-8 italic">
+                            데이터 포털의 업력 데이터와 사내 활동 로그를 학습하여, 방문 전 '맞춤형 오프닝 멘트'와 '리스크 분석'을 제공하는 AI 자동 리포트 시스템 추진.
+                        </p>
+                        <div class="flex gap-2">
+                            <span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-black">Gen AI</span>
+                            <span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-black">Insights</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roadmap Item 2 -->
+                <div class="glass-card p-10 relative overflow-hidden group border-t-8 border-emerald-500">
+                    <div class="absolute -right-6 -bottom-6 text-slate-50 text-8xl font-black group-hover:text-emerald-50 transition-colors">02</div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center mb-10 shadow-lg shadow-emerald-500/20">
+                            <i class="fa-solid fa-at text-lg"></i>
+                        </div>
+                        <h4 class="text-xl font-black text-slate-900 mb-6">MCP 스마트 연동 인프라</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-8 italic">
+                            Model Context Protocol을 통해 구글 시트, 외부 DB, 내부 CRM 간의 데이터 격차를 없애고 끊임없는 동기화 환경을 구축합니다.
+                        </p>
+                        <div class="flex gap-2">
+                            <span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-[10px] font-black">Interoperability</span>
+                            <span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-[10px] font-black">No-Latency</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roadmap Item 3 -->
+                <div class="glass-card p-10 relative overflow-hidden group border-t-8 border-slate-900">
+                    <div class="absolute -right-6 -bottom-6 text-slate-50 text-8xl font-black group-hover:text-slate-100 transition-colors">03</div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center mb-10 shadow-lg shadow-slate-900/20">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </div>
+                        <h4 class="text-xl font-black text-slate-900 mb-6">위치 기반 가망고객 예측</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-8 italic">
+                            지리 정보 시스템(GIS) 데이터와 업종 분포도를 분석하여, 신규 인허가 가능성이 높은 지역을 선제적으로 추천하는 지능형 지도 뷰 공급.
+                        </p>
+                        <div class="flex gap-2">
+                            <span class="bg-slate-100 text-slate-900 px-2 py-1 rounded text-[10px] font-black">Predictive</span>
+                            <span class="bg-slate-100 text-slate-900 px-2 py-1 rounded text-[10px] font-black">GIS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 프레스티지 레포트 패키지 (Executive Report Suite) -->
+        <section id="report-suite" class="mb-24 scroll-mt-24">
+            <div class="text-center mb-16">
+                <span class="text-emerald-500 font-black tracking-[0.4em] text-[10px] uppercase mb-4 block">Executive Artifacts</span>
+                <h2 class="text-5xl font-black text-slate-950 tracking-tighter">분야별 정밀 보고서 통합 관리 (Suite)</h2>
+                <p class="text-slate-500 mt-4 max-w-2xl mx-auto text-sm">경영진 의사결정을 돕기 위한 5종의 전문 보고서 패키지입니다. 클릭 시 해당 상세 내역으로 이동합니다.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <a href="field_verification_report_20260204.html" target="_blank" class="glass-card p-6 flex flex-col items-center text-center hover:bg-slate-50 transition-all border-b-4 border-emerald-500">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-4 text-xl">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <div class="text-xs font-black text-slate-900 mb-1">현장 실사 보고</div>
+                    <p class="text-[9px] text-slate-500 uppercase tracking-tighter">Field Verification</p>
+                </a>
+                <a href="project_report.html" target="_blank" class="glass-card p-6 flex flex-col items-center text-center hover:bg-slate-50 transition-all border-b-4 border-blue-500">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4 text-xl">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                    <div class="text-xs font-black text-slate-900 mb-1">경영진 요약 보고</div>
+                    <p class="text-[9px] text-slate-500 uppercase tracking-tighter">Executive Summary</p>
+                </a>
+                <a href="premium_user_manual.html" target="_blank" class="glass-card p-6 flex flex-col items-center text-center hover:bg-slate-50 transition-all border-b-4 border-indigo-500">
+                    <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 text-xl">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <div class="text-xs font-black text-slate-900 mb-1">프리미엄 매뉴얼</div>
+                    <p class="text-[9px] text-slate-500 uppercase tracking-tighter">User Manual</p>
+                </a>
+                <a href="tech_concept_guide.html" target="_blank" class="glass-card p-6 flex flex-col items-center text-center hover:bg-slate-50 transition-all border-b-4 border-slate-900">
+                    <div class="w-12 h-12 bg-slate-100 text-slate-900 rounded-xl flex items-center justify-center mb-4 text-xl">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <div class="text-xs font-black text-slate-900 mb-1">기술 개념 가이드</div>
+                    <p class="text-[9px] text-slate-500 uppercase tracking-tighter">Tech Concept</p>
+                </a>
+                <a href="project_portfolio_kr.html" target="_blank" class="glass-card p-6 flex flex-col items-center text-center hover:bg-slate-50 transition-all border-b-4 border-orange-500">
+                    <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center mb-4 text-xl">
+                        <i class="fa-solid fa-address-card"></i>
+                    </div>
+                    <div class="text-xs font-black text-slate-900 mb-1">DX 포트폴리오</div>
+                    <p class="text-[9px] text-slate-500 uppercase tracking-tighter">Vision Portfolio</p>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-950 text-slate-600 py-20 no-print border-t border-white/5">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex justify-center space-x-12 text-[9px] font-black uppercase tracking-[0.5em] mb-12 text-slate-400">
+                <span>Precision Engineering</span>
+                <span>Data-Driven Strategy</span>
+                <span>AI Native</span>
+            </div>
+            <p class="text-slate-500 mb-4 font-bold tracking-tight">"현장의 활동이 데이터로 축적되고, 그 데이터가 다시 영업의 무기가 됩니다."</p>
+            <p class="text-[10px] text-slate-700">&copy; 2026 Field Sales Assistant Operations. Powered by Advanced Intelligence. | 강북/강원본부 사업지원팀</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

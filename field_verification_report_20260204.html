@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Executive Report] Field-Test Verification Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <style>
+        :root {
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --emerald-500: #10b981;
+            --indigo-500: #6366f1;
+        }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--slate-950);
+            color: #f8fafc;
+        }
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #34d399 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .stat-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--emerald-500);
+            box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.2);
+        }
+        @media print {
+            .no-print { display: none; }
+            body { background: white; color: black; }
+            .glass, .stat-card { background: white; border: 1px solid #ddd; color: black; }
+            .gradient-text { background: none; -webkit-text-fill-color: black; color: black; font-weight: bold; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header Navigation -->
+    <nav class="nav-sticky px-6 py-4 no-print">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-square-check text-white text-xs"></i>
+                </div>
+                <span class="font-bold tracking-tight text-slate-200">FIELD VERIFICATION REPORT</span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
+                <a href="#summary" class="hover:text-emerald-400 transition-colors">종합 성과</a>
+                <a href="#results" class="hover:text-emerald-400 transition-colors">지사별 실사 내역</a>
+                <a href="#insight" class="hover:text-emerald-400 transition-colors">데이터 신뢰도</a>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="window.print()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-full border border-slate-700 transition-all">
+                    <i class="fa-solid fa-file-pdf mr-2"></i>PDF EXPORT
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        
+        <!-- Title Section -->
+        <header class="mb-16">
+            <div class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest uppercase mb-6">
+                PHASE 2: 실효성 검증 완료 보고
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight leading-tight">
+                신규 오픈 매장 DB 앱(App)<br> 
+                <span class="gradient-text">현장 실효성 검증(Field-Test) 결과 보고서</span>
+            </h1>
+            <div class="flex flex-wrap items-center gap-6 text-slate-400 text-sm mt-8 border-t border-slate-800 pt-8">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-day text-emerald-500/50"></i>
+                    <span>검증 기간: 2026. 01. 26 ~ 02. 04</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot text-emerald-500/50"></i>
+                    <span>대상 지역: 강북/강원본부 5개 지사 관할</span>
+                </div>
+                <div class="flex items-center gap-2 ml-auto">
+                    <span class="text-xs uppercase tracking-tighter opacity-50">Reported by</span>
+                    <span class="font-bold text-slate-200">강북/강원본부 사업지원팀</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Cards -->
+        <section id="summary" class="mb-20">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="stat-card p-8 rounded-3xl">
+                    <div class="text-slate-500 text-xs font-bold mb-4 flex items-center justify-between">
+                        종합 방문 건수 <i class="fa-solid fa-shoe-prints text-indigo-500 opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold mb-2">49<span class="text-lg text-slate-500 font-normal ml-1">건</span></div>
+                    <p class="text-xs text-slate-400 leading-relaxed">제공 DB 기반 즉시 방문 완료</p>
+                </div>
+                <div class="stat-card p-8 rounded-3xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-3xl rounded-full"></div>
+                    <div class="text-slate-500 text-xs font-bold mb-4 flex items-center justify-between">
+                        추가 기회 발굴 <i class="fa-solid fa-plus text-emerald-500 opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold text-emerald-400 mb-2">22<span class="text-lg text-slate-500 font-normal ml-1">건</span></div>
+                    <p class="text-xs text-slate-400 leading-relaxed">이동 동선 내 인테리어 현장 추가 포착</p>
+                </div>
+                <div class="stat-card p-8 rounded-3xl">
+                    <div class="text-slate-500 text-xs font-bold mb-4 flex items-center justify-between">
+                        유효 리드 전달 <i class="fa-solid fa-paper-plane text-blue-500 opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold mb-2">36<span class="text-lg text-slate-500 font-normal ml-1">건</span></div>
+                    <p class="text-xs text-slate-400 leading-relaxed">지사별 SP팀 즉시 영업 이관</p>
+                </div>
+                <div class="stat-card p-8 rounded-3xl bg-indigo-500/10 border-indigo-500/30">
+                    <div class="text-indigo-400 text-xs font-bold mb-4 flex items-center justify-between">
+                        데이터 적중률 <i class="fa-solid fa-bullseye opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold text-white mb-2">100<span class="text-lg text-slate-400 font-normal ml-1">%</span></div>
+                    <p class="text-xs text-indigo-300/80 leading-relaxed">인허가 정보와 현장 상황 일치도</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Insight Section -->
+        <section class="mb-20 glass rounded-[2.5rem] p-10 md:p-14 relative overflow-hidden">
+            <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-emerald-500/10 blur-[100px] rounded-full"></div>
+            <div class="relative z-10 max-w-3xl">
+                <h3 class="text-2xl font-bold mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm">💡</span>
+                    CEO Strategy Insight
+                </h3>
+                <div class="space-y-6 text-slate-300 leading-relaxed">
+                    <p class="text-xl text-white font-bold italic border-l-4 border-emerald-500 pl-6 mb-10">
+                        "씨앗 뿌리기 효과는 활동량에 비례하며, <br>
+                        이 시스템은 그 '활동의 밀도'를 혁신적으로 높이는 엔진입니다."
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-4">
+                            <i class="fa-solid fa-check-double text-emerald-500 mt-1"></i>
+                            <span><strong>데이터 신뢰도 입증</strong>: 공공데이터 API를 통해 수집된 정보와 실제 현장 인테리어 상황이 100% 일치함을 확인하여, 허수 방문을 원천 차단했습니다.</span>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <i class="fa-solid fa-check-double text-emerald-500 mt-1"></i>
+                            <span><strong>발견(Discovery) 파급효과</strong>: 지도 기반 동선 최적화를 통해, 원래 목표가 아니었던 인근의 22개 신규 매장을 추가로 발굴하는 성과를 거두었습니다.</span>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <i class="fa-solid fa-check-double text-emerald-500 mt-1"></i>
+                            <span><strong>구조적 확장성</strong>: 서대문 지사의 성공 모델을 기반으로 강북/강원권 8개 지사로 즉각 수평 전파 가능한 준비를 마쳤습니다.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Results Table -->
+        <section id="results" class="mb-20">
+            <h3 class="text-xl font-bold mb-8 flex items-center gap-2">
+                <i class="fa-solid fa-list-ul text-slate-500"></i> 검증 참여 지사별 정량 성과 요약
+            </h3>
+            <div class="overflow-x-auto rounded-3xl border border-slate-800">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-900/50 text-slate-500 uppercase text-[10px] font-extrabold tracking-widest border-b border-slate-800">
+                        <tr>
+                            <th class="px-8 py-5">구분(지사)</th>
+                            <th class="px-8 py-5">영업 구역 담당</th>
+                            <th class="px-8 py-5 text-center">기회 방문(건)</th>
+                            <th class="px-8 py-5 text-center">추가 발견(건)</th>
+                            <th class="px-8 py-5 text-center">이관 완료(건)</th>
+                            <th class="px-8 py-5">특이 사항</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        <tr class="hover:bg-slate-900/30 transition-colors">
+                            <td class="px-8 py-5 font-bold text-slate-200">서대문</td>
+                            <td class="px-8 py-5 text-slate-400">최용호 팀장</td>
+                            <td class="px-8 py-5 text-center font-bold">8</td>
+                            <td class="px-8 py-5 text-center text-emerald-400 font-bold">2</td>
+                            <td class="px-8 py-5 text-center">5</td>
+                            <td class="px-8 py-5 text-xs text-slate-500 font-medium italic">이동 동선 내 2층 인테리어 발굴</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/30 transition-colors">
+                            <td class="px-8 py-5 font-bold text-slate-200">중앙</td>
+                            <td class="px-8 py-5 text-slate-400">양현성 팀장</td>
+                            <td class="px-8 py-5 text-center font-bold">5</td>
+                            <td class="px-8 py-5 text-center text-emerald-400 font-bold">2</td>
+                            <td class="px-8 py-5 text-center">3</td>
+                            <td class="px-8 py-5 text-xs text-slate-500 font-medium italic">영업 종료 매장 즉시 포착</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/30 transition-colors">
+                            <td class="px-8 py-5 font-bold text-slate-200">고양</td>
+                            <td class="px-8 py-5 text-slate-400">강경필 팀장 외</td>
+                            <td class="px-8 py-5 text-center font-bold">10</td>
+                            <td class="px-8 py-5 text-center text-emerald-400 font-bold">1</td>
+                            <td class="px-8 py-5 text-center">3</td>
+                            <td class="px-8 py-5 text-xs text-slate-500 font-medium italic">CCTV 설치 여부 교차 검증</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/30 transition-colors">
+                            <td class="px-8 py-5 font-bold text-slate-200">강북</td>
+                            <td class="px-8 py-5 text-slate-400">김형선 팀장</td>
+                            <td class="px-8 py-5 text-center font-bold">13</td>
+                            <td class="px-8 py-5 text-center text-emerald-400 font-bold">6</td>
+                            <td class="px-8 py-5 text-center">8</td>
+                            <td class="px-8 py-5 text-xs text-slate-500 font-medium italic">최다 기회 발굴 (동선 최적화)</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/30 transition-colors">
+                            <td class="px-8 py-5 font-bold text-slate-200">남양주</td>
+                            <td class="px-8 py-5 text-slate-400">김현돈 팀장 외</td>
+                            <td class="px-8 py-5 text-center font-bold">8</td>
+                            <td class="px-8 py-5 text-center text-emerald-400 font-bold">2</td>
+                            <td class="px-8 py-5 text-center">3</td>
+                            <td class="px-8 py-5 text-xs text-slate-500 font-medium italic">다산지점 신규 권역 확대</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/30 transition-colors">
+                            <td class="px-8 py-5 font-bold text-slate-200">서대문(추가)</td>
+                            <td class="px-8 py-5 text-slate-400">안근영 팀장</td>
+                            <td class="px-8 py-5 text-center font-bold">8</td>
+                            <td class="px-8 py-5 text-center text-emerald-400 font-bold">7</td>
+                            <td class="px-8 py-5 text-center">10</td>
+                            <td class="px-8 py-5 text-xs text-slate-500 font-medium italic">최고 활동 밀도 증명</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-slate-900 font-bold text-white">
+                        <tr>
+                            <td colspan="2" class="px-8 py-6 text-right uppercase tracking-widest text-[10px] text-slate-500">TOTAL SUMMARY</td>
+                            <td class="px-8 py-6 text-center text-2xl">49</td>
+                            <td class="px-8 py-6 text-center text-2xl text-emerald-400">22</td>
+                            <td class="px-8 py-6 text-center text-2xl">36</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <footer class="mt-32 pt-12 border-t border-slate-800 text-center">
+            <p class="text-slate-500 text-sm mb-4 italic">본 검증 데이터는 8개 지사 전면 확대 운영의 기술적/영업적 근거로 활용됩니다.</p>
+            <div class="flex justify-center gap-6 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
+                <i class="fa-solid fa-shield-halved text-4xl"></i>
+                <i class="fa-solid fa-microchip text-4xl"></i>
+                <i class="fa-solid fa-chart-area text-4xl"></i>
+            </div>
+            <p class="mt-12 text-[10px] text-slate-700 tracking-[0.5em] font-bold uppercase">Field Sales Assistant Platform 2026</p>
+        </footer>
+    </main>
+
+</body>
+</html>

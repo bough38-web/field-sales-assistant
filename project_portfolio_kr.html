@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[DX Portfolio] Sales Opportunity Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <style>
+        :root {
+            --slate-950: #020617;
+            --emerald-500: #10b981;
+            --indigo-600: #4f46e5;
+        }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--slate-950);
+            color: #f8fafc;
+        }
+        .hero-bg {
+            background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.1), transparent),
+                        radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.1), transparent);
+        }
+        .vision-card {
+            background: linear-gradient(145deg, #0f172a, #020617);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2.5rem;
+            padding: 3.5rem;
+            transition: all 0.5s ease;
+        }
+        .vision-card:hover {
+            border-color: var(--emerald-500);
+            box-shadow: 0 30px 60px -20px rgba(16, 185, 129, 0.2);
+        }
+        .code-block {
+            background-color: #0b1120;
+            border: 1px solid #1e293b;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            font-family: 'Courier New', monospace;
+            color: #10C681;
+            font-size: 0.85rem;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        .badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--emerald-500);
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 0.65rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body class="antialiased hero-bg">
+
+    <!-- Hero Section -->
+    <header class="pt-32 pb-24 px-8 text-center max-w-5xl mx-auto">
+        <div class="inline-flex items-center gap-2 badge mb-8">
+            Digital Transformation (DX) Strategy
+        </div>
+        <h1 class="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.95]">
+            데이터를 <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">행동(Action)</span>으로<br> 혁신을 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">성과</span>로
+        </h1>
+        <p class="text-xl md:text-2xl text-slate-400 font-medium leading-relaxed mb-12">
+            공공 데이터의 홍수 속에서 '진짜 돈이 되는 기회'만 찾아내는<br> 
+            차세대 영업 DX 지능형 비서 솔루션
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <div class="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-xs font-bold">#자체개발 100%</div>
+            <div class="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-xs font-bold text-emerald-400">#비용절감 93%</div>
+            <div class="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-xs font-bold text-indigo-400">#8개지사 확장</div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-8 pb-40">
+        
+        <!-- Story / Why -->
+        <section class="mb-32">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
+                <div class="vision-card">
+                    <div class="text-slate-500 font-black text-xs uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
+                         Problem & Solution
+                    </div>
+                    <h2 class="text-4xl font-black mb-8 leading-tight italic">
+                        "오늘 어디로 영업 가세요?"
+                    </h2>
+                    <p class="text-slate-300 text-lg leading-relaxed mb-8">
+                        대부분의 영업인이 <strong>"일단 나가봐야 알죠"</strong>라고 대답합니다. <br>
+                        이 '감'에 의존한 무작위 개척은 하루 평균 <span class="text-white font-bold underline">1시간의 이동 시간 낭비</span>와 낮은 적중률을 초래합니다.
+                    </p>
+                    <p class="text-slate-400 leading-relaxed font-medium">
+                        저희 시스템은 지도 위에 <span class="text-emerald-400">'지금 당장 계약할 확률 90% 이상의 곳'</span>만 레이더처럼 찍어줍니다. 이제 현장은 헛된 발걸음 없이 '계약이 기다리는 곳'으로 향합니다.
+                    </p>
+                </div>
+                <div class="relative">
+                    <div class="p-8 bg-slate-900/50 rounded-[3rem] border border-white/5 backdrop-blur-xl relative z-10">
+                        <div class="space-y-4 mb-10">
+                            <div class="h-4 bg-slate-800 rounded-full w-3/4 opacity-30"></div>
+                            <div class="h-4 bg-slate-800 rounded-full w-full opacity-30"></div>
+                            <div class="h-4 bg-slate-800 rounded-full w-5/6 opacity-30"></div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <i class="fa-solid fa-file-excel text-6xl text-slate-700 mb-4 tracking-tighter"></i>
+                            <div class="text-xs font-black text-slate-600 uppercase tracking-widest">AS-IS: STATIC LIST</div>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-10 -right-10 p-8 bg-emerald-500 rounded-[3rem] shadow-2xl shadow-emerald-500/20 z-20 transition-transform hover:scale-105">
+                        <div class="flex flex-col items-center">
+                            <i class="fa-solid fa-map-location-dot text-6xl text-white mb-4"></i>
+                            <div class="text-[10px] font-black text-white/80 uppercase tracking-widest">TO-BE: INTELLIGENCE MAP</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROI Dashboard -->
+        <section class="mb-32">
+            <h2 class="text-3xl font-black mb-16 flex items-center gap-4">
+                <span class="w-2 h-10 bg-indigo-600 rounded-full"></span>
+                Business ROI: 데이터가 가져온 경영적 가치
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-10 vision-card text-center group">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-2xl mb-8 mx-auto group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div class="text-5xl font-black mb-4">93%</div>
+                    <div class="font-bold text-white mb-4">자체 개발 비용 절감</div>
+                    <p class="text-xs text-slate-500">외주 견적 3,000만원 대비 <br>인하우스 개발(200만원)로 압도적 효율 달성</p>
+                </div>
+                <div class="p-10 vision-card text-center group border-emerald-500/20">
+                    <div class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 text-2xl mb-8 mx-auto group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="text-5xl font-black text-emerald-400 mb-4">2x</div>
+                    <div class="font-bold text-white mb-4">영업 리드 폭증</div>
+                    <p class="text-xs text-slate-500">이동 동선 효율화로 1일 방문 고객 수 2배 증가 <br>(서대문 지사 시범운영 실적)</p>
+                </div>
+                <div class="p-10 vision-card text-center group">
+                    <div class="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 text-2xl mb-8 mx-auto group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-cloud-bolt"></i>
+                    </div>
+                    <div class="text-5xl font-black mb-4">SaaS</div>
+                    <div class="font-bold text-white mb-4">솔루션 자산화</div>
+                    <p class="text-xs text-slate-500">보험, 제약, 유통 등 타 업종으로 <br>수평 확산 가능한 독자적 지식 자산 확보</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Snapshot -->
+        <section class="mb-32 p-12 bg-indigo-900/10 rounded-[3.5rem] border border-white/5">
+            <h2 class="text-3xl font-black mb-12 flex items-center justify-between">
+                <div>CORE TECHNOLOGY SPEC</div>
+                <div class="badge">Performance Optimized</div>
+            </h2>
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-xl font-bold text-indigo-400 mb-6 italic">0.1s Vectorized Math Engine</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-10 font-medium">
+                        대용량 공공데이터(84,000건+) 처리 시, 일반적인 반복문(Loop) 대신 <strong class="text-white">Vectorized Parallel Processing</strong>을 사용하여 좌표계 변환을 실시간으로 수행합니다.
+                    </p>
+                    <div class="code-block">
+                        // Transform 100k+ data in <0.5s<br>
+                        transformer.transform(df['x'].values, df['y'].values)
+                    </div>
+                </div>
+                <div class="overflow-hidden rounded-[2.5rem] border border-white/5 shadow-3xl">
+                    <img src="file:///Users/heebonpark/.gemini/antigravity/brain/0a3e27d4-3778-4550-9534-5c6743566ccb/mobile_sales_assistant_1775084047560.png" alt="Mobile Sales Assistant Preview" class="w-full h-auto">
+                </div>
+            </div>
+        </section>
+
+        <!-- Future Vision Message -->
+        <section class="text-center py-24 relative">
+             <div class="absolute inset-0 bg-emerald-500/5 blur-[120px] rounded-full -z-10"></div>
+             <h2 class="text-4xl font-black mb-10">지속 가능한 영업 혁신의 파트너</h2>
+             <p class="text-slate-300 text-lg max-w-3xl mx-auto leading-relaxed mb-16">
+                 우리의 목표는 단순히 지도를 그리는 것이 아닙니다. <br>
+                 <strong class="text-white">영업 현장의 피로도를 낮추고, 데이터 기반의 성공 경험을 반복하게 하는 것.</strong><br>
+                 그것이 강북/강원본부 8개 지사가 함께 걸어갈 영업 DX의 미래입니다.
+             </p>
+             <div class="text-[10px] text-slate-700 font-bold uppercase tracking-[0.5em] mt-20">
+                 Sales Opportunity System Portfolio | 2026
+             </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

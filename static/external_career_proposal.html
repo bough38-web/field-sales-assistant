@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business DX Proposal & Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        function showTab(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-slate-800', 'text-white', 'scale-105');
+                el.classList.add('bg-white', 'text-slate-600');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabId).classList.remove('hidden');
+            // Add active class to clicked button
+            const btn = document.querySelector(`[onclick="showTab('${tabId}')"]`);
+            btn.classList.remove('bg-white', 'text-slate-600');
+            btn.classList.add('bg-slate-800', 'text-white', 'scale-105');
+        }
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #2563eb, #9333ea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .proposal-card {
+            transition: all 0.3s ease;
+        }
+
+        .proposal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Hero Section -->
+    <header class="bg-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5">
+        </div>
+        <div class="container mx-auto px-6 py-20 md:py-32 relative z-10 text-center">
+            <span
+                class="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-600 text-xs font-bold tracking-wider mb-6 border border-blue-100 uppercase">
+                Confidential Business Proposal
+            </span>
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 tracking-tight text-slate-900 leading-tight">
+                개발자가 아닙니다.<br>
+                <span class="gradient-text">비즈니스 위닝 모델</span>을 팝니다.
+            </h1>
+            <p class="text-xl text-slate-500 max-w-2xl mx-auto font-light leading-relaxed">
+                단순히 코드를 짜는 것이 아니라, <strong>데이터로 매출 구조를 혁신하는 DX 리더</strong>를 채용하십시오.<br>
+                제가 검증한 '영업 효율화 시스템'을 귀사에 이식해 드립니다.
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12 -mt-10 relative z-20">
+
+        <!-- Selector Tabs -->
+        <div class="flex flex-col md:flex-row justify-center gap-4 mb-16">
+            <button onclick="showTab('venture')"
+                class="tab-btn bg-slate-800 text-white scale-105 px-8 py-4 rounded-xl shadow-lg font-bold text-lg transition-all duration-300 flex items-center justify-center border border-slate-200/50">
+                <i class="fa-solid fa-rocket mr-3"></i> 벤처/스타트업
+            </button>
+            <button onclick="showTab('mid')"
+                class="tab-btn bg-white text-slate-600 px-8 py-4 rounded-xl shadow-md font-bold text-lg transition-all duration-300 flex items-center justify-center hover:bg-slate-50">
+                <i class="fa-solid fa-building mr-3"></i> 중견기업
+            </button>
+            <button onclick="showTab('enterprise')"
+                class="tab-btn bg-white text-slate-600 px-8 py-4 rounded-xl shadow-md font-bold text-lg transition-all duration-300 flex items-center justify-center hover:bg-slate-50">
+                <i class="fa-solid fa-city mr-3"></i> 대기업
+            </button>
+        </div>
+
+        <!-- Content Area -->
+
+        <!-- 1. Venture/Startup Tab -->
+        <div id="venture" class="tab-content max-w-5xl mx-auto">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 proposal-card">
+                <div class="bg-slate-900 p-10 text-white">
+                    <span class="bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded mb-4 inline-block">For
+                        Series A~B Startups</span>
+                    <h2 class="text-3xl font-bold mb-2">B2B SaaS 신사업 리더 (CPO/PO) 제안</h2>
+                    <p class="text-slate-400">"검증된 PMF(Product-Market Fit)를 가진 아이템을 가져가십시오."</p>
+                </div>
+                <div class="p-10 grid md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2 border-slate-200">Value
+                            Proposition</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-check-circle text-indigo-500 mt-1 mr-3 text-lg"></i>
+                                <div>
+                                    <strong class="block text-slate-800">즉시 사업화 가능 (Ready-to-Sell)</strong>
+                                    <span class="text-sm text-slate-500">이미 현장 검증(Field Test)이 끝난 '영업 기회 발굴 맵' 보유. 입사 즉시
+                                        B2B 세일즈 가능.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-check-circle text-indigo-500 mt-1 mr-3 text-lg"></i>
+                                <div>
+                                    <strong class="block text-slate-800">잠재 매출 (ARR) 확보</strong>
+                                    <span class="text-sm text-slate-500">보험, 제약, 유통 등 타겟 시장 분석 완료. 연간 3억+ ARR 기대
+                                        모델.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-indigo-50 p-8 rounded-2xl border border-indigo-100">
+                        <h3 class="text-lg font-bold text-indigo-900 mb-4 flex items-center"><i
+                                class="fa-solid fa-file-signature mr-2"></i> Hiring Condition</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center border-b border-indigo-200 pb-2">
+                                <span class="text-sm text-indigo-700">Position</span>
+                                <span class="font-bold text-indigo-900">CPO / Product Lead</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-indigo-200 pb-2">
+                                <span class="text-sm text-indigo-700">Compensation</span>
+                                <span class="font-bold text-indigo-900">Competitive Salary</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-sm text-indigo-700">Incentive</span>
+                                <span class="font-bold text-red-500">Signing Bonus + Equity (지분)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-indigo-400 mt-4 text-center">"단순 채용이 아니라, 사업 파트너로서 제안합니다."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Mid-sized Tab -->
+        <div id="mid" class="tab-content hidden max-w-5xl mx-auto">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 proposal-card">
+                <div class="bg-emerald-900 p-10 text-white">
+                    <span class="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded mb-4 inline-block">For
+                        Traditional SMB</span>
+                    <h2 class="text-3xl font-bold mb-2">영업 DX 혁신 팀장 제안</h2>
+                    <p class="text-emerald-200/80">"낙후된 영업 프로세스를 1개월 만에 디지털로 전환해 드립니다."</p>
+                </div>
+                <div class="p-10 grid md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2 border-slate-200">Value
+                            Proposition</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-check-circle text-emerald-600 mt-1 mr-3 text-lg"></i>
+                                <div>
+                                    <strong class="block text-slate-800">압도적인 비용 절감</strong>
+                                    <span class="text-sm text-slate-500">외주 시 3천만원 드는 시스템을 자체 개발 능력으로 '0원'에 구축. 비용 효율
+                                        93% 달성.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-check-circle text-emerald-600 mt-1 mr-3 text-lg"></i>
+                                <div>
+                                    <strong class="block text-slate-800">영업 생산성 극대화</strong>
+                                    <span class="text-sm text-slate-500">영업 사원의 '이동 낭비 시간'을 '돈 버는 시간'으로 전환. 인당 효율
+                                        500만원/년 증대.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-emerald-50 p-8 rounded-2xl border border-emerald-100">
+                        <h3 class="text-lg font-bold text-emerald-900 mb-4 flex items-center"><i
+                                class="fa-solid fa-file-contract mr-2"></i> Hiring Condition</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center border-b border-emerald-200 pb-2">
+                                <span class="text-sm text-emerald-700">Position</span>
+                                <span class="font-bold text-emerald-900">DX Team Leader</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-emerald-200 pb-2">
+                                <span class="text-sm text-emerald-700">Authority</span>
+                                <span class="font-bold text-emerald-900">신설 TF 팀장 권한</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-sm text-emerald-700">Incentive</span>
+                                <span class="font-bold text-emerald-600">개발 절감액의 20% (일시금)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-emerald-400 mt-4 text-center">"외주 업체 줄 돈으로 저를 채용하십시오. 훨씬 이득입니다."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Enterprise Tab -->
+        <div id="enterprise" class="tab-content hidden max-w-5xl mx-auto">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 proposal-card">
+                <div class="bg-slate-800 p-10 text-white">
+                    <span class="bg-slate-600 text-white text-xs font-bold px-3 py-1 rounded mb-4 inline-block">For
+                        Large Enterprise</span>
+                    <h2 class="text-3xl font-bold mb-2">데이터 전략 기획 (Strategy Planner) 제안</h2>
+                    <p class="text-slate-400">"지도 플랫폼이 놓치고 있는 '초정밀 독점 데이터'의 가치를 압니다."</p>
+                </div>
+                <div class="p-10 grid md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2 border-slate-200">Value
+                            Proposition</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-check-circle text-slate-900 mt-1 mr-3 text-lg"></i>
+                                <div>
+                                    <strong class="block text-slate-800">독점 데이터 자산화 능력</strong>
+                                    <span class="text-sm text-slate-500">단순 공공데이터를 가공하여 '폐업/공사 예정' 등 시장 가치가 높은 독점 정보로
+                                        전환하는 알고리즘 보유.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-check-circle text-slate-900 mt-1 mr-3 text-lg"></i>
+                                <div>
+                                    <strong class="block text-slate-800">Micro-Geography 전략</strong>
+                                    <span class="text-sm text-slate-500">광역 지도가 놓치는 골목 단위의 비즈니스 기회를 포착하고 서비스화하는
+                                        기획력.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-50 p-8 rounded-2xl border border-slate-200">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center"><i
+                                class="fa-solid fa-crown mr-2"></i> Hiring Condition</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                                <span class="text-sm text-slate-600">Position</span>
+                                <span class="font-bold text-slate-900">서비스/전략 기획 Manager</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                                <span class="text-sm text-slate-600">Value</span>
+                                <span class="font-bold text-slate-900">Data-Driven Strategy</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-sm text-slate-600">Incentive</span>
+                                <span class="font-bold text-slate-800">업계 최고 수준 연봉 (Top-tier)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 text-center">"경쟁사가 갖지 못한 데이터 인사이트를 제공하겠습니다."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-10 text-slate-400 text-sm">
+        <p>© 2026 Professional Portfolio. All Strategic Rights Reserved.</p>
+    </footer>
+
+</body>
+
+</html>

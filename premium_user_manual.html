@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Premium Guide] Sales Intelligence System Manual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <style>
+        :root {
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --emerald-500: #10b981;
+            --indigo-500: #6366f1;
+        }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--slate-950);
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #0b1120;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2.5rem 1.5rem;
+            z-index: 100;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 4rem 6rem;
+            max-width: 1200px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #94a3b8;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        .nav-item:hover, .nav-item.active {
+            color: #fff;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        .nav-item.active {
+            color: var(--emerald-500);
+            border-left: 3px solid var(--emerald-500);
+            border-radius: 4px 12px 12px 4px;
+        }
+        .section-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2rem;
+            padding: 3rem;
+            margin-bottom: 4rem;
+        }
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--emerald-500);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .screenshot-box {
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            background: #0f172a;
+        }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; padding: 2rem; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="flex items-center gap-3 mb-12">
+            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-leaf text-white"></i>
+            </div>
+            <span class="font-black tracking-tighter text-white">SALES-DX GUIDE</span>
+        </div>
+
+        <nav class="space-y-1">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-4 mb-4 mt-8">System Manual</div>
+            <a href="#intro" class="nav-item active"><i class="fa-solid fa-star"></i> 시스템 개요</a>
+            <a href="#workflow" class="nav-item"><i class="fa-solid fa-route"></i> 핵심 워크플로우</a>
+            <a href="#login" class="nav-item"><i class="fa-solid fa-user-shield"></i> 보안 및 권한</a>
+            <a href="#dashboard" class="nav-item"><i class="fa-solid fa-chart-pie"></i> 현황 분석 대시보드</a>
+            <a href="#map" class="nav-item"><i class="fa-solid fa-location-crosshairs"></i> 실시간 타켓팅 지도</a>
+            <a href="#mobile" class="nav-item"><i class="fa-solid fa-mobile-screen"></i> 현장용 모바일 리스트</a>
+        </nav>
+
+        <div class="mt-auto pt-8 border-t border-white/5">
+            <div class="p-4 bg-slate-900/50 rounded-2xl border border-white/5">
+                <div class="text-[10px] text-slate-500 font-bold mb-2">OPERATIONAL SUPPORT</div>
+                <div class="text-xs font-bold text-slate-200">강북/강원본부 8개 지사</div>
+                <div class="text-[10px] text-slate-600 mt-1">Version 2.0 (Alpha)</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Intro -->
+        <section id="intro" class="mb-24">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-bold tracking-widest mb-6">
+                PREMIUM DIGITAL GUIDE
+            </div>
+            <h1 class="text-5xl font-black mb-6 text-white tracking-tight">현장 영업 마스터 가이드</h1>
+            <p class="text-xl text-slate-400 mb-12 leading-relaxed max-w-2xl">
+                데이터로 씨앗을 뿌리고 성과로 거둡니다. <br>
+                8개 지사 확대 운영을 위한 <strong>신규 오픈 매장 DB 비서</strong> 활용 매뉴얼입니다.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5">
+                    <div class="feature-icon mb-4"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <div class="font-bold text-white mb-2">초정밀 조회</div>
+                    <p class="text-xs text-slate-500 leading-normal">지사별/담당자명 마스킹 데이터를 기준으로 필터링된 타겟 조회</p>
+                </div>
+                <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5">
+                    <div class="feature-icon mb-4"><i class="fa-solid fa-bullseye"></i></div>
+                    <div class="font-bold text-white mb-2">실시간 타겟팅</div>
+                    <p class="text-xs text-slate-500 leading-normal">신규 인허가 후 15일 이내의 기회 매장 집중 공략</p>
+                </div>
+                <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5">
+                    <div class="feature-icon mb-4"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="font-bold text-white mb-2">즉시 실행(Action)</div>
+                    <p class="text-xs text-slate-500 leading-normal">모바일에서 클릭 한 번으로 전화 연결 및 네비게이션 작동</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow -->
+        <section id="workflow" class="section-card">
+            <h2 class="text-2xl font-bold mb-10 flex items-center gap-3">
+                <span class="w-1.5 h-8 bg-emerald-500 rounded-full"></span>
+                CORE WORKFLOW: 현장 성공 공식
+            </h2>
+            <div class="space-y-12">
+                <div class="flex gap-10">
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 bg-white text-slate-950 font-black flex items-center justify-center rounded-2xl shadow-xl">01</div>
+                        <div class="w-0.5 h-full bg-slate-800 mt-4"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">조회 (Insight)</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-4">지사별 현황판에서 나의 타겟 리스트와 실적 상태를 실시간 로드합니다.</p>
+                        <div class="screenshot-box">
+                            <img src="file:///Users/heebonpark/.gemini/antigravity/brain/0a3e27d4-3778-4550-9534-5c6743566ccb/dashboard_ui_preview_1775084005335.png" alt="Dashboard UI Preview" class="w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-10">
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 bg-emerald-500 text-white font-black flex items-center justify-center rounded-2xl shadow-xl">02</div>
+                        <div class="w-0.5 h-full bg-slate-800 mt-4"></div>
+                    </div>
+                    <div>
+                        <div class="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl text-xs text-emerald-400 italic mb-6">
+                            💡 Tip: '15일 필터'를 활성화하면 가장 신선한(Fresh) 기회만 노출됩니다.
+                        </div>
+                        <div class="screenshot-box">
+                            <img src="file:///Users/heebonpark/.gemini/antigravity/brain/0a3e27d4-3778-4550-9534-5c6743566ccb/intelligence_map_radar_1775084027028.png" alt="Intelligence Map Radar" class="w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-10">
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 bg-indigo-500 text-white font-black flex items-center justify-center rounded-2xl shadow-xl">03</div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">실행 (Action)</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">현장 도착 전 모바일 리스트에서 즉시 전화를 걸거나 길찾기를 시작합니다.</p>
+                        <div class="screenshot-box max-w-sm mx-auto">
+                            <img src="file:///Users/heebonpark/.gemini/antigravity/brain/0a3e27d4-3778-4550-9534-5c6743566ccb/mobile_sales_assistant_1775084047560.png" alt="Mobile Sales Assistant" class="w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security & Access -->
+        <section id="login" class="mb-24">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-black mb-6">보안 및 권한 관리</h2>
+                    <ul class="space-y-6">
+                        <li class="flex items-start gap-4">
+                            <i class="fa-solid fa-lock text-slate-500 mt-1"></i>
+                            <div>
+                                <div class="font-bold text-white mb-1">역할 기반 보안 (RBAC)</div>
+                                <p class="text-xs text-slate-500">소속 지사 및 본인 담당 영업 구역의 데이터만 자동 조회되도록 설계되었습니다.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <i class="fa-solid fa-user-secret text-slate-500 mt-1"></i>
+                            <div>
+                                <div class="font-bold text-white mb-1">인명 마스킹 적용</div>
+                                <p class="text-xs text-slate-500">영업담당자 성함은 기밀 유지를 위해 성(Surname) 외 마스킹 처리됩니다 (예: 박*본).</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="screenshot-box p-8 bg-slate-900 border-indigo-500/20">
+                    <div class="text-center">
+                        <i class="fa-solid fa-shield-halved text-5xl text-indigo-500/30 mb-4 tracking-tighter"></i>
+                        <p class="text-[10px] text-slate-600 font-black uppercase tracking-widest">Access Denied to Unauthorized Areas</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Details (Map/Mobile) -->
+        <section id="map" class="section-card bg-indigo-900/10 border-indigo-500/10">
+            <h2 class="text-2xl font-bold mb-10 flex items-center gap-3">
+                <span class="w-1.5 h-8 bg-indigo-500 rounded-full"></span>
+                MAP: 전술 레이더의 활용
+            </h2>
+            <div class="grid md:grid-cols-2 gap-10">
+                <div class="space-y-6">
+                    <div class="p-6 bg-slate-950 rounded-3xl border border-white/5">
+                        <div class="font-bold text-white mb-2 flex items-center gap-2">
+                             <span class="w-3 h-3 bg-blue-500 rounded-full"></span> 신규 영업 (Blue)
+                        </div>
+                        <p class="text-xs text-slate-500">인허가가 최근 완료되어 아직 장비 도입 전인 최우선 가망 고객</p>
+                    </div>
+                    <div class="p-6 bg-slate-950 rounded-3xl border border-white/5">
+                        <div class="font-bold text-white mb-2 flex items-center gap-2">
+                             <span class="w-3 h-3 bg-red-500 rounded-full"></span> 폐업/공실 (Red)
+                        </div>
+                        <p class="text-xs text-slate-500">기존 고객의 이탈을 미리 파악하고 회수 절차 진행</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-slate-950 rounded-3xl border border-white/5">
+                    <div class="font-bold text-white mb-4">⚡️ 원클릭 액션 패널</div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl text-xs">
+                            <span class="text-slate-400">카카오 네비게이션 연동</span>
+                            <i class="fa-solid fa-location-arrow text-emerald-400"></i>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl text-xs">
+                            <span class="text-slate-400">가게 연락처 즉시 통화</span>
+                            <i class="fa-solid fa-phone text-indigo-400"></i>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl text-xs">
+                            <span class="text-slate-400">포털 상세 검색 (Naver/Kakao)</span>
+                            <i class="fa-solid fa-magnifying-glass text-blue-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-40 pt-12 border-t border-white/5 text-center text-slate-600 text-[10px] font-bold tracking-widest uppercase">
+            &copy; 2026 FIELD SALES ASSISTANT PLATFORM. ALL RIGHTS RESERVED.
+        </footer>
+    </main>
+
+    <script>
+        // Simple scroll spy logic
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            let current = "";
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href').includes(current)) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

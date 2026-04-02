@@ -1,0 +1,90 @@
+name: Daily Data Sync (7 AM KST)
+
+on:
+  schedule:
+    # 7 AM KST is 10 PM UTC of the previous day
+    - cron: '0 22 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write    # Allow push back to repo
+
+env:
+  # Future-proof GitHub Actions for Node 24
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Store API Key from Secrets
+  SERVICE_KEY: ${{ secrets.PUBLIC_DATA_API_KEY }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Set target date
+      run: echo "TARGET_DATE=$(date -d 'yesterday' +'%Y-%m-%d' || date -v -1d +'%Y-%m-%d')" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pandas openpyxl urllib3
+
+    - name: List workspace
+      run: ls -R
+
+    - name: Run data extraction script
+      env:
+        # Use Secret from GitHub Settings
+        SERVICE_KEY: ${{ secrets.PUBLIC_DATA_API_KEY }}
+        PYTHONPATH: .
+        # Future-proof GitHub Actions for Node 24
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      run: |
+        # Use wildcard to avoid NFC/NFD normalization issues with the directory name
+        SCRIPT_PATH=$(find . -name "daily_fetch.py" | head -n 1)
+        echo "Running script: $SCRIPT_PATH"
+        python "$SCRIPT_PATH" --mode DAILY --workers 2 --days 3
+        echo "Script execution finished."
+        if [ -f summary.txt ]; then
+          echo "summary.txt created successfully."
+          cat summary.txt
+        else
+          echo "summary.txt NOT FOUND."
+        fi
+
+    - name: Commit and Push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add updated data files and zip
+        git add data/
+        
+        # Only commit if there are changes to commit
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "Auto Update: Daily Public Data ($(date +'%Y-%m-%d'))"
+          git push || echo "Push rejected, possibly due to concurrent updates."
+        else
+          echo "No changes found to commit today."
+        fi
+
+    - name: Send email report
+      if: always()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: "[자동알림] 영업기공 데이터 취합 결과 (${{ env.TARGET_DATE }})"
+        to: bough38@gmail.com, heebon.park@kt.com
+        from: GitHub Actions Sync
+        body: file://summary.txt
+        convert_markdown: true

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영업기회(Sales Opportunity) Master Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-8px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .btn-premium {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-premium:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(37, 99, 235, 0.6);
+        }
+        .brand-badge {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating { animation: float 6s ease-in-out infinite; }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-16 relative">
+        <div class="absolute -top-24 -left-24 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="brand-badge">Project Hub v2.5</span>
+                    <span class="text-slate-400 text-sm">|</span>
+                    <span class="text-blue-400 text-sm font-semibold flex items-center gap-1">
+                        <i class="fas fa-circle text-[8px] animate-pulse"></i> Live Pipeline Active
+                    </span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4">
+                    영업기회 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">마스터 허브</span>
+                </h1>
+                <p class="text-xl text-slate-400 max-w-2xl font-light leading-relaxed">
+                    데이터 분석부터 가치 평가까지, 프로젝트의 모든 문서를 한데 모았습니다.<br>
+                    실시간으로 동기화되는 <strong>영업기회 비서(S.T.O.A)</strong> 생태계에 오신 것을 환영합니다.
+                </p>
+            </div>
+            <div class="flex gap-4">
+                <a href="https://field-sales-assistant-m2bruvb2xacggxutpj5fa6.streamlit.app" target="_blank" class="btn-premium px-8 py-4 rounded-2xl font-bold flex items-center gap-3">
+                    <i class="fas fa-rocket"></i> 앱 즉시 실행
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+        <!-- 1st Row: Main Application & Core Value -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Main Application -->
+            <div class="glass-card p-8 flex flex-col justify-between overflow-hidden relative group">
+                <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-mobile-screen-button text-9xl"></i>
+                </div>
+                <div>
+                    <div class="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 text-2xl mb-6">
+                        <i class="fas fa-map-location-dot"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-3 italic">01. Field Sales Assistant</h2>
+                    <p class="text-slate-400 mb-6 leading-relaxed">
+                        전국 195개 업종의 공공 데이터를 실시간 수집하여 영업 담당자에게 '당장 가야할 곳'을 제안합니다. 지사별/담당자별 맞춤형 지도와 리스트를 제공합니다.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">Streamlit Engine</span>
+                    <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">Kakao Navi API</span>
+                    <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">Public Data API</span>
+                </div>
+            </div>
+
+            <!-- Value Report -->
+            <a href="cost_analysis.html" class="glass-card p-8 flex flex-col justify-between group">
+                <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-chart-line text-9xl"></i>
+                </div>
+                <div>
+                    <div class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 text-2xl mb-6">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-3 italic">02. Executive ROI Analysis</h2>
+                    <p class="text-slate-400 mb-6 leading-relaxed">
+                        연간 1,350만원의 자동화 가치와 1인당 500만원의 효율 증대 효과를 분석한 리포트입니다. 프로젝트의 경제적 타당성과 가치를 증명합니다.
+                    </p>
+                </div>
+                <div class="text-blue-400 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+                    자세히 보기 <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- 2nd Row: Verification, Architecture, Theory -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <!-- Verification -->
+            <a href="project_report.html" class="glass-card p-8 flex flex-col justify-between group">
+                <div>
+                    <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 text-xl mb-6">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">현장 검증 리포트</h3>
+                    <p class="text-sm text-slate-500 mb-6">
+                        실제 현장 방문 데이터(9.5만 건 반영)를 기반으로 한 데이터 정합성과 영업 기회 탐지 성능 보고서입니다.
+                    </p>
+                </div>
+                <div class="text-indigo-400 text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
+                    OPEN REPORT <i class="fas fa-chevron-right"></i>
+                </div>
+            </a>
+
+            <!-- Architecture -->
+            <a href="system_architecture.html" class="glass-card p-8 flex flex-col justify-between group">
+                <div>
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 text-xl mb-6">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">시스템 아키텍처</h3>
+                    <p class="text-sm text-slate-500 mb-6">
+                        '디지털 야간 경비원' 개념의 자동화 파이프라인(GitHub Actions + Python Engine) 구조를 도식화하였습니다.
+                    </p>
+                </div>
+                <div class="text-purple-400 text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
+                    VIEW INFRA <i class="fas fa-chevron-right"></i>
+                </div>
+            </a>
+
+            <!-- Concept Guide -->
+            <a href="tech_concept_guide.html" class="glass-card p-8 flex flex-col justify-between group">
+                <div>
+                    <div class="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center text-orange-400 text-xl mb-6">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">기술 개념 가이드</h3>
+                    <p class="text-sm text-slate-500 mb-6">
+                        '진주 캐기', '레이더' 등 비유를 통해 영업 현장에서 기술을 쉽게 이해할 수 있도록 만든 초보자용 가이드입니다.
+                    </p>
+                </div>
+                <div class="text-orange-400 text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
+                    READ GUIDE <i class="fas fa-chevron-right"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- 3rd Row: Advanced Documentation & Brand Finalization -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Advanced Docs (Mini Grid) -->
+            <div class="grid grid-cols-2 gap-4">
+                <a href="technical_whitepaper.html" class="glass-card p-6 flex items-center gap-4 hover:bg-slate-800/50 transition">
+                    <i class="fas fa-file-code text-blue-400 text-2xl"></i>
+                    <div>
+                        <h4 class="font-bold text-sm">기술 백서</h4>
+                        <p class="text-[10px] text-slate-500">Engineering Deep Dive</p>
+                    </div>
+                </a>
+                <a href="premium_user_manual.html" class="glass-card p-6 flex items-center gap-4 hover:bg-slate-800/50 transition">
+                    <i class="fas fa-shield-halved text-emerald-400 text-2xl"></i>
+                    <div>
+                        <h4 class="font-bold text-sm">운영자 매뉴얼</h4>
+                        <p class="text-[10px] text-slate-500">Security & VOC Guide</p>
+                    </div>
+                </a>
+                <a href="internal_strategy.html" class="glass-card p-6 flex items-center gap-4 hover:bg-slate-800/50 transition">
+                    <i class="fas fa-chess-knight text-purple-400 text-2xl"></i>
+                    <div>
+                        <h4 class="font-bold text-sm">도입 전략</h4>
+                        <p class="text-[10px] text-slate-500">Confident Strategy</p>
+                    </div>
+                </a>
+                <a href="patent_strategy.html" class="glass-card p-6 flex items-center gap-4 hover:bg-slate-800/50 transition">
+                    <i class="fas fa-gavel text-amber-400 text-2xl"></i>
+                    <div>
+                        <h4 class="font-bold text-sm">특허 전략</h4>
+                        <p class="text-[10px] text-slate-500">Intellectual Property</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Brand Finalization Selection -->
+            <div class="glass-card p-8 border-2 border-blue-500/20 bg-blue-500/5">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <i class="fas fa-tags text-blue-400"></i> 최종 브랜드(Naming) 후보
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800/80 border border-slate-700">
+                        <div class="flex items-center gap-4">
+                            <span class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-sm">1</span>
+                            <div>
+                                <h4 class="font-bold text-white">영업기회 비서</h4>
+                                <p class="text-xs text-slate-500">Field Sales Assistant (현재 사용 중)</p>
+                            </div>
+                        </div>
+                        <span class="text-blue-400 text-xs font-bold font-mono">ACTIVE</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 hover:border-slate-600 transition">
+                        <div class="flex items-center gap-4">
+                            <span class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm">2</span>
+                            <div>
+                                <h4 class="font-bold text-slate-300">세일즈 레이다</h4>
+                                <p class="text-xs text-slate-500">Sales Radar Pro</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-600 text-xs">CANDIDATE</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 hover:border-slate-600 transition">
+                        <div class="flex items-center gap-4">
+                            <span class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm">3</span>
+                            <div>
+                                <h4 class="font-bold text-slate-300">오퍼튜니티AI</h4>
+                                <p class="text-xs text-slate-500">Opportunity Intelligence</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-600 text-xs">CANDIDATE</span>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-slate-500 mt-6">
+                    <i class="fas fa-info-circle mr-1"></i> 이 중 마음에 드는 이름을 선택하시면 전체 문서 및 앱 타이틀을 일괄 변경합니다.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="max-w-7xl mx-auto mt-20 pb-12 text-center text-slate-600 text-sm border-t border-slate-800 pt-12">
+        <p class="mb-2">© 2026 Field Sales Assistant Project Ecosystem</p>
+        <p class="font-mono">Engineered for Excellence by Antigravity AI Assistant</p>
+    </footer>
+
+</body>
+</html>

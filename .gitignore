@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.venv/
+env/
+# data/  <-- Commented out to allow data folder
+data/BACKUP_*
+data/MASTER_2026_MERGED_FINAL.csv
+output/
+temp_extracted_data/
+
+# Generated Reports and Backups
+reports/
+backup/
+backups/
+
+# API Key
+오픈API/api_key.txt
+
+# Storage (user data, logs, activity tracking)
+storage/
+storage/*.json
+
+*.zip
+!data/LOCALDATA_NOWMON_CSV.zip
+!data/LOCALDATA_NOWMON_CSV_2월.zip
+!data/LOCALDATA_NOWMON_CSV_3월.zip
+!data/LOCALDATA_NOWMON_CSV-3월.zip
+!data/LOCALDATA_DAILY_*.zip

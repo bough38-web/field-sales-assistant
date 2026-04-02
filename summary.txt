@@ -1,0 +1,2 @@
+자동화 실행 중 오류가 발생했습니다:
+Cannot save file into a non-existent directory: '/Users/heebonpark/Downloads/field-sales-assistant-main-(배포-자동api)_0331/일일데이터 공공데이터포털_API 가져오기/TEMP_BATCH_WORK/20260330'

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>특허 출원 전략 보고서 (Patent Strategy)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .paper-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+
+<body class="text-slate-700">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white py-12 px-6 border-b-4 border-amber-500">
+        <div class="container mx-auto max-w-4xl text-center">
+            <div
+                class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-500 text-white mb-4 shadow-lg">
+                <i class="fa-solid fa-scale-balanced text-xl"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">특허 출원 가능성 및 전략 보고서</h1>
+            <p class="text-slate-400 text-sm">Intellectual Property Strategy Report</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto max-w-4xl px-6 -mt-8 pb-20">
+
+        <!-- 1. Pre-Analysis Result -->
+        <section class="bg-white rounded-xl paper-shadow p-8 mb-8">
+            <div class="flex items-center mb-6">
+                <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded mr-3">Step 1</span>
+                <h2 class="text-xl font-bold text-slate-800">선행 기술 조사 결과 (Prior Art Search)</h2>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-lg border-l-4 border-green-500 mb-6">
+                <h3 class="font-bold text-green-700 mb-2"><i class="fa-solid fa-circle-check mr-2"></i>등록 가능성: 높음 (High)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    웹 검색 및 주요 키워드("영업 기회 발굴", "공공데이터 지도 영업") 분석 결과,
+                    <strong>"인허가 공공데이터의 상태값(폐업/신축)을 영업 리드로 치환하여 지도에 시각화하는 시스템"</strong>과
+                    정확히 일치하는 선행 특허는 발견되지 않았습니다.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm mb-3 border-b pb-1">유사 분야 특허 현황</h4>
+                    <ul class="text-sm space-y-2 text-slate-600">
+                        <li><i class="fa-solid fa-minus text-slate-400 mr-2"></i> <strong>CRM 시스템</strong>: 고객 관리 및 일정
+                            관리에 집중 (유사도 낮음)</li>
+                        <li><i class="fa-solid fa-minus text-slate-400 mr-2"></i> <strong>상권 분석 시스템</strong>: 유동인구/매출
+                            분석에 집중 (유사도 낮음)</li>
+                        <li><i class="fa-solid fa-minus text-slate-400 mr-2"></i> <strong>단순 지도 서비스</strong>: 위치 정보 제공에
+                            집중 (유사도 낮음)</li>
+                    </ul>
+                </div>
+                <div class="bg-blue-50 p-4 rounded text-sm text-blue-800">
+                    <strong>💡 차별화 포인트 (Novelty)</strong><br>
+                    기존 시스템은 "이미 존재하는 가게"를 보여주지만,<br>
+                    본 시스템은 <strong>"미래에 영업 가능한 기회(공사중, 빈 점포)"</strong>를 예측하여 보여준다는 점이 핵심 차별점입니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Core Claims Strategy -->
+        <section class="bg-white rounded-xl paper-shadow p-8 mb-8">
+            <div class="flex items-center mb-6">
+                <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded mr-3">Step 2</span>
+                <h2 class="text-xl font-bold text-slate-800">핵심 청구항 전략 (What to Patent?)</h2>
+            </div>
+            <p class="text-sm text-slate-500 mb-6">특허는 "아이디어"가 아니라 "구체적인 구현 방법"을 보호받습니다. 아래 3가지 요소를 중점적으로 청구해야 합니다.</p>
+
+            <div class="space-y-4">
+                <!-- Claim 1 -->
+                <div class="border border-slate-200 rounded-lg p-5 hover:border-amber-400 transition-colors">
+                    <div class="flex items-start">
+                        <div
+                            class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold mr-4 shrink-0">
+                            1</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800">데이터 전처리 및 상태 판단 알고리즘 (Method)</h3>
+                            <p class="text-sm text-slate-600 mt-1">
+                                공공 데이터의 비정형 텍스트(예: "신축 공사중(30%)")를 파싱하여
+                                '영업 핫 리드(Construction)' 또는 '잠재 리드(Closed)'로
+                                <strong>자동 분류하는 로직 프로세스</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Claim 2 -->
+                <div class="border border-slate-200 rounded-lg p-5 hover:border-amber-400 transition-colors">
+                    <div class="flex items-start">
+                        <div
+                            class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold mr-4 shrink-0">
+                            2</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800">이종 좌표계 실시간 변환 시스템 (System)</h3>
+                            <p class="text-sm text-slate-600 mt-1">
+                                서로 다른 공공기관의 데이터(GRS80 등)를 웹 표준(WGS84)으로
+                                <strong>클라이언트 사이드 또는 경량 서버에서 실시간 벡터 변환</strong>하여 매핑하는 기술적 구조
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Claim 3 -->
+                <div class="border border-slate-200 rounded-lg p-5 hover:border-amber-400 transition-colors">
+                    <div class="flex items-start">
+                        <div
+                            class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold mr-4 shrink-0">
+                            3</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800">영업 행동 유도 UI (UI/UX Patent)</h3>
+                            <p class="text-sm text-slate-600 mt-1">
+                                단순 위치 표시가 아닌, '진입 가능 여부', '공사 진행율' 등을 시각화하여
+                                <strong>사용자의 영업 경로 결정을 보조하는 인터페이스 방법론</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Next Steps -->
+        <section class="bg-slate-800 text-white rounded-xl paper-shadow p-8">
+            <h2 class="text-xl font-bold mb-4">🚀 향후 실행 로드맵</h2>
+            <div class="flex flex-col md:flex-row gap-6 text-sm">
+                <div class="flex-1">
+                    <strong class="text-amber-400 block mb-2">1. 아이디어 구체화 (발명신고서)</strong>
+                    <p class="text-slate-300">위에서 정의한 3가지 청구항을 바탕으로 구체적인 플로우차트와 예시 도면을 작성합니다. (본 리포트 활용 가능)</p>
+                </div>
+                <div class="w-px bg-slate-600 hidden md:block"></div>
+                <div class="flex-1">
+                    <strong class="text-amber-400 block mb-2">2. 선행기술 정밀 조사</strong>
+                    <p class="text-slate-300">변리사를 통해 KIPRIS(특허정보검색서비스)에서 유사 키워드 정밀 검색을 수행하여 회피 설계를 준비합니다.</p>
+                </div>
+                <div class="w-px bg-slate-600 hidden md:block"></div>
+                <div class="flex-1">
+                    <strong class="text-amber-400 block mb-2">3. BM 특허 출원</strong>
+                    <p class="text-slate-300">비즈니스 모델(BM) 특허로 출원하여 기술과 사업 모델을 동시에 보호받습니다.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 text-slate-400 text-xs">
+        <p>본 보고서는 참고용이며, 법적 효력을 갖지 않습니다. 실제 출원 시 변리사와 상담하시기 바랍니다.</p>
+    </footer>
+
+</body>
+
+</html>

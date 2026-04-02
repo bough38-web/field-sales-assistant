@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쉬운 기술 개념 가이드 (Easy Tech Guide)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #fff7ed;
+            /* Orange 50 */
+        }
+
+        .concept-card {
+            transition: transform 0.3s ease;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-10px);
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-orange-500 text-white py-16 px-6 text-center">
+        <h1 class="text-3xl md:text-5xl font-bold mb-4">기술을 몰라도 3초 만에 이해하는<br>핵심 원리 3가지</h1>
+        <p class="text-orange-100 text-lg">"어렵게 설명하는 건 진짜 아는 게 아닙니다. 초등학생도 이해하도록 설명합니다."</p>
+    </header>
+
+    <main class="container mx-auto max-w-5xl px-6 -mt-10 pb-20">
+
+        <div class="grid md:grid-cols-3 gap-8">
+
+            <!-- Concept 1: Data Processing -->
+            <div class="concept-card bg-white rounded-2xl shadow-xl overflow-hidden border-b-4 border-blue-500">
+                <div class="bg-blue-500 h-2"></div>
+                <div class="p-8 text-center">
+                    <div
+                        class="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center text-4xl mb-6">
+                        🦪
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">1. 데이터 가공</h2>
+                    <p class="text-slate-400 text-sm mb-6 font-bold uppercase tracking-wider">The "Pearl Mining"</p>
+
+                    <div class="bg-slate-50 rounded-xl p-4 text-left border border-slate-100">
+                        <p class="mb-3 text-slate-700 font-medium">❓ 문제는?</p>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-4">
+                            공공데이터는 <strong>'거대한 흙탕물'</strong>과 같습니다.<br>
+                            쓸모없는 정보(돌맹이)와 오류(모래)가 섞여 있어 그냥은 못 씁니다.
+                        </p>
+                        <p class="mb-3 text-blue-600 font-bold">💡 해결책: 진주 캐기</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            저희 시스템은 <strong>'자동 거름망'</strong>입니다.<br>
+                            99%의 흙탕물을 씻어내고, 돈이 되는 1%의 <strong>'영업 기회(진주)'</strong>만 남깁니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concept 2: Vectorization -->
+            <div class="concept-card bg-white rounded-2xl shadow-xl overflow-hidden border-b-4 border-emerald-500">
+                <div class="bg-emerald-500 h-2"></div>
+                <div class="p-8 text-center">
+                    <div
+                        class="w-20 h-20 mx-auto bg-emerald-100 rounded-full flex items-center justify-center text-4xl mb-6">
+                        🗣️
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">2. 좌표계 변환</h2>
+                    <p class="text-slate-400 text-sm mb-6 font-bold uppercase tracking-wider">The "Instant Translator"
+                    </p>
+
+                    <div class="bg-slate-50 rounded-xl p-4 text-left border border-slate-100">
+                        <p class="mb-3 text-slate-700 font-medium">❓ 문제는?</p>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-4">
+                            정부 데이터는 <strong>'옛날 사투리(GRS80)'</strong>를 쓰고,<br>
+                            구글 지도는 <strong>'현대 표준어(WGS84)'</strong>를 써서 서로 말이 안 통합니다.
+                        </p>
+                        <p class="mb-3 text-emerald-600 font-bold">💡 해결책: AI 동시 통역</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            보통은 한 문장씩 번역해서 느리지만,<br>
+                            저희는 책 한 권(10만 개 데이터)을 <strong>0.1초 만에 통째로 번역(Vectorizing)</strong>해버립니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concept 3: Mapping -->
+            <div class="concept-card bg-white rounded-2xl shadow-xl overflow-hidden border-b-4 border-red-500">
+                <div class="bg-red-500 h-2"></div>
+                <div class="p-8 text-center">
+                    <div
+                        class="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center text-4xl mb-6">
+                        🎯
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">3. 지도 시각화</h2>
+                    <p class="text-slate-400 text-sm mb-6 font-bold uppercase tracking-wider">The "Missile Radar"</p>
+
+                    <div class="bg-slate-50 rounded-xl p-4 text-left border border-slate-100">
+                        <p class="mb-3 text-slate-700 font-medium">❓ 문제는?</p>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-4">
+                            일반 지도는 그냥 <strong>'땅'</strong>만 보여줍니다.<br>
+                            어디로 가야 할지 알려주지 않죠.
+                        </p>
+                        <p class="mb-3 text-red-600 font-bold">💡 해결책: 전술 레이더</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            저희 지도는 <strong>'전투기 레이더'</strong>입니다.<br>
+                            지금 당장 공격(영업)해야 할 <strong>타겟(빨간 점)</strong>을 정확히 찍어줍니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="text-center py-8 text-slate-400 text-sm">
+        <p>어려운 기술을 쉽게 만드는 것이 진정한 기술입니다.</p>
+    </footer>
+
+</body>
+
+</html>

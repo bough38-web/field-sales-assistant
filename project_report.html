@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[CEO Report] Digital Sales Transformation (DX) Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --slate-950: #020617;
+            --emerald-500: #10b981;
+            --indigo-600: #4f46e5;
+        }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--slate-950);
+            color: #f8fafc;
+            scroll-behavior: smooth;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2rem;
+        }
+        .gradient-border {
+            position: relative;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 2rem;
+            z-index: 0;
+        }
+        .gradient-border::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, #10b981, #6366f1, #3b82f6);
+            border-radius: 2rem;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        .nav-link::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--emerald-500);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--emerald-500);
+            border: 3px solid var(--slate-950);
+            border-radius: 50%;
+            position: absolute;
+            left: -6px;
+            top: 0;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-emerald-500/30">
+
+    <!-- Global Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/5 px-8 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-bolt-lightning text-white"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-black tracking-tighter text-white">DX SALES INTELLIGENCE</div>
+                    <div class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Presidential Report</div>
+                </div>
+            </div>
+            <div class="hidden lg:flex gap-10 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
+                <a href="#vision" class="nav-link hover:text-white transition-colors">Strategic Vision</a>
+                <a href="#progress" class="nav-link hover:text-white transition-colors">Execution Path</a>
+                <a href="#stats" class="nav-link hover:text-white transition-colors">Operational ROI</a>
+                <a href="#expansion" class="nav-link hover:text-white transition-colors">Scale-up Roadmap</a>
+            </div>
+            <button onclick="window.print()" class="px-6 py-2 bg-white text-slate-950 text-[11px] font-black rounded-full hover:bg-emerald-400 transition-all duration-300 shadow-xl shadow-white/5">
+                PRINT REPORT
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="vision" class="relative pt-40 pb-24 px-8 overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-indigo-600/10 blur-[120px] rounded-full -z-10 mt-[-200px]"></div>
+        <div class="max-w-7xl mx-auto">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-bold tracking-widest uppercase mb-8">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    Operational Status: 8-Branch Expansion Stage
+                </div>
+                <h1 class="text-5xl md:text-7xl font-black mb-8 tracking-tighter leading-[1.05]">
+                    데이터가 <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">영업의 지도</span>가 되는<br> 혁신적 DX 모델 보고
+                </h1>
+                <p class="text-xl text-slate-400 font-medium leading-relaxed mb-12">
+                    "씨앗 뿌리기 효과는 활동량에 비례합니다." <br>
+                    단순 정보 제공을 넘어, 영업사원의 활동 밀도를 데이터로 견인하여 실질적인 계약 성과를 창출하는 스마트 세일즈 엔진의 추진 경과입니다.
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="p-6 glass-card border-none bg-slate-900/40">
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Dev & Build</div>
+                        <div class="text-2xl font-black text-white">4주</div>
+                    </div>
+                    <div class="p-6 glass-card border-none bg-slate-900/40">
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Expansion</div>
+                        <div class="text-2xl font-black text-emerald-400">8개 지사</div>
+                    </div>
+                    <div class="p-6 glass-card border-none bg-slate-900/40">
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Review Cycle</div>
+                        <div class="text-2xl font-black text-white">5단계</div>
+                    </div>
+                    <div class="p-6 glass-card border-none bg-slate-900/40">
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Data Integrity</div>
+                        <div class="text-2xl font-black text-emerald-400">100%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Timeline (Execution Path) -->
+    <section id="progress" class="py-24 px-8 bg-slate-900/30">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-black mb-16 flex items-center gap-4">
+                <span class="w-1.5 h-12 bg-indigo-500 rounded-full"></span>
+                프로젝트 추진 타임라인 (Execution)
+            </h2>
+            
+            <div class="grid lg:grid-cols-2 gap-20">
+                <!-- Build Phase -->
+                <div>
+                    <div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8 border-b border-white/5 pb-4">
+                        Phase 1: Build & Field-Test
+                    </div>
+                    <div class="space-y-12">
+                        <div class="relative pl-8 border-l border-white/10">
+                            <div class="timeline-dot"></div>
+                            <div class="text-xl font-bold text-white mb-2">프로그램 기획 및 집중 개발</div>
+                            <div class="text-sm text-slate-500 mb-2">4주 집중 스프린트 진행</div>
+                            <p class="text-slate-400 text-sm leading-relaxed">공공데이터 API 연동 및 좌표계 벡터 변환 기술 확보</p>
+                        </div>
+                        <div class="relative pl-8 border-l border-white/10">
+                            <div class="timeline-dot"></div>
+                            <div class="text-xl font-bold text-white mb-2">현장 실사 검증 (Field Verification)</div>
+                            <div class="text-sm text-slate-500 mb-2">2026. 01. 26 ~ 02. 04</div>
+                            <p class="text-slate-400 text-sm leading-relaxed">서대문 등 5개 지사 관할 구역 실지 방문 및 DB 정합성 100% 확인</p>
+                        </div>
+                        <div class="relative pl-8 border-l border-white/10">
+                            <div class="timeline-dot"></div>
+                            <div class="text-xl font-bold text-white mb-2">시범 운영 (Pilot Launch)</div>
+                            <div class="text-sm text-slate-500 mb-2">2026. 02. 09 (서대문지사)</div>
+                            <p class="text-slate-400 text-sm leading-relaxed">지사 총무 및 SP 대상 시스템 교육 및 현장 적용 시작</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monitoring Phase -->
+                <div>
+                    <div class="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-8 border-b border-white/5 pb-4">
+                        Phase 2: Success Monitoring (Monthly Cycle)
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Stage Cards -->
+                        <div class="p-5 glass-card bg-white/5 border-none">
+                            <div class="text-indigo-400 text-xs font-bold mb-1">1차 점검 회의</div>
+                            <div class="text-lg font-bold">2026. 03. 04</div>
+                            <div class="mt-2 text-[10px] text-slate-500">운영 초동 반응 분석</div>
+                        </div>
+                        <div class="p-5 glass-card bg-white/5 border-none">
+                            <div class="text-indigo-400 text-xs font-bold mb-1">2차 점검 회의</div>
+                            <div class="text-lg font-bold">2026. 03. 12</div>
+                            <div class="mt-2 text-[10px] text-slate-500">지사별 데이터 매칭 최적화</div>
+                        </div>
+                        <div class="p-5 glass-card bg-white/5 border-none">
+                            <div class="text-indigo-400 text-xs font-bold mb-1">3차 점검 회의</div>
+                            <div class="text-lg font-bold">2026. 03. 20</div>
+                            <div class="mt-2 text-[10px] text-slate-500">활동 로그 분석 및 피드백</div>
+                        </div>
+                        <div class="p-5 glass-card bg-white/5 border-none">
+                            <div class="text-indigo-400 text-xs font-bold mb-1">4차 점검 회의</div>
+                            <div class="text-lg font-bold">2026. 03. 26</div>
+                            <div class="mt-2 text-[10px] text-slate-500">자동 수집 파이프라인 고도화</div>
+                        </div>
+                        <div class="p-5 glass-card bg-indigo-600/20 border-indigo-500/30 col-span-2">
+                            <div class="text-emerald-400 text-xs font-bold mb-1">5차 현장 확대 회의</div>
+                            <div class="text-xl font-bold">2026. 04. 02</div>
+                            <div class="mt-2 text-[10px] text-indigo-300">8개 지사 전면 확대 및 성과 집계</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Performance Stats Section -->
+    <section id="stats" class="py-24 px-8 overflow-hidden relative">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-black mb-16 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <span class="w-1.5 h-12 bg-emerald-500 rounded-full"></span>
+                    운영 성과 분석 (Operational ROI)
+                </div>
+                <div class="text-slate-500 text-sm italic font-medium no-print">※ 04.02 기준 리얼타임 데이터</div>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                <div class="gradient-border p-1">
+                    <div class="bg-slate-950 p-8 rounded-[1.9rem] flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center mb-6">
+                            <i class="fa-solid fa-person-walking text-emerald-400"></i>
+                        </div>
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2 tracking-widest">방문 건수</div>
+                        <div class="text-5xl font-black">00<span class="text-lg font-normal text-slate-600 ml-1">건</span></div>
+                    </div>
+                </div>
+                <div class="gradient-border p-1">
+                    <div class="bg-slate-950 p-8 rounded-[1.9rem] flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center mb-6">
+                            <i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i>
+                        </div>
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2 tracking-widest">제안 건수</div>
+                        <div class="text-5xl font-black">00<span class="text-lg font-normal text-slate-600 ml-1">건</span></div>
+                    </div>
+                </div>
+                <div class="gradient-border p-1">
+                    <div class="bg-slate-950 p-8 rounded-[1.9rem] flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center mb-6">
+                            <i class="fa-solid fa-handshake text-blue-400"></i>
+                        </div>
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2 tracking-widest">계약진행</div>
+                        <div class="text-5xl font-black text-emerald-400">00<span class="text-lg font-normal text-slate-600 ml-1">건</span></div>
+                    </div>
+                </div>
+                <div class="gradient-border p-1">
+                    <div class="bg-slate-950 p-8 rounded-[1.9rem] flex flex-col items-center opacity-60">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center mb-6">
+                            <i class="fa-solid fa-circle-xmark text-slate-400"></i>
+                        </div>
+                        <div class="text-slate-500 text-[10px] font-bold uppercase mb-2 tracking-widest">계약실패</div>
+                        <div class="text-5xl font-black">00<span class="text-lg font-normal text-slate-600 ml-1">건</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Preview Section -->
+            <div class="mt-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-24">
+                <div class="glass-card p-4 bg-slate-900 border-emerald-500/10">
+                    <div class="flex items-center gap-3 mb-4 pl-2">
+                        <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+                        <span class="text-xs font-black uppercase tracking-widest text-slate-400 font-medium">Intelligence Map Radar</span>
+                    </div>
+                    <img src="file:///Users/heebonpark/.gemini/antigravity/brain/0a3e27d4-3778-4550-9534-5c6743566ccb/intelligence_map_radar_1775084027028.png" alt="Intelligence Map Radar" class="w-full h-auto rounded-3xl shadow-3xl">
+                </div>
+                <div class="glass-card p-4 bg-slate-900 border-indigo-500/10">
+                    <div class="flex items-center gap-3 mb-4 pl-2">
+                        <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span>
+                        <span class="text-xs font-black uppercase tracking-widest text-slate-400 font-medium">Mobile Sales Interface</span>
+                    </div>
+                    <img src="file:///Users/heebonpark/.gemini/antigravity/brain/0a3e27d4-3778-4550-9534-5c6743566ccb/mobile_sales_assistant_1775084047560.png" alt="Mobile Sales Assistant" class="w-full h-auto rounded-3xl shadow-3xl max-w-sm mx-auto">
+                </div>
+            </div>
+
+            <!-- ROI Insight Card -->
+            <div class="glass-card p-10 md:p-14 relative overflow-hidden group">
+                <div class="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full group-hover:bg-emerald-500/20 transition-all duration-700"></div>
+                <div class="grid lg:grid-cols-2 gap-12 items-center relative z-10 font-medium">
+                    <div>
+                        <h3 class="text-2xl font-black mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-brain text-emerald-400"></i>
+                            Why DX Matters: 가시성이 성과를 바꿉니다
+                        </h3>
+                        <div class="space-y-6 text-slate-400 text-lg">
+                            <p class="leading-relaxed">
+                                기존의 '감'에 의존한 무차별적 개척 활동은 높은 피로도와 낮은 적중률을 야기했습니다. 
+                                본 시스템은 <span class="text-white font-bold">인허가 당일 ~ 3일 이내의 골든 타임</span>을 데이터로 시각화하여, 영업사원의 발걸음이 계약으로 이어질 확률을 극대화합니다.
+                            </p>
+                            <p class="leading-relaxed">
+                                서대문지사 시범 운영 결과, 단순 이동 시간이 실질적인 <strong>'가망 고객 발견 시간'</strong>으로 전환되는 체질 변화를 확인했습니다.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950/50 p-8 rounded-3xl border border-white/5">
+                        <div class="text-sm font-bold text-slate-500 mb-6 uppercase tracking-widest">Efficiency Benchmark</div>
+                        <div class="space-y-8">
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs font-bold mb-2">
+                                    <span class="text-slate-400">기존 영업 (List-Based)</span>
+                                    <span class="text-slate-500 uppercase tracking-tighter">Hit Rate 12%</span>
+                                </div>
+                                <div class="h-3 bg-slate-900 rounded-full overflow-hidden">
+                                    <div class="h-full bg-slate-700 w-[12%]"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs font-bold mb-2">
+                                    <span class="text-emerald-400">DX 시스템 영업 (Map-Based)</span>
+                                    <span class="text-emerald-400 uppercase tracking-tighter">Hit Rate 42% + Additional Discovery</span>
+                                </div>
+                                <div class="h-3 bg-slate-900 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 w-[42%]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-10 px-4 py-3 bg-emerald-500/10 rounded-xl text-emerald-400 text-xs font-bold text-center italic">
+                            * 현장 인테리어 공사 단계 선제 포착 가능성 3.5배 상승
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Expansion Roadmap -->
+    <section id="expansion" class="py-24 px-8 bg-slate-900/10">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 tracking-tight">본부 내 전 지사 확산을 위한 강북/강원본부 로드맵</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-16">
+                서대문 1개 지사를 넘어, 본부 내 8개 주요 지사로 DX 영업 문화를 즉각 확산합니다.
+            </p>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-10 glass-card bg-indigo-600/5 border-indigo-500/10">
+                    <div class="text-3xl font-black mb-4">Phase 1</div>
+                    <div class="text-indigo-400 font-bold mb-4">Pilot & Proof</div>
+                    <p class="text-slate-500 text-sm leading-relaxed">서대문지사 시범 운영을 통한 시스템 신뢰도 및 현장 VOC 수렴 완료</p>
+                </div>
+                <div class="p-10 glass-card bg-emerald-600/10 border-emerald-500/20 relative">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full uppercase tracking-widest">Current</div>
+                    <div class="text-3xl font-black mb-4">Phase 2</div>
+                    <div class="text-emerald-400 font-bold mb-4">Regional Roll-out</div>
+                    <p class="text-slate-500 text-sm leading-relaxed">본부 내 8개 지사 확대 적용 및 지사별 SP 성과 연동 모니터링 개시</p>
+                </div>
+                <div class="p-10 glass-card bg-slate-800/10 border-slate-500/10 opacity-50">
+                    <div class="text-3xl font-black mb-4">Phase 3</div>
+                    <div class="text-slate-400 font-bold mb-4">National Standard</div>
+                    <p class="text-slate-500 text-sm leading-relaxed">본부별 영업 거점 단위 수평 전파 및 AI 기반 영업 코칭 엔진 고도화</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-20 px-8 border-t border-white/5 text-center">
+        <div class="flex justify-center gap-10 mb-8 grayscale opacity-20 no-print">
+            <i class="fa-solid fa-building-circle-check text-5xl"></i>
+            <i class="fa-solid fa-diagram-project text-5xl"></i>
+            <i class="fa-solid fa-microchip text-5xl"></i>
+        </div>
+        <p class="text-slate-600 text-xs font-bold tracking-[0.3em] uppercase">Executive Business Intelligence Report | 2026</p>
+        <p class="mt-4 text-slate-800 text-[10px]">Confidential & Strategic Asset</p>
+    </footer>
+
+</body>
+</html>

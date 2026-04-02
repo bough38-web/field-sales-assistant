@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[CEO Tech Guide] Understanding the Intelligence Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <style>
+        :root {
+            --slate-950: #020617;
+            --emerald-400: #34d399;
+            --indigo-500: #6366f1;
+        }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--slate-950);
+            color: #f8fafc;
+        }
+        .tech-card {
+            background: linear-gradient(145deg, #0f172a, #020617);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tech-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--emerald-400);
+            box-shadow: 0 20px 40px -20px rgba(52, 211, 153, 0.3);
+        }
+        .glow-icon {
+            filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.5));
+        }
+        .code-snippet {
+            font-family: 'Courier New', Courier, monospace;
+            background: #000;
+            color: #10b981;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            border: 1px solid #1e293b;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header Section -->
+    <header class="pt-24 pb-16 px-8 text-center max-w-4xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-slate-500 text-[10px] font-bold tracking-[0.3em] uppercase mb-8">
+            Executive Technology Insight
+        </div>
+        <h1 class="text-4xl md:text-6xl font-black mb-6 tracking-tighter">
+            기술의 복잡함을 <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">비즈니스의 직관</span>으로
+        </h1>
+        <p class="text-lg text-slate-400 font-medium leading-relaxed">
+            "어려운 기술을 쉽게 설명하지 못하면 진짜 아는 것이 아닙니다." <br>
+            데이터가 어떻게 실제 영업 성과로 치환되는지, 3가지 핵심 동력을 보고드립니다.
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-8 pb-32">
+        <div class="grid md:grid-cols-3 gap-8">
+            
+            <!-- Concept 1: Pearl Mining -->
+            <div class="tech-card p-10 flex flex-col items-center text-center group">
+                <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-5xl mb-8 glow-icon group-hover:rotate-12 transition-transform">
+                    🦪
+                </div>
+                <h2 class="text-2xl font-black mb-3">1. 데이터 가공 (Pearl Mining)</h2>
+                <div class="text-emerald-400 text-[10px] font-bold tracking-widest uppercase mb-6">ETL Optimization</div>
+                
+                <div class="space-y-4 text-slate-400 text-sm text-left mb-8 font-medium">
+                    <p>● <strong class="text-white">문제</strong>: 공공데이터는 99%의 흙탕물(모래, 자갈)과 같습니다. 쓸모없는 정보가 너무 많습니다.</p>
+                    <p>● <strong class="text-emerald-400">해결</strong>: 저희 시스템은 초정밀 거름망입니다. 하루 수만 건의 데이터 중 계약 확률이 높은 1%의 <strong>'진주(영업 기회)'</strong>만 골라냅니다.</p>
+                </div>
+
+                <div class="mt-auto w-full pt-6 border-t border-white/5">
+                    <div class="text-xs text-slate-600 font-bold uppercase mb-2">Core Logic</div>
+                    <div class="code-snippet">filter(status='IN_PROGRESS', date < 3)</div>
+                </div>
+            </div>
+
+            <!-- Concept 2: Instant Translator -->
+            <div class="tech-card p-10 flex flex-col items-center text-center group border-indigo-500/20">
+                <div class="w-20 h-20 bg-indigo-500/10 rounded-3xl flex items-center justify-center text-5xl mb-8 glow-icon group-hover:rotate-12 transition-transform">
+                    🗣️
+                </div>
+                <h2 class="text-2xl font-black mb-3">2. 좌표계 변환 (Translator)</h2>
+                <div class="text-indigo-400 text-[10px] font-bold tracking-widest uppercase mb-6">Vectorized Math Engine</div>
+                
+                <div class="space-y-4 text-slate-400 text-sm text-left mb-8 font-medium">
+                    <p>● <strong class="text-white">문제</strong>: 정부 데이터는 '옛날 사투리(GRS80)'를 쓰고, 구글 지도는 '현대 표준어(WGS84)'를 씁니다. 서로 말이 안 통합니다.</p>
+                    <p>● <strong class="text-indigo-400">해결</strong>: AI 동시 통역 엔진입니다. 책 한 권(10만 개 데이터)을 <strong>0.1초 만에 통째로 번역(Vectorizing)</strong>하여 지도 위에 한 치의 오차 없이 뿌립니다.</p>
+                </div>
+
+                <div class="mt-auto w-full pt-6 border-t border-white/5 text-[10px] text-indigo-400 font-black italic">
+                    * 84,000건 대용량 데이터 로딩 시간 2.4초 미만
+                </div>
+            </div>
+
+            <!-- Concept 3: Missile Radar -->
+            <div class="tech-card p-10 flex flex-col items-center text-center group">
+                <div class="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center text-5xl mb-8 glow-icon group-hover:rotate-12 transition-transform">
+                    🎯
+                </div>
+                <h2 class="text-2xl font-black mb-3">3. 지도 시각화 (Radar)</h2>
+                <div class="text-blue-400 text-[10px] font-bold tracking-widest uppercase mb-6">Real-time Strat-Map</div>
+                
+                <div class="space-y-4 text-slate-400 text-sm text-left mb-8 font-medium">
+                    <p>● <strong class="text-white">문제</strong>: 일반 지도는 그냥 '땅'만 보여줍니다. 어디로 가야 할지 알려주지 않습니다.</p>
+                    <p>● <strong class="text-blue-400">해결</strong>: 전술 전용 리더입니다. 단순히 위치를 보여주는 것이 아니라, <strong>지금 당장 공격(영업)해야 할 타겟</strong>을 붉은 점으로 정확히 조준합니다.</p>
+                </div>
+
+                <div class="mt-auto w-full pt-6 border-t border-white/5">
+                    <div class="bg-blue-500/10 p-3 rounded-xl border border-blue-500/20 text-[10px] text-blue-400 font-bold">
+                        Targeting Hit Rate Improvement: +350%
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Deep Dive Section for Scale-up -->
+        <section class="mt-20 p-12 bg-white/5 rounded-[3rem] border border-white/10 relative overflow-hidden">
+            <div class="absolute -top-20 -right-20 w-80 h-80 bg-indigo-500/10 blur-[80px] rounded-full"></div>
+            <div class="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h3 class="text-3xl font-black mb-8 leading-tight">8개 지사 전면 확대의<br>기술적 기반: Scale-up Engine</h3>
+                    <p class="text-slate-400 mb-10 leading-relaxed font-medium">
+                        서대문 시범 운영을 통해 안정성이 검증된 <strong>Intelligence Pipeline</strong>은 이제 본부 단위 대용량 처리를 위해 고도화되었습니다.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5">
+                            <i class="fa-solid fa-microchip text-emerald-400 mb-3"></i>
+                            <div class="font-bold text-white text-sm">NFC 정형화</div>
+                            <p class="text-[10px] text-slate-500">지사명/주소 한글 자모 분리 방지 및 완벽 매칭</p>
+                        </div>
+                        <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5">
+                            <i class="fa-solid fa-database text-indigo-400 mb-3"></i>
+                            <div class="font-bold text-white text-sm">84k Row 최적화</div>
+                            <p class="text-[10px] text-slate-500">멀티 코어 병렬 처리를 통한 대용량 데이터 초고속 로딩</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="p-8 bg-slate-950 rounded-3xl border border-white/5 shadow-2xl">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">System Efficiency Radar</span>
+                            <i class="fa-solid fa-arrow-trend-up text-emerald-500"></i>
+                        </div>
+                        <div class="flex justify-center h-48 items-center border-b border-white/5 mb-6">
+                            <!-- Minimalist CSS Chart graph -->
+                            <div class="flex items-end gap-3 h-32">
+                                <div class="w-8 bg-slate-800 rounded-t-lg h-1/4"></div>
+                                <div class="w-8 bg-slate-800 rounded-t-lg h-2/4"></div>
+                                <div class="w-8 bg-indigo-500 rounded-t-lg h-3/4 animate-pulse"></div>
+                                <div class="w-8 bg-emerald-500 rounded-t-lg h-full"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-center text-slate-400 leading-relaxed font-medium">
+                            "기술은 보이지 않아야 하며, <br>결과는 피부로 느껴져야 합니다."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-20 border-t border-white/5 text-center text-[10px] text-slate-600 font-bold tracking-[0.5em] uppercase">
+        Intelligence Engine Architecture | 2026
+    </footer>
+
+</body>
+</html>

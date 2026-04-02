@@ -1,0 +1,12 @@
+streamlit
+pandas
+requests
+plotly
+qrcode
+pillow
+sqlalchemy
+pydantic
+fastapi
+uvicorn
+python-multipart
+openpyxl

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated System Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Mermaid.js -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral', fontFamily: 'Pretendard' });
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .hybrid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .hybrid-container {
+                grid-template-columns: 1fr 1.5fr;
+            }
+        }
+
+        .analogy-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .diagram-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white py-12 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4">Hybrid System Architecture</h1>
+            <p class="text-slate-400">Concept (Analogy) <i class="fa-solid fa-arrow-right-arrow-left mx-2"></i> Logic
+                (Diagram)</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto max-w-6xl px-6 py-12 space-y-20">
+
+        <!-- Section 0: Automated Pipeline (The Digital Assistant) -->
+        <section>
+            <div class="flex items-center mb-6">
+                <div
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold mr-4">
+                    0</div>
+                <h2 class="text-2xl font-bold">Automated Data Sync (The Assistant)</h2>
+            </div>
+
+            <div class="hybrid-container">
+                <!-- Left: Analogy -->
+                <div class="analogy-card border-slate-800">
+                    <div class="text-5xl mb-4">🤖</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">The "Digital Night Watch"</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        모두가 잠든 시간에도 시스템은 쉬지 않습니다.
+                        <br><br>
+                        이 엔진은 <strong>"24시간 디지털 조수"</strong>입니다.
+                        매일 오전 8시, 깃허브 액션(GitHub Actions)이 스스로 깨어나
+                        최근 3일간의 데이터를 수집하고 정제하여 보고서를 발송합니다.
+                    </p>
+                </div>
+
+                <!-- Right: Diagram -->
+                <div class="diagram-card">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Automation Pipeline Flow</h4>
+                    <pre class="mermaid">
+graph TD
+    subgraph Scheduling [GitHub Actions Scheduler]
+        Cron["⏰ Every 8 AM KST"]
+    end
+
+    subgraph SyncEngine [Data Sync Engine]
+        Fetch["🐍 Python Fetch (3-day rolling)"]
+        Clean["✨ Multi-file De-duplication"]
+        Push["🚀 Auto Push to GitHub"]
+    end
+
+    subgraph Outreach [Daily Notification]
+        Mail["📧 Executive Email Report"]
+    end
+
+    Cron --> Fetch
+    Fetch --> Clean
+    Clean --> Push
+    Push --> Mail
+
+    style Cron fill:#f8fafc,stroke:#1e293b
+    style SyncEngine fill:#f1f5f9,stroke:#334155,stroke-width:2px
+    style Mail fill:#eff6ff,stroke:#2563eb
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 1: Data Processing -->
+        <section>
+            <div class="flex items-center mb-6">
+                <div
+                    class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-4">
+                    1</div>
+                <h2 class="text-2xl font-bold">Data Processing (ETL)</h2>
+            </div>
+
+            <div class="hybrid-container">
+                <!-- Left: Analogy -->
+                <div class="analogy-card border-blue-500">
+                    <div class="text-5xl mb-4">🦪</div>
+                    <h3 class="text-xl font-bold text-blue-600 mb-2">The "Pearl Mining"</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        공공데이터는 진흙탕(99%)과 진주(1%)가 섞여 있습니다.
+                        <br><br>
+                        이 시스템은 <strong>"자동 거름망"</strong>입니다.
+                        무의미한 데이터(폐업 3년 경과 등)를 걸러내고,
+                        영업 가능한 '진주'만 남깁니다.
+                    </p>
+                </div>
+
+                <!-- Right: Diagram -->
+                <div class="diagram-card">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Technical
+                        Logic Flow</h4>
+                    <pre class="mermaid">
+flowchart LR
+    Raw[🌊 Raw Data Pool] --> Filter1{Is Valid?}
+    
+    Filter1 -- "Mud (Noise)" --> Discard[🗑️ Discard]
+    Filter1 -- "Pearl (Lead)" --> Clean[💎 Clean Data]
+    
+    subgraph Logic [Filter Rules]
+        Filter1 -->|Rule A| Status[Status Check]
+        Filter1 -->|Rule B| Date[Date Check]
+    end
+    
+    style Raw fill:#e2e8f0,stroke:#64748b
+    style Clean fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+    style Discard fill:#f1f5f9,stroke:#94a3b8,stroke-dasharray: 5 5
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Vectorization -->
+        <section>
+            <div class="flex items-center mb-6">
+                <div
+                    class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold mr-4">
+                    2</div>
+                <h2 class="text-2xl font-bold">Vector Transformation</h2>
+            </div>
+
+            <div class="hybrid-container">
+                <!-- Left: Analogy -->
+                <div class="analogy-card border-emerald-500">
+                    <div class="text-5xl mb-4">🗣️</div>
+                    <h3 class="text-xl font-bold text-emerald-600 mb-2">The "Instant Translator"</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        정부 지도(GRS80)와 구글 지도(WGS84)는 서로 언어가 다릅니다.
+                        <br><br>
+                        이 엔진은 <strong>"AI 동시 통역기"</strong>입니다.
+                        10만 개의 문장을 한 줄씩 번역하지 않고,
+                        <strong>0.1초 만에 책 한 권을 통째로 번역(Vectorizing)</strong>합니다.
+                    </p>
+                </div>
+
+                <!-- Right: Diagram -->
+                <div class="diagram-card">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Vector
+                        Operation Diagram</h4>
+                    <pre class="mermaid">
+sequenceDiagram
+    participant Gov as epds:5174 (Old)
+    participant Engine as ⚡ Vector Engine
+    participant Map as epsg:4326 (New)
+    
+    Gov->>Engine: Input 100,000 Coordinates (Batch)
+    Note over Engine: Vector Matrix Operation (No Loop)
+    Engine->>Map: Output 100,000 Lat/Lon (0.1ms)
+    
+    Note right of Map: Ready to Visualize
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Mapping -->
+        <section>
+            <div class="flex items-center mb-6">
+                <div
+                    class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold mr-4">
+                    3</div>
+                <h2 class="text-2xl font-bold">Actionable Mapping</h2>
+            </div>
+
+            <div class="hybrid-container">
+                <!-- Left: Analogy -->
+                <div class="analogy-card border-red-500">
+                    <div class="text-5xl mb-4">🎯</div>
+                    <h3 class="text-xl font-bold text-red-600 mb-2">The "Missile Radar"</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        일반 지도가 그냥 '땅'만 보여준다면,
+                        이 시스템은 <strong>"전술 레이더"</strong>입니다.
+                        <br><br>
+                        모든 건물을 보여주는 게 아니라,
+                        <strong>지금 당장 공략해야 할 타겟(영업처)</strong>만
+                        빨간 점으로 찍어줍니다.
+                    </p>
+                </div>
+
+                <!-- Right: Diagram -->
+                <div class="diagram-card">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">System
+                        Interaction Graph</h4>
+                    <pre class="mermaid">
+graph TD
+    User((Sales User))
+    
+    subgraph MapInterface [Tactical Map Layer]
+        Target[🔴 Target (Construction)]
+        Normal[⚪ Normal (Ignore)]
+    end
+    
+    User -->|Open App| MapInterface
+    MapInterface -->|Highlight| Target
+    MapInterface -.->|Fade Out| Normal
+    
+    Target -->|Click| Action[📝 Sales Action]
+    
+    style Target fill:#fecaca,stroke:#dc2626
+    style Action fill:#bbf7d0,stroke:#16a34a,stroke-width:2px
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-10 text-center text-slate-400 text-sm">
+        <p>Hybrid Architecture Report: Combining Concept & Code.</p>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영업기회 현장 검증 결과 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="gradient-header text-white py-12 shadow-xl relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+        </div>
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <span
+                class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">현장
+                검증 보고서</span>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 tracking-tight">영업기회 시스템 현장 검증 결과</h1>
+            <p class="text-xl text-slate-300 font-light max-w-2xl mx-auto">데이터 기반 영업 활동의 실효성 검증 및 가치 분석</p>
+            <p class="mt-8 text-sm opacity-60">검증 일자: 2026. 01. 26 | 대상 지역: 마포구/서대문구 일대</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 -mt-10 pb-20 relative z-20">
+
+        <!-- 0. Executive Summary (Board/Executive) -->
+        <section class="bg-indigo-900 rounded-3xl p-8 mb-12 text-white relative overflow-hidden shadow-2xl">
+            <div class="relative z-10">
+                <div class="flex items-center mb-6">
+                    <span
+                        class="bg-indigo-500/30 text-indigo-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">임원
+                        보고용</span>
+                    <h2 class="text-2xl font-bold">📌 핵심 요약 (Key Executive Summary)</h2>
+                </div>
+
+                <div class="space-y-4 mb-8">
+                    <p class="flex items-start"><span class="text-indigo-400 mr-2 mt-1">●</span><span>영업기회 지도기반 자료 제공은
+                            영업 활동의 시작점을 명확히 정의하여 <strong>무작위 영업을 데이터 기반 탐색형 영업으로 전환</strong>함</span></p>
+                    <p class="flex items-start"><span class="text-indigo-400 mr-2 mt-1">●</span><span>현장 검증 결과, 사전 타겟
+                            제공을 통해 <strong>즉시 제외 대상과 유효 기회를 빠르게 구분</strong></span></p>
+                    <p class="flex items-start"><span class="text-indigo-400 mr-2 mt-1">●</span><span>지도 기반 이동 과정에서
+                            <strong>방문 대상 외 신규 잠재 고객 추가 발굴</strong> 효과 확인</span></p>
+                    <p class="flex items-start"><span class="text-indigo-400 mr-2 mt-1">●</span><span>단순 정보 제공이 아니라
+                            <strong>영업사원의 현장 활동 밀도와 기회 포착 빈도를 동시에 상승</strong>시키는 구조</span></p>
+                    <p class="flex items-start"><span class="text-indigo-400 mr-2 mt-1">●</span><span>향후 확대 시,
+                            <strong>영업 효율 표준화 및 조직 단위 성과 재현 가능성 확보</strong></span></p>
+                </div>
+
+                <div class="bg-white/10 rounded-xl p-6 border-l-4 border-yellow-400">
+                    <p class="text-indigo-200 text-sm mb-1 uppercase tracking-widest font-bold">Executive Insight</p>
+                    <p class="text-xl md:text-2xl font-bold text-white leading-relaxed">
+                        “관리 목적이 아니라, <span class="text-yellow-400">영업 효율을 구조적으로 올리는 도구</span>입니다.”
+                    </p>
+                </div>
+            </div>
+
+            <!-- Deco -->
+            <div
+                class="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-20 -mr-20 -mt-20 pointer-events-none">
+            </div>
+        </section>
+
+        <!-- 1. Executive Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- Summary 1: Accuracy -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-blue-500 card-hover">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm text-slate-500 font-semibold uppercase tracking-wide">타겟 적중률 (Hit Rate)</p>
+                        <h3 class="text-3xl font-bold text-slate-800 mt-1">38%</h3>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-xl text-blue-600">
+                        <i class="fa-solid fa-crosshairs text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-slate-600 text-sm">
+                    방문 대상 8건 중 <span class="font-bold text-blue-600">3건 인테리어 확인</span><br>
+                    (실제 영업 유효 타겟)
+                </p>
+            </div>
+
+            <!-- Summary 2: NEW: Automated Reliability -->
+            <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-2xl shadow-lg p-8 transform md:-translate-y-4 relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                    <div>
+                        <p class="text-sm text-indigo-300 font-semibold uppercase tracking-wide">데이터 무결성 (Integrity)</p>
+                        <h3 class="text-3xl font-bold text-white mt-1">100%</h3>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-xl text-white backdrop-blur-sm">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-indigo-100 text-sm relative z-10">
+                    <span class="font-bold">3일 단위 롤링 자동 동기화</span> 적용<br>
+                    API 지연 시에도 누락 없는 신뢰 데이터 확보
+                </p>
+            </div>
+
+            <!-- Summary 3: New Discovery (The Window Factor) -->
+            <div
+                class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-emerald-500 card-hover relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 bg-emerald-100 w-24 h-24 rounded-full opacity-50"></div>
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                    <div>
+                        <p class="text-sm text-emerald-600 font-bold uppercase tracking-wide">20일 선제 감지 범위</p>
+                        <h3 class="text-3xl font-bold text-emerald-700 mt-1">D+20</h3>
+                    </div>
+                    <div class="bg-emerald-100 p-3 rounded-xl text-emerald-600">
+                        <i class="fa-solid fa-binoculars text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-slate-600 text-sm relative z-10">
+                    최근 <span class="font-bold text-emerald-600">20일간의 인허가/폐업 변동</span> 추적<br>
+                    확장된 분석 윈도우로 영업 가시성 대폭 확대
+                </p>
+            </div>
+        </div>
+
+        <!-- 2. Detailed Breakdown & Visualization -->
+        <section class="grid md:grid-cols-2 gap-8 mb-16">
+            <!-- Chart Area -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <i class="fa-solid fa-chart-simple mr-2 text-blue-500"></i> 현장 확인 결과 분포
+                </h3>
+                <div class="h-64 flex justify-center items-center">
+                    <canvas id="resultChart"></canvas>
+                </div>
+                <div class="mt-6 text-center">
+                    <div class="flex justify-center gap-4 text-sm font-medium">
+                        <span class="flex items-center"><span
+                                class="w-3 h-3 rounded-full bg-emerald-500 mr-2"></span>인테리어 (38%)</span>
+                        <span class="flex items-center"><span
+                                class="w-3 h-3 rounded-full bg-slate-400 mr-2"></span>폐문/공실 (50%)</span>
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-slate-200 mr-2"></span>미확인
+                            (12%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Area -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <i class="fa-solid fa-list-check mr-2 text-blue-500"></i> 세부 확인 내역
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3">사업장명</th>
+                                <th class="px-4 py-3 text-center">상태</th>
+                                <th class="px-4 py-3">비고</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-800">노랑통닭 등교동삼거리점</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-emerald-100 text-emerald-700 py-1 px-2 rounded text-xs font-bold">인테리어중</span>
+                                </td>
+                                <td class="px-4 py-3 text-slate-500">2026-01-19 인허가</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-800">아운티제니 신촌점</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-emerald-100 text-emerald-700 py-1 px-2 rounded text-xs font-bold">인테리어중</span>
+                                </td>
+                                <td class="px-4 py-3 text-slate-500">2026-01-23 인허가</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-800">아운티제니 홍대점</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-emerald-100 text-emerald-700 py-1 px-2 rounded text-xs font-bold">인테리어중</span>
+                                </td>
+                                <td class="px-4 py-3 text-slate-500">2026-01-20 인허가</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-400">방이네</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-slate-100 text-slate-500 py-1 px-2 rounded text-xs">폐문</span></td>
+                                <td class="px-4 py-3 text-slate-400">폐업일자 확인됨</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-400">보그헤어(신촌역점)</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-slate-100 text-slate-500 py-1 px-2 rounded text-xs">폐문</span></td>
+                                <td class="px-4 py-3 text-slate-400"></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-400">세이프 스테이</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-slate-100 text-slate-500 py-1 px-2 rounded text-xs">폐문</span></td>
+                                <td class="px-4 py-3 text-slate-400"></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-400">엘세븐헤어(신촌연대점)</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-slate-100 text-slate-500 py-1 px-2 rounded text-xs">폐문</span></td>
+                                <td class="px-4 py-3 text-slate-400"></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-600">왁싱굿(Waxingood)</td>
+                                <td class="px-4 py-3 text-center"><span
+                                        class="bg-gray-100 text-gray-600 py-1 px-2 rounded text-xs">미확인</span></td>
+                                <td class="px-4 py-3 text-slate-500"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Why Map-Based? (Logic/Justification) -->
+        <section class="mb-16">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">왜 '지도 기반'이어야 하는가?</h2>
+                <p class="text-slate-500">리스트(Excel) 방식 vs 지도(Map) 방식의 결정적 차이</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Bad Case -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 opacity-70 hover:opacity-100 transition-opacity">
+                    <h3 class="text-xl font-bold text-slate-600 mb-4 flex items-center">
+                        <i class="fa-solid fa-file-excel mr-3 text-red-400"></i> 기존 리스트/엑셀 방식
+                    </h3>
+                    <ul class="space-y-4 text-slate-600">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-xmark text-red-400 mt-1 mr-3"></i>
+                            <div>
+                                <strong class="block text-slate-800">점(Point) 정보만 존재</strong>
+                                <span class="text-sm">공간적 맥락이 없어 이동 동선 설계가 불가능함</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-xmark text-red-400 mt-1 mr-3"></i>
+                            <div>
+                                <strong class="block text-slate-800">'보고 → 방문' 까지만 가능</strong>
+                                <span class="text-sm">'가는 과정'은 버려지는 시간이 됨</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Good Case -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-500 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">
+                        CORE VALUE</div>
+                    <h3 class="text-xl font-bold text-blue-600 mb-4 flex items-center">
+                        <i class="fa-solid fa-map-location-dot mr-3"></i> 지도 기반의 결정적 차이
+                    </h3>
+                    <ul class="space-y-4 text-slate-700">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check text-blue-500 mt-1 mr-3"></i>
+                            <div>
+                                <strong class="block text-slate-800">이동 자체가 영업 활동이 됨</strong>
+                                <span class="text-sm">방문 대상뿐 아니라 <strong>그 사이 공간까지 영업 영역으로 확장</strong></span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check text-blue-500 mt-1 mr-3"></i>
+                            <div>
+                                <strong class="block text-slate-800">비의도적 기회 포착 증가</strong>
+                                <span class="text-sm">이동 중 주변 인테리어/공사 현장 인지 및 즉시 대응 가능</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="mt-6 bg-blue-50 p-4 rounded-xl text-center">
+                        <p class="text-blue-800 font-bold">👉 ‘가는 길’이 성과를 만드는 구조</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Value Proposition (For Sales Staff) -->
+        <section
+            class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-10 md:p-14 text-white shadow-2xl overflow-hidden relative">
+            <!-- Background element -->
+            <div
+                class="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl opacity-10 pointer-events-none">
+            </div>
+
+            <div class="relative z-10 text-center mb-12">
+                <span
+                    class="bg-white/10 text-slate-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">현장
+                    동기 부여</span>
+                <h2 class="text-3xl font-bold mb-4">이렇게 설명하면 바로 이해합니다</h2>
+                <p class="text-slate-300 max-w-2xl mx-auto text-lg">
+                    “이건 너를 관리하려는 시스템이 아니라,<br>
+                    <span class="text-emerald-400 font-bold">헛발품 줄이고 계약에 가까운 곳부터 가게 해주는 지도</span>야.”
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-12">
+                <!-- Point 1 -->
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                    <div class="text-emerald-400 text-2xl mb-3"><i class="fa-solid fa-route"></i></div>
+                    <h3 class="text-xl font-bold mb-2">어디 갈지 고민 끝</h3>
+                    <p class="text-slate-400 text-sm">될 확률 있는 루트부터 시작하니까<br>동선 계획 고민이 사라짐</p>
+                </div>
+                <!-- Point 2 -->
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                    <div class="text-emerald-400 text-2xl mb-3"><i class="fa-solid fa-door-closed"></i></div>
+                    <h3 class="text-xl font-bold mb-2">폐문이어도 헛수고 아님</h3>
+                    <p class="text-slate-400 text-sm">빨리 확인하고 다음으로 이동(Pass)<br>그 자체로 데이터 갱신 성과</p>
+                </div>
+                <!-- Point 3 -->
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                    <div class="text-emerald-400 text-2xl mb-3"><i class="fa-solid fa-binoculars"></i></div>
+                    <h3 class="text-xl font-bold mb-2">가는 길에 발견한 기회</h3>
+                    <p class="text-slate-400 text-sm">이동 중 발견한 공사 현장,<br>네가 만든 <strong>공식 성과로 인정</strong></p>
+                </div>
+            </div>
+
+            <!-- Bottom Quote -->
+            <div class="mt-8 pt-8 border-t border-white/10 text-center">
+                <p class="text-xl md:text-2xl text-slate-200 font-bold leading-relaxed">
+                    “그냥 돌아다니는 게 아니라,<br>
+                    <span class="text-emerald-300 border-b-2 border-emerald-300 pb-1">지도 따라 가다 보면 기회가 하나씩 더 생긴다.</span>”
+                </p>
+            </div>
+        </section>
+
+        <!-- 5. Market Value & Vision (Strategic Analysis) -->
+        <section class="mt-20 border-t border-slate-200 pt-16">
+            <div class="text-center mb-16">
+                <span
+                    class="bg-violet-100 text-violet-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">Future
+                    Vision</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">🚀 시장 가치 및 확장성 분석</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto">본 시스템의 도입이 가져올 영업 조직의 근본적인 변화와 비전</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 relative">
+                <!-- Connecting Line (Desktop) -->
+                <div
+                    class="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-violet-200 via-violet-400 to-violet-200 -z-10">
+                </div>
+
+                <!-- Value 1: Standardization -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-xl shadow-violet-100/50 border border-violet-100 relative group hover:-translate-y-2 transition-transform duration-300">
+                    <div
+                        class="w-16 h-16 bg-white rounded-2xl border-2 border-violet-100 flex items-center justify-center text-violet-600 text-2xl mb-6 shadow-sm mx-auto group-hover:border-violet-500 transition-colors">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 text-center">영업 성과의 표준화</h3>
+                    <div class="space-y-3 text-sm text-slate-600 bg-slate-50 p-4 rounded-xl">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                            <span class="text-xs text-slate-400">AS-IS</span>
+                            <span class="font-medium">개인의 '감'에 의존</span>
+                        </div>
+                        <div class="flex justify-between items-center text-violet-700 font-bold">
+                            <span class="text-xs text-violet-400 font-normal">TO-BE</span>
+                            <span>시스템 기반 성과 재현</span>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-slate-500 text-sm text-center">
+                        "누구나 지도만 따라가면 상위 30%의 성과를 낼 수 있는 구조적 환경 조성"
+                    </p>
+                </div>
+
+                <!-- Value 2: Process Innovation -->
+                <div
+                    class="bg-violet-600 p-8 rounded-3xl shadow-2xl text-white relative transform md:-translate-y-4 md:scale-105 z-10">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none">
+                    </div>
+
+                    <div
+                        class="w-20 h-20 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center text-white text-3xl mb-6 mx-auto">
+                        <i class="fa-solid fa-recycle"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-center">프로세스 혁신 (Process)</h3>
+                    <p class="text-violet-100 text-center text-sm mb-6">
+                        버려지던 '이동 시간'을 가장 가치 있는 '데이터 수집 시간'으로 전환
+                    </p>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center bg-white/10 px-3 py-2 rounded-lg">
+                            <i class="fa-solid fa-arrow-right-long mr-3 text-violet-300"></i>
+                            <span>단순 방문 활동 (Labor)</span>
+                        </li>
+                        <li class="flex justify-center text-violet-300 text-xs">▼ Transformation ▼</li>
+                        <li class="flex items-center bg-white text-violet-700 px-3 py-2 rounded-lg font-bold shadow-lg">
+                            <i class="fa-solid fa-star mr-3 text-yellow-500"></i>
+                            <span>자산 축적 활동 (Asset)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Value 3: Scalability -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-xl shadow-violet-100/50 border border-violet-100 relative group hover:-translate-y-2 transition-transform duration-300">
+                    <div
+                        class="w-16 h-16 bg-white rounded-2xl border-2 border-violet-100 flex items-center justify-center text-violet-600 text-2xl mb-6 shadow-sm mx-auto group-hover:border-violet-500 transition-colors">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 text-center">확장성 (Scalability)</h3>
+                    <div class="space-y-3 text-sm text-slate-600 bg-slate-50 p-4 rounded-xl">
+                        <p class="mb-2 font-medium text-slate-800 text-center">적용 가능 산업군</p>
+                        <div class="flex flex-wrap gap-2 justify-center">
+                            <span class="bg-white border border-slate-200 px-2 py-1 rounded text-xs">보험 영업</span>
+                            <span class="bg-white border border-slate-200 px-2 py-1 rounded text-xs">제약 영업</span>
+                            <span class="bg-white border border-slate-200 px-2 py-1 rounded text-xs">프랜차이즈</span>
+                            <span class="bg-white border border-slate-200 px-2 py-1 rounded text-xs">물류/배송</span>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-slate-500 text-sm text-center">
+                        모든 Field Sales 조직에 적용 가능한 <br><strong>B2B SaaS 모델로서의 잠재력</strong>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script to render chart -->
+    <script>
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['인테리어중 (유효)', '폐문/공실', '미확인'],
+                datasets: [{
+                    data: [3, 4, 1],
+                    backgroundColor: [
+                        '#10b981', // emerald-500
+                        '#94a3b8', // slate-400
+                        '#e2e8f0'  // slate-200
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { family: "'Pretendard', sans-serif" }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    </script>
+</body>
+
+</html>

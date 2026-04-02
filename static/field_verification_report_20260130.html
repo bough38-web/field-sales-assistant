@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신규 오픈 매장 DB 앱 현장 검증 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="gradient-header text-white py-12 shadow-xl relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+        </div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end">
+                <div>
+                    <span
+                        class="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">
+                        Field Verification Report
+                    </span>
+                    <h1 class="text-3xl md:text-4xl font-bold mb-2 tracking-tight">신규 오픈 매장 DB 앱(App) 현장 실효성
+                        검증(Field-Test) 추진 현황</h1>
+                    <p class="text-lg text-slate-300 font-light">선제적 영업 기회 확보를 위한 DB 필드 검증</p>
+                </div>
+                <div class="mt-6 md:mt-0 text-right">
+                    <p class="text-sm opacity-60">보고일자: 01. 30</p>
+                    <p class="text-sm opacity-60">보고자: 강북/강원본부 사업지원팀 박희본</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- 1. Overview & Purpose -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-10">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center border-b pb-4">
+                <i class="fa-solid fa-bullseye text-blue-500 mr-3"></i> 1. 개요 및 목적
+            </h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-bold text-slate-700 mb-2">배경 (Background)</h3>
+                    <p class="text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg">
+                        신규 오픈 예정 매장 정보(상호, 위치, 연락처 등)를 제공하는 모바일 앱 개발 완료에 따라,
+                        실제 영업 현장에서의 활용 가치를 검증할 필요성이 대두됨.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-700 mb-2">목적 (Purpose)</h3>
+                    <p class="text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg">
+                        제공된 데이터와 실제 현장 상황(인테리어 공사 여부, 개업 시기 등)의 일치 여부를 파악하여
+                        <strong class="text-emerald-600">DB의 신뢰도(Reliability) 확보</strong> 및
+                        <strong class="text-emerald-600">영업 적중률(Hit-Rate) 제고</strong>.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Test Overview -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-10">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center border-b pb-4">
+                <i class="fa-solid fa-list-check text-blue-500 mr-3"></i> 2. 테스트 개요
+            </h2>
+            <ul class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <li class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <span class="text-xs text-slate-500 uppercase font-bold block mb-1">기간</span>
+                    <span class="font-bold text-slate-800">01. 27 ~ 01. 29 (3일간)</span>
+                </li>
+                <li class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <span class="text-xs text-slate-500 uppercase font-bold block mb-1">대상</span>
+                    <span class="font-bold text-slate-800">앱 내 '신규 오픈'으로 표기된<br>수도권 주요 상권 22개소(서대문/중앙/고양)</span>
+                </li>
+                <li class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <span class="text-xs text-slate-500 uppercase font-bold block mb-1">영업팀장 구역</span>
+                    <span class="font-bold text-slate-800">사업지원팀 및 시범 지사 영업사원<br>(6명)</span>
+                </li>
+                <li class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <span class="text-xs text-slate-500 uppercase font-bold block mb-1">검증 방식</span>
+                    <span class="font-bold text-slate-800">앱 데이터 확인 후 <br><span class="text-blue-600">현장 즉시 방문(Field
+                            Verification)</span>을 통한 교차 검증</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- 3. Field Results -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-10">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-chart-simple text-blue-500 mr-3"></i> 3. 현장 점검 결과
+                </h2>
+                <div class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-bold">
+                    <i class="fa-solid fa-bell mr-2"></i>참여 팀장 전원 적극적 앱 사용 및 방문 활동 의사 확인
+                </div>
+            </div>
+
+            <!-- Photos -->
+            <div class="mb-8">
+                <h3 class="font-bold text-slate-700 mb-4 flex items-center">
+                    <i class="fa-solid fa-camera text-slate-400 mr-2"></i> 현장 검증 사진
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="group relative overflow-hidden rounded-xl shadow-md cursor-pointer">
+                        <img src="images/field_photo_new_1.jpg" alt="현장 검증 사진 1"
+                            class="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <p class="text-white text-sm font-medium">현장 방문 및 앱 데이터 대조 1</p>
+                        </div>
+                    </div>
+                    <div class="group relative overflow-hidden rounded-xl shadow-md cursor-pointer">
+                        <img src="images/field_photo_new_2.jpg" alt="현장 검증 사진 2"
+                            class="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <p class="text-white text-sm font-medium">현장 방문 및 앱 데이터 대조 2</p>
+                        </div>
+                    </div>
+                    <div class="group relative overflow-hidden rounded-xl shadow-md cursor-pointer">
+                        <img src="images/field_photo_new_3.jpg" alt="현장 검증 사진 3"
+                            class="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <p class="text-white text-sm font-medium">실제 매장 인테리어 현황 확인 1</p>
+                        </div>
+                    </div>
+                    <div class="group relative overflow-hidden rounded-xl shadow-md cursor-pointer">
+                        <img src="images/field_photo_new_4.jpg" alt="현장 검증 사진 4"
+                            class="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <p class="text-white text-sm font-medium">실제 매장 인테리어 현황 확인 2</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead
+                        class="bg-slate-100 text-slate-600 uppercase text-xs font-bold border-t border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3 border-r relative text-center">관리지사</th>
+                            <th class="px-4 py-3 border-r relative text-center">활동일시</th>
+                            <th class="px-4 py-3 border-r relative text-center">SP담당</th>
+                            <th class="px-4 py-3 border-r relative">사업장명</th>
+                            <th class="px-4 py-3 border-r relative text-center">인허가일자</th>
+                            <th class="px-4 py-3 border-r relative text-center">폐업일자</th>
+                            <th class="px-4 py-3 border-r relative text-center">활동진행상태</th>
+                            <th class="px-4 py-3 relative">방문결과</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <!-- Sudamun -->
+                        <tr class="hover:bg-slate-50">
+                            <td rowspan="7" class="px-4 py-3 font-medium text-center border-r bg-white align-top pt-4">
+                                서대문</td>
+                            <td rowspan="7" class="px-4 py-3 text-center border-r bg-white align-top pt-4">
+                                01.27<br>10:40 ~ 15:40</td>
+                            <td rowspan="7"
+                                class="px-4 py-3 text-center border-r bg-white align-top pt-4 font-bold text-slate-700">
+                                최용호</td>
+                            <td class="px-4 py-3 border-r font-medium">노랑통닭 등교동삼거리점</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-19</td>
+                            <td class="px-4 py-3 text-center border-r text-red-400"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-blue-100 text-blue-700">전달</span></td>
+                            <td class="px-4 py-3 font-bold text-emerald-600">인테리어중</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r text-slate-500">방이네</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">'25-03-18</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium">01-22</td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">폐문</span></td>
+                            <td class="px-4 py-3 text-slate-400">폐업</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r text-slate-500">보그헤어 (신촌역점)</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">'07-11-12</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium">01-21</td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">폐문</span></td>
+                            <td class="px-4 py-3 text-slate-400">폐업</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r text-slate-500">세이프 스테이</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-19</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">폐문</span></td>
+                            <td class="px-4 py-3 text-slate-400"></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium">아운티제니 신촌점</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-23</td>
+                            <td class="px-4 py-3 text-center border-r text-red-400"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-blue-100 text-blue-700">전달</span></td>
+                            <td class="px-4 py-3 font-bold text-emerald-600">인테리어중</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium">아운티제니 홍대점</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-20</td>
+                            <td class="px-4 py-3 text-center border-r text-red-400"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-blue-100 text-blue-700">전달</span></td>
+                            <td class="px-4 py-3 font-bold text-emerald-600">인테리어중</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 border-b-2 border-slate-200">
+                            <td class="px-4 py-3 border-r text-slate-500">엘세븐헤어 (신촌연대점)</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">'11-02-01</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium">01-21</td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">폐문</span></td>
+                            <td class="px-4 py-3 text-slate-400">폐업</td>
+                        </tr>
+
+                        <!-- Adding the "Extra logic" row for Sudamun -->
+                        <tr class="bg-indigo-50/50 border-b-2 border-indigo-100">
+                            <td colspan="8" class="px-4 py-3 text-center text-indigo-800 font-bold">
+                                ※ 이동중 추가 2군데 (2층건물, 3층건물) 인테리어 장소 확인, 최용호팀장 전달
+                            </td>
+                        </tr>
+
+                        <!-- Joongang -->
+                        <tr class="hover:bg-slate-50">
+                            <td rowspan="5" class="px-4 py-3 font-medium text-center border-r bg-white align-top pt-4">
+                                중앙지사</td>
+                            <td rowspan="5" class="px-4 py-3 text-center border-r bg-white align-top pt-4">
+                                01.28<br>15:10 ~ 17:00</td>
+                            <td class="px-4 py-3 text-center border-r bg-white align-top pt-2 font-bold text-slate-700">
+                                송민철</td>
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">북촌손두부</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">'11-06-21</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium bg-yellow-100">01-20
+                            </td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-purple-100 text-purple-700">잠재적가능</span></td>
+                            <td class="px-4 py-3 bg-yellow-50">기본 집기류 있는 상태 (영업종료)</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td rowspan="4"
+                                class="px-4 py-3 text-center border-r bg-white align-top pt-4 font-bold text-slate-700">
+                                양현성</td>
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">스테이 쉼</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-23</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">내부진입불가</span></td>
+                            <td class="px-4 py-3"></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">엠뷰티</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-16</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-purple-100 text-purple-700">잠재적가능</span></td>
+                            <td class="px-4 py-3 bg-yellow-50">폐문, 집기류 있으며, 영업준비중</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">일신광업사</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">'13-02-01</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium">01-12</td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">미확인</span></td>
+                            <td class="px-4 py-3 text-slate-500">확인못함</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 border-b-2 border-slate-200">
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">허니프레소</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-19</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">미확인</span></td>
+                            <td class="px-4 py-3">동대문 디자인플라자 (직원에게 물었으나 확인불가)</td>
+                        </tr>
+
+                        <!-- Adding the "Extra logic" row for Joongang -->
+                        <tr class="bg-indigo-50/50 border-b-2 border-indigo-100">
+                            <td colspan="8" class="px-4 py-3 text-center text-indigo-800 font-bold">
+                                ※ 이동중 2군데 인테리어 장소 확인, 양현성팀장 전달
+                            </td>
+                        </tr>
+
+                        <!-- Goyang -->
+                        <tr class="hover:bg-slate-50">
+                            <td rowspan="10" class="px-4 py-3 font-medium text-center border-r bg-white align-top pt-4">
+                                고양지사</td>
+                            <td rowspan="10" class="px-4 py-3 text-center border-r bg-white align-top pt-4">
+                                01.29<br>10:40 ~ 16:00</td>
+                            <td rowspan="3"
+                                class="px-4 py-3 text-center border-r bg-white align-top pt-4 font-bold text-slate-700">
+                                강경필</td>
+                            <td class="px-4 py-3 border-r font-medium">작당 당구장 고양 화정점</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-27</td>
+                            <td class="px-4 py-3 text-center border-r text-red-400"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">CCTV 사용중</span></td>
+                            <td class="px-4 py-3">사실_CCTV설치됨</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">주식회사 한결종합관리</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-23</td>
+                            <td class="px-4 py-3 text-center border-r text-red-400"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">확인x</span></td>
+                            <td class="px-4 py-3">2층이나, 비어 있음 (의자3개, 책상3개)</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">활력수산</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-27</td>
+                            <td class="px-4 py-3 text-center border-r text-red-400"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">확인x</span></td>
+                            <td class="px-4 py-3">장어천국 식당이면서 유통관련 별도로 진행</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td rowspan="5"
+                                class="px-4 py-3 text-center border-r bg-white align-top pt-4 font-bold text-slate-700">
+                                강민수</td>
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">닭발 1987</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-23</td>
+                            <td class="px-4 py-3 text-center border-r text-red-400"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-slate-100 text-slate-500">CCTV 사용중</span></td>
+                            <td class="px-4 py-3">2/5일 오픈준비중, 사재 CCTV설치됨</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-bold text-slate-800">리카 (Lycka)</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">'24-11-14</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-bold">01-08
+                            </td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-purple-100 text-purple-700">잠재적가능</span></td>
+                            <td class="px-4 py-3 font-bold">폐업, 폐문상태</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">바나프레소 일산후곡점</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-26</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-red-100 text-red-700">철거중</span></td>
+                            <td class="px-4 py-3">철거작업중 (기존 에스원 지문리더설치 상태)</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-blue-600">소망</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-26</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-blue-100 text-blue-700">전달</span></td>
+                            <td class="px-4 py-3 bg-blue-50 text-blue-800 font-bold">공사중, 강민수팀장 전달</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-blue-600">아이랑쿡 베이비푸드</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-27</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-blue-100 text-blue-700">전달</span></td>
+                            <td class="px-4 py-3 bg-blue-50 text-blue-800 font-bold">공사중, 강민수팀장 전달</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td rowspan="2"
+                                class="px-4 py-3 text-center border-r bg-white align-top pt-4 font-bold text-slate-700">
+                                최우석</td>
+                            <td class="px-4 py-3 border-r font-medium text-slate-500">L&L스킨네일속눈썹(1)</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">'16-07-08</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium bg-red-50">01-27
+                            </td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-purple-100 text-purple-700">잠재적가능</span></td>
+                            <td class="px-4 py-3 text-slate-500">폐업</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 border-r font-medium text-blue-600">한지붕세가족</td>
+                            <td class="px-4 py-3 text-center border-r text-slate-500">01-23</td>
+                            <td class="px-4 py-3 text-center border-r text-red-500 font-medium"></td>
+                            <td class="px-4 py-3 text-center border-r"><span
+                                    class="status-badge bg-blue-100 text-blue-700">전달</span></td>
+                            <td class="px-4 py-3 bg-blue-50 text-blue-800">
+                                <strong>○ 최우석전달</strong><br>
+                                - 부동산확인, 기존커피숍자리에 식당입점
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 py-8 text-center">
+        <p>&copy; Sales Field Assistant System. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>

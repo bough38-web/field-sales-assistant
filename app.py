@@ -2446,6 +2446,12 @@ if raw_df is not None:
         # [SECURITY] Global Filter Visibility (Admin Only)
         st.markdown("### 🔍 조회 조건 설정")
         
+        # [NEW] Map Display Limit (Safety for 190k rows)
+        map_limit = st.slider("📍 지도 표시 개수", 1, 3000, 100, 
+                             help="한꺼번에 너무 많은 지점을 표시하면 브라우저가 느려지거나 오류가 발생할 수 있습니다. (권장: 100~500개)")
+        if map_limit == 1:
+            st.info("💡 **최대 1건** 모드: 가장 점수가 높은 1개 지점만 지도에 표시합니다.")
+        
         # [FEATURE] Global Date Range Filter (Moved to Conditional Search Expander)
         # Old location removed. Now handled via session state at top and UI rendered later.
         global_date_range = st.session_state.get('global_date_range', ())
@@ -4158,11 +4164,16 @@ if raw_df is not None:
         }
         
         if not map_df.empty:
+            # [FIX] Apply limit to prevent OOM/Browser Crash on 190k rows
+            display_df = map_df.head(map_limit)
+            if len(map_df) > map_limit:
+                st.caption(f"⚠️ 총 {len(map_df):,}건 중 상위 {map_limit:,}건만 지도에 표시 중입니다. (사이드바에서 조절 가능)")
+                
             if kakao_key:
                 # Pass heatmap flag to visualizer
-                map_visualizer.render_kakao_map(map_df, kakao_key, use_heatmap=use_heatmap, user_context=user_context)
+                map_visualizer.render_kakao_map(display_df, kakao_key, use_heatmap=use_heatmap, user_context=user_context)
             else:
-                map_visualizer.render_folium_map(map_df, use_heatmap=use_heatmap, user_context=user_context) # [FIX] Correct function name
+                map_visualizer.render_folium_map(display_df, use_heatmap=use_heatmap, user_context=user_context) # [FIX] Correct function name
         else:
             st.warning("표시할 데이터가 없습니다.")
             

@@ -6,107 +6,67 @@ import streamlit as st
 @st.cache_data(show_spinner=False)
 def calculate_ai_scores(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Calculate AI Opportunity Scores (0-100) for each row.
-    
-    Factors:
-    1. Recency (New Open/Change): 40 pts
-    2. Status (Open > Closed): 30 pts
-    3. Scale (Area): 20 pts
-    4. Strategic Priority (Hospital > Others): 10 pts
+    Calculate AI Opportunity Scores (0-100) using high-speed Vectorized Pandas operations.
+    Optimal for datasets up to 200k+ rows.
     """
     if df.empty:
         return df
 
-    now = pd.Timestamp.now()
     df = df.copy()
+    now = pd.Timestamp.now()
     
-    # Initialize Score
-    df['AI_Score'] = 0
-    df['AI_Comment'] = ""
-
-    # 1. Recency Score (40 pts)
-    # Define columns to check
-    # 인허가일자, 최종수정시점
+    # 1. Precalculate Days Diff (Vectorized)
+    # Coerce errors to NaT, then fillna with distant future
+    permit_dates = pd.to_datetime(df['인허가일자'], errors='coerce')
+    mod_dates = pd.to_datetime(df['최종수정시점'], errors='coerce')
     
-    # Helper for days diff
-    def get_days_diff(pipeline_date):
-        try:
-            val = pd.to_datetime(pipeline_date)
-            if pd.isna(val): return 9999
-            return (now - val).days
-        except:
-            return 9999
-
-    # Vectorized calculation usually better, but robust loop for mixed types
-    scores = []
-    comments = []
+    d_permit = (now - permit_dates).dt.days.fillna(9999)
+    d_mod = (now - mod_dates).dt.days.fillna(9999)
     
-    for idx, row in df.iterrows():
-        s = 0
-        c = []
+    # Factor 1: Recency (40 pts)
+    # Conditions prioritized by severity
+    recency_conditions = [
+        (d_permit <= 7),
+        (d_permit <= 30),
+        (d_mod <= 7)
+    ]
+    recency_values = [40, 30, 25]
+    recency_comments = ["🔥신규(7일내)", "✨신규(1달내)", "🔄최근변동"]
+    
+    df['recency_pts'] = np.select(recency_conditions, recency_values, default=10)
+    df['recency_comment'] = np.select(recency_conditions, recency_comments, default="")
+    
+    # Factor 2: Status (30 pts)
+    status_str = df['영업상태명'].fillna('').astype(str)
+    is_open = status_str.str.contains('영업|정상')
+    is_closed = status_str.str.contains('폐업')
+    
+    df['status_pts'] = np.where(is_open, 30, np.where(is_closed, 20, 0))
+    df['status_comment'] = np.where(is_closed, "⚠️폐업관리", "")
+    
+    # Factor 3: Scale/Area (20 pts)
+    area_val = pd.to_numeric(df['소재지면적'], errors='coerce').fillna(0)
+    df['area_pts'] = np.where(area_val >= 330, 20, np.where(area_val >= 100, 10, 5))
+    df['area_comment'] = np.where(area_val >= 330, "🏢대형", "")
+    
+    # Factor 4: Type (10 pts)
+    type_str = df['업태구분명'].fillna('').astype(str)
+    is_medical = type_str.str.contains('병원|의원')
+    df['type_pts'] = np.where(is_medical, 10, 5)
+    df['type_comment'] = np.where(is_medical, "🏥병원", "")
+    
+    # Combine Scores
+    df['AI_Score'] = (df['recency_pts'] + df['status_pts'] + df['area_pts'] + df['type_pts']).clip(0, 100)
+    
+    # Combine Comments
+    # Join non-empty comments
+    comment_cols = ['recency_comment', 'status_comment', 'area_comment', 'type_comment']
+    def join_comments(row):
+        return " ".join([str(val) for val in row if val and str(val).strip()])
         
-        # Factor 1: Recency
-        # Prioritize New Openings (Permit Date)
-        d_permit = get_days_diff(row.get('인허가일자'))
-        d_mod = get_days_diff(row.get('최종수정시점'))
-        
-        recency_pts = 0
-        if d_permit <= 7:
-            recency_pts = 40
-            c.append("🔥신규(7일내)")
-        elif d_permit <= 30:
-            recency_pts = 30
-            c.append("✨신규(1달내)")
-        elif d_mod <= 7:
-            recency_pts = 25
-            c.append("🔄최근변동")
-        else:
-            recency_pts = 10
-        
-        s += recency_pts
-        
-        # Factor 2: Status (30 pts)
-        status = str(row.get('영업상태명', ''))
-        if '영업' in status or '정상' in status:
-            s += 30
-        elif '폐업' in status:
-            # Closed is still an opportunity for asset recovery, but maybe lower score than active sales?
-            # Or higher? Let's say opportunity "to sell new" => Open is better.
-            # Opportunity "to retrieve" => Closed is better.
-            # Let's assume Sales context: Open is 30, Closed is 20 (still important).
-            s += 20
-            c.append("⚠️폐업관리")
-        
-        # Factor 3: Scale/Area (20 pts)
-        try:
-            area = float(row.get('소재지면적', 0))
-            if area >= 330: # 100py
-                s += 20
-                c.append("🏢대형")
-            elif area >= 100: # 30py
-                s += 10
-            else:
-                s += 5
-        except:
-            s += 5
-            
-        # Factor 4: Type (10 pts)
-        btype = str(row.get('업태구분명', ''))
-        if '병원' in btype or '의원' in btype:
-            s += 10
-            c.append("🏥병원")
-        else:
-            s += 5
-            
-        # Bonus: Random jitter to differentiate equal scores (0-5)
-        # Using hash of name to be deterministic but varied
-        # name_seed = int(hash(str(row.get('사업장명',''))) % 5)
-        # s += name_seed 
-        
-        scores.append(min(s, 100))
-        comments.append(" ".join(c))
-        
-    df['AI_Score'] = scores
-    df['AI_Comment'] = comments
+    df['AI_Comment'] = df[comment_cols].apply(join_comments, axis=1)
+    
+    # Clean up temporary columns
+    df = df.drop(columns=['recency_pts', 'recency_comment', 'status_pts', 'status_comment', 'area_pts', 'area_comment', 'type_pts', 'type_comment'])
     
     return df

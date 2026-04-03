@@ -131,16 +131,24 @@ def inject_custom_css():
     """, unsafe_allow_html=True)
 
 def inject_button_color_script():
-    """Injects JavaScript to dynamically apply status colors to buttons with a periodic safety check."""
+    """Injects an ultra-safe, passive MutationObserver to style buttons without React conflicts."""
     js = """
     <script>
         (function() {
-            function applyStatusColors() {
+            // [STABILITY] Ultra-Safe Passive Styling Script
+            // Uses MutationObserver + requestAnimationFrame to avoid 'removeChild' errors
+            
+            function applyStyles() {
                 try {
-                    const buttons = window.parent.document.querySelectorAll('button');
+                    const doc = window.parent.document;
+                    // Detect Streamlit "Running" state - avoid touching DOM while React is mounting/unmounting
+                    const isRunning = !!doc.querySelector('[data-testid="stStatusWidget"]');
+                    if (isRunning) return; 
+
+                    const buttons = doc.querySelectorAll('button');
                     buttons.forEach(btn => {
-                        // Skip if already processed to minimize DOM activity
-                        if (btn.dataset.stStyled === 'true') return;
+                        // 1. Skip if already styled OR detached
+                        if (btn.dataset.stStyled === 'true' || !doc.contains(btn)) return;
                         
                         const txt = btn.innerText.trim();
                         let changed = false;
@@ -163,19 +171,27 @@ def inject_button_color_script():
                     });
                 } catch(e) {}
             }
-            
-            // Clean up any existing interval from a previous run to prevent accumulation
-            if (window.parent._stButtonInterval) {
-                clearInterval(window.parent._stButtonInterval);
+
+            // Cleanup
+            if (window.parent._stObs) {
+                window.parent._stObs.disconnect();
             }
+
+            // Initial call via frame to stay sync with browser refresh
+            requestAnimationFrame(applyStyles);
+
+            // [STABILITY] MutationObserver is much safer than setInterval for high-data scenarios
+            const observer = new MutationObserver((mutations) => {
+                // Throttled execution via requestAnimationFrame
+                requestAnimationFrame(applyStyles);
+            });
+
+            observer.observe(window.parent.document.body, {
+                childList: true,
+                subtree: true
+            });
             
-            // Periodically check for new buttons every 1000ms
-            // Throttled periodic check is much more stable than eal-time MutationObserver 
-            // for Streamlit's complex React-managed DOM.
-            window.parent._stButtonInterval = setInterval(applyStatusColors, 1000);
-            
-            // Initial call
-            applyStatusColors();
+            window.parent._stObs = observer;
         })();
     </script>
     """

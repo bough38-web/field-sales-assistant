@@ -131,7 +131,7 @@ def inject_custom_css():
     """, unsafe_allow_html=True)
 
 def inject_button_color_script():
-    """Injects JavaScript to dynamically apply status colors to buttons with a safety throttle."""
+    """Injects JavaScript to dynamically apply status colors to buttons with a periodic safety check."""
     js = """
     <script>
         (function() {
@@ -139,46 +139,43 @@ def inject_button_color_script():
                 try {
                     const buttons = window.parent.document.querySelectorAll('button');
                     buttons.forEach(btn => {
+                        // Skip if already processed to minimize DOM activity
+                        if (btn.dataset.stStyled === 'true') return;
+                        
                         const txt = btn.innerText.trim();
+                        let changed = false;
+                        
                         if (txt === '영업') {
-                            if (btn.style.backgroundColor !== 'rgb(174, 213, 129)') {
-                                btn.style.setProperty('background-color', '#AED581', 'important');
-                                btn.style.setProperty('color', '#1B5E20', 'important');
-                                btn.style.setProperty('border-color', '#AED581', 'important');
-                            }
+                            btn.style.setProperty('background-color', '#AED581', 'important');
+                            btn.style.setProperty('color', '#1B5E20', 'important');
+                            btn.style.setProperty('border-color', '#AED581', 'important');
+                            changed = true;
                         } else if (txt === '폐업') {
-                            if (btn.style.backgroundColor !== 'rgb(239, 154, 154)') {
-                                btn.style.setProperty('background-color', '#EF9A9A', 'important');
-                                btn.style.setProperty('color', '#B71C1C', 'important');
-                                btn.style.setProperty('border-color', '#EF9A9A', 'important');
-                            }
+                            btn.style.setProperty('background-color', '#EF9A9A', 'important');
+                            btn.style.setProperty('color', '#B71C1C', 'important');
+                            btn.style.setProperty('border-color', '#EF9A9A', 'important');
+                            changed = true;
+                        }
+                        
+                        if (changed) {
+                            btn.dataset.stStyled = 'true';
                         }
                     });
                 } catch(e) {}
             }
             
-            // Initial call
-            applyStatusColors();
-            
-            // Cleanup previous observer to prevent memory leak and racial conditions
-            if (window.parent._stButtonObserver) {
-                window.parent._stButtonObserver.disconnect();
+            // Clean up any existing interval from a previous run to prevent accumulation
+            if (window.parent._stButtonInterval) {
+                clearInterval(window.parent._stButtonInterval);
             }
             
-            // Throttled MutationObserver
-            let timeout;
-            window.parent._stButtonObserver = new MutationObserver((mutations) => {
-                if (timeout) return;
-                timeout = setTimeout(() => {
-                    applyStatusColors();
-                    timeout = null;
-                }, 100); // 100ms throttle to prevent React sync issues
-            });
+            // Periodically check for new buttons every 1000ms
+            // Throttled periodic check is much more stable than eal-time MutationObserver 
+            // for Streamlit's complex React-managed DOM.
+            window.parent._stButtonInterval = setInterval(applyStatusColors, 1000);
             
-            window.parent._stButtonObserver.observe(window.parent.document.body, { 
-                childList: true, 
-                subtree: true 
-            });
+            // Initial call
+            applyStatusColors();
         })();
     </script>
     """

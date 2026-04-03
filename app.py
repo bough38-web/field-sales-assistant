@@ -2409,10 +2409,22 @@ if raw_df is not None:
         only_with_phone = False
         address_search = ""  # Address search filter
         
-        # [STABILITY] Unify Date Filter Logic (Simplified to prevent removeChild crash)
+        # [STABILITY] Robust Date Filter Sync (Syncs Sidebar & Tab without removeChild crash)
         if 'global_date_range' not in st.session_state:
-            # Default to no filter (empty tuple) or specific range
             st.session_state.global_date_range = ()
+            
+        def _sync_date_state(key):
+            val = st.session_state.get(key)
+            prev_key = f"prev_{key}"
+            if isinstance(val, (list, tuple)) and val != st.session_state.get(prev_key):
+                st.session_state[prev_key] = val
+                if len(val) == 2 or len(val) == 0:
+                    st.session_state.global_date_range = val
+                    # Add a tiny buffer only on change to allow DOM to settle
+                    time.sleep(0.4)
+        
+        _sync_date_state('sb_mod_period')
+        _sync_date_state('tab_mod_period')
         
         global_date_range = st.session_state.global_date_range
         
@@ -2663,18 +2675,12 @@ if raw_df is not None:
             key="sb_close_ym"
         )
         
-        # [STABILITY] Unified Date Filter (Sidebar)
-        def on_period_change():
-            # Add a tiny delay to ensure browser settles before heavy branch filtering
-            time.sleep(0.4)
-            st.session_state.page = 0
-            
+        # [STABILITY] Sidebar Date Input
         mod_range = st.date_input(
             "시작일 - 종료일",
             value=st.session_state.global_date_range,
             help="데이터의 최종 수정일(인허가/폐업/활동) 기준",
-            key="global_date_range",
-            on_change=on_period_change
+            key="sb_mod_period" # Decoupled key for sidebar
         )
         
         # Validation message for incomplete range
@@ -3885,17 +3891,27 @@ if raw_df is not None:
 
     # [TAB] Map & Analysis
     if active_nav == "🗺️ 지도 & 분석":
-        # Log tab access
+        # [STABILITY] Move Period Search to top-level for guaranteed visibility
+        st.markdown("##### 🕵️ 기간 조회 (최종수정일 기준)")
+        st.caption("전체 탭(지도, 통계, 리스트)에 공통 적용됩니다.")
         
+        g_tab_val = st.date_input(
+            "조회 기간 선택",
+            value=st.session_state.global_date_range,
+            label_visibility="collapsed",
+            key="tab_mod_period" # Decoupled key for Tab
+        )
+        
+        # Validation message for incomplete range
+        if isinstance(g_tab_val, (list, tuple)) and len(g_tab_val) == 1:
+            st.warning("⚠️ 종료일을 선택해주세요.")
+        st.divider()
+
         with st.expander("🗺️ 조건조회", expanded=True):
             # Marker for Mobile Visibility Control
             st.markdown('<div id="mobile-filter-marker"></div>', unsafe_allow_html=True)
-            # st.subheader("🗺️ 조건조회")
             
-            # [STABILITY] Removed redundant date input to prevent removeChild crash
-            st.markdown("##### 🕵️ 전체 기간 필터링")
-            st.info("💡 사이드바의 **📅 수정 기간** 필터가 지도와 통계에 공통 적용됩니다.")
-            st.divider()
+            st.info("💡 위 설정은 지도 탐색에 적용됩니다.")
 
             # [MOVED] AI Analysis Block removed from here
 

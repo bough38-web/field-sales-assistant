@@ -2491,11 +2491,19 @@ if raw_df is not None:
             st.session_state.sb_manager = "전체"
             st.session_state.page = 0 # [FIX] Reset pagination
             st.query_params.clear()
+            # [STABILITY] Adding a tiny buffer for heavy branch-level data transitions
+            time.sleep(0.4)
+            
+        # [STABILITY] Hardened Index Lookup (Prevents ValueError if options change mid-run)
+        try:
+            curr_br_idx = branch_opts.index(st.session_state.sb_branch)
+        except ValueError:
+            curr_br_idx = 0
             
         sel_branch = st.selectbox(
             "관리지사 선택", 
             branch_opts, 
-            index=branch_opts.index(st.session_state.sb_branch) if st.session_state.sb_branch in branch_opts else 0,
+            index=curr_br_idx,
             key="sb_branch",
             on_change=reset_manager_filter,
             disabled=disabled_branch
@@ -2537,10 +2545,16 @@ if raw_df is not None:
              time.sleep(0.4)
 
         # [ROLE_CONSTRAINT] Manager (Admin can always change)
+        # [STABILITY] Hardened Manager Index Lookup
+        try:
+            curr_mgr_idx = manager_opts.index(st.session_state.get('sb_manager', "전체"))
+        except ValueError:
+            curr_mgr_idx = 0
+            
         sel_manager_label = st.selectbox(
             "영업구역/담당", 
             manager_opts, 
-            index=manager_opts.index(st.session_state.get('sb_manager', "전체")) if st.session_state.get('sb_manager') in manager_opts else 0,
+            index=curr_mgr_idx,
             key="sb_manager",
             on_change=on_manager_change, # [FIX] Reset page & params
             disabled=False # Admin can always change
@@ -4188,6 +4202,10 @@ if raw_df is not None:
     # [TAB] Detailed Stats
     if active_nav == "📈 상세통계":
         st.subheader("📈 다차원 상세 분석")
+        
+        # [MEMORY_GUARD] If filtered data is too large for complex charts (e.g. 50k+ rows)
+        if len(base_df) > 30000:
+             st.warning(f"⚠️ 현재 {len(base_df):,}건의 데이터가 선택되었습니다. 대용량 데이터를 처리하는 중이므로 차트 생성에 2-3초가 걸릴 수 있습니다.")
         
         # [FEATURE] 15-Day Daily Trend Chart
         st.markdown("##### 📅 최근 15일 영업/폐업 추이")

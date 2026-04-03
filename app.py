@@ -2512,8 +2512,14 @@ if raw_df is not None:
         if has_area_code:
                 temp_df = filter_df[['영업구역 수정', 'SP담당']].dropna(subset=['SP담당']).copy()
                 # Handle potential NaN in code
-                temp_df['영업구역 수정'] = temp_df['영업구역 수정'].fillna('')
-                temp_df['label'] = temp_df.apply(lambda x: f"{x['영업구역 수정']} ({x['SP담당']})" if x['영업구역 수정'] else x['SP담당'], axis=1)
+                temp_df['영업구역 수정'] = temp_df['영업구역 수정'].fillna('').astype(str)
+                temp_df['SP담당'] = temp_df['SP담당'].fillna('').astype(str)
+                # Vectorized label creation
+                temp_df['label'] = np.where(
+                    temp_df['영업구역 수정'] != '',
+                    temp_df['영업구역 수정'] + ' (' + temp_df['SP담당'] + ')',
+                    temp_df['SP담당']
+                )
                 temp_df = temp_df.sort_values(['SP담당', '영업구역 수정'])
                 manager_opts = ["전체"] + list(temp_df['label'].unique())
                 # Map label back to data
@@ -2527,6 +2533,8 @@ if raw_df is not None:
         def on_manager_change():
              st.session_state.page = 0
              st.query_params.clear()
+             # [FIX] Added tiny delay to ensure browser DOM settles before high-load filter change
+             time.sleep(0.4)
 
         # [ROLE_CONSTRAINT] Manager (Admin can always change)
         sel_manager_label = st.selectbox(

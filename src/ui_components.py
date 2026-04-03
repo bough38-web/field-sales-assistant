@@ -131,38 +131,55 @@ def inject_custom_css():
     """, unsafe_allow_html=True)
 
 def inject_button_color_script():
-    """Injects JavaScript to dynamicallly apply status colors to buttons."""
+    """Injects JavaScript to dynamically apply status colors to buttons with a safety throttle."""
     js = """
     <script>
-        function applyStatusColors() {
-            try {
-                const buttons = window.parent.document.querySelectorAll('button');
-                buttons.forEach(btn => {
-                    const txt = btn.innerText.trim();
-                    if (txt === '영업') {
-                        btn.style.backgroundColor = '#AED581 !important';
-                        btn.style.color = '#1B5E20 !important';
-                        btn.style.borderColor = '#AED581 !important';
-                    } else if (txt === '폐업') {
-                        btn.style.backgroundColor = '#EF9A9A !important';
-                        btn.style.color = '#B71C1C !important';
-                        btn.style.borderColor = '#EF9A9A !important';
-                    }
-                });
-            } catch(e) {}
-        }
-        
-        applyStatusColors();
-        
-        if (window.parent.statusButtonObserver) {
-            window.parent.statusButtonObserver.disconnect();
-        }
-        
-        window.parent.statusButtonObserver = new MutationObserver(() => {
+        (function() {
+            function applyStatusColors() {
+                try {
+                    const buttons = window.parent.document.querySelectorAll('button');
+                    buttons.forEach(btn => {
+                        const txt = btn.innerText.trim();
+                        if (txt === '영업') {
+                            if (btn.style.backgroundColor !== 'rgb(174, 213, 129)') {
+                                btn.style.setProperty('background-color', '#AED581', 'important');
+                                btn.style.setProperty('color', '#1B5E20', 'important');
+                                btn.style.setProperty('border-color', '#AED581', 'important');
+                            }
+                        } else if (txt === '폐업') {
+                            if (btn.style.backgroundColor !== 'rgb(239, 154, 154)') {
+                                btn.style.setProperty('background-color', '#EF9A9A', 'important');
+                                btn.style.setProperty('color', '#B71C1C', 'important');
+                                btn.style.setProperty('border-color', '#EF9A9A', 'important');
+                            }
+                        }
+                    });
+                } catch(e) {}
+            }
+            
+            // Initial call
             applyStatusColors();
-        });
-        
-        window.parent.statusButtonObserver.observe(window.parent.document.body, { childList: true, subtree: true });
+            
+            // Cleanup previous observer to prevent memory leak and racial conditions
+            if (window.parent._stButtonObserver) {
+                window.parent._stButtonObserver.disconnect();
+            }
+            
+            // Throttled MutationObserver
+            let timeout;
+            window.parent._stButtonObserver = new MutationObserver((mutations) => {
+                if (timeout) return;
+                timeout = setTimeout(() => {
+                    applyStatusColors();
+                    timeout = null;
+                }, 100); // 100ms throttle to prevent React sync issues
+            });
+            
+            window.parent._stButtonObserver.observe(window.parent.document.body, { 
+                childList: true, 
+                subtree: true 
+            });
+        })();
     </script>
     """
     components.html(js, height=0, width=0)

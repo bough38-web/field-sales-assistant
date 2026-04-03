@@ -15,8 +15,14 @@ import shutil
 import subprocess
 import sys
 from datetime import datetime, timedelta
+import time # [FIX] Required for safe_rerun delay
 
-# Import modularized components
+# [FIX] Global Helper for Stable Reruns (Prevents 'Node removeChild' DOM Errors)
+def safe_rerun(delay=0.1):
+    """Adds a tiny buffer to allow the browser DOM to stabilize before Streamlit reruns."""
+    if delay > 0:
+        time.sleep(delay)
+    st.rerun()
 from src import utils
 from src.utils import load_system_config, save_system_config, embed_local_images, safe_normalize, mask_name, get_manager_password
 from src import data_loader
@@ -1690,7 +1696,7 @@ if raw_df is not None:
                                     activity_logger.log_access('manager', p_name, 'login')
                                     usage_logger.log_usage('manager', p_name, st.session_state.get('user_branch', ''), 'login', {'manager_code': p_code})
                                     st.query_params.clear() # [FIX] Clear params
-                                    st.rerun()
+                                    safe_rerun(0.3)
                                 else: st.error("패스워드가 올바르지 않습니다.")
                             else: st.error("담당자 정보를 찾을 수 없습니다.")
 
@@ -1711,7 +1717,7 @@ if raw_df is not None:
                                 activity_logger.log_access('branch', s_branch, 'login')
                                 usage_logger.log_usage('branch', s_branch, s_branch, 'login')
                                 st.query_params.clear() # [FIX] Clear params
-                                st.rerun()
+                                safe_rerun(0.3)
                             else: st.error("패스워드가 올바르지 않습니다.")
 
         with tab_adm:
@@ -1730,7 +1736,7 @@ if raw_df is not None:
                                  activity_logger.log_access('admin', '관리자', 'login')
                                  usage_logger.log_usage('admin', '관리자', '전체', 'login')
                                  st.query_params.clear() # [FIX] Clear any params before rerun
-                                 st.rerun()
+                                 safe_rerun(0.3)
                             else: st.error("암호가 올바르지 않습니다.")
 
         st.markdown('</div>', unsafe_allow_html=True) # End of login-box-card
@@ -4715,9 +4721,7 @@ if raw_df is not None:
                     st.toast(f"✅ {saved_count}건 등록되었습니다.")
                     st.cache_data.clear()
                     # [FIX] Add delay to prevent 'Node removeChild' error due to rapid DOM updates
-                    import time
-                    time.sleep(0.5)
-                    st.rerun()
+                    safe_rerun(0.5)
                 else:
                     st.info("변경된 항목이 없습니다.")
         

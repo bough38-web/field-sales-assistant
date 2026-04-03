@@ -49,6 +49,12 @@ def calculate_ai_scores(df: pd.DataFrame) -> pd.DataFrame:
     df['area_pts'] = np.where(area_val >= 330, 20, np.where(area_val >= 100, 10, 5))
     df['area_comment'] = np.where(area_val >= 330, "🏢대형", "")
     
+    # Factor 4: Type (10 pts)
+    type_str = df['업태구분명'].fillna('').astype(str)
+    is_medical = type_str.str.contains('병원|의원')
+    df['type_pts'] = np.where(is_medical, 10, 5)
+    df['type_comment'] = np.where(is_medical, "🏥병원", "")
+    
     # Combine Scores
     df['AI_Score'] = (df['recency_pts'] + df['status_pts'] + df['area_pts'] + df['type_pts']).clip(0, 100)
     

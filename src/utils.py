@@ -59,7 +59,7 @@ def normalize_address(address):
     address = address.replace('  ', ' ') # Double spaces
     address = address.replace('-', '')
     
-    if '*' in address or len(address) < 8:  # Too short or masked
+    if not address or pd.isna(address):
         return None
         
     return address.strip()
@@ -97,7 +97,7 @@ def vectorize_normalize_address(series: pd.Series) -> pd.Series:
     s = s.str.strip()
     
     # Mask short or invalid
-    mask = (s.str.contains('*', regex=False)) | (s.str.len() < 8) | (series.isna())
+    mask = series.isna()
     s[mask] = None
     
     return s

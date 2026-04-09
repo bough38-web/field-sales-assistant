@@ -4026,10 +4026,9 @@ if raw_df is not None:
                 with c_q_r1_1: q_new = st.checkbox("🆕 신규(15일)", value=False, key="chk_q_new")
                 with c_q_r1_2: q_closed = st.checkbox("🚫 폐업(15일)", value=False, key="chk_q_closed")
 
-            c_q_r2_1, c_q_r2_2, c_q_r2_3 = st.columns(3)
+            c_q_r2_1, c_q_r2_2 = st.columns(2)
             with c_q_r2_1: q_hosp = st.checkbox("🏥 병원만", value=False, key="chk_q_hosp")
             with c_q_r2_2: q_large = st.checkbox("🏗️ 100평↑", value=False, key="chk_q_large")
-            with c_q_r2_3: q_stopped = st.checkbox("🛑 정지시설", value=False, key="chk_q_stopped")
             
             cutoff_15d = GLOBAL_MAX_DATE - pd.Timedelta(days=15)
             map_df_base = base_df.dropna(subset=['lat', 'lon']).copy()

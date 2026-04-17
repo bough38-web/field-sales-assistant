@@ -65,7 +65,7 @@ st.set_page_config(
 
 # [MAINTENANCE] Check Maintenance Mode state (Global Block)
 sys_config = load_system_config()
-is_maintenance = sys_config.get("maintenance_mode", False)
+is_maintenance = True # Temporarily suspended
 
 # Initialize Session State (Earliest possible)
 if 'user_role' not in st.session_state:

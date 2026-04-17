@@ -82,9 +82,8 @@ if 'visit_data' not in st.session_state:
     st.session_state.visit_data = {}
 
 if is_maintenance and st.session_state.user_role != 'admin':
-    st.warning("🚧 **시스템 점검 안내**")
-    st.error("현재 시스템 점검 중입니다. 잠시 후 다시 접속해 주세요.")
-    st.info(f"📅 점검 내용: {sys_config.get('notice_content', '정기 점검')}")
+    st.warning("🚧 **시스템 운영 중단 안내**")
+    st.error("관리자 사정으로 운영중단됨을 안내 드립니다.")
     st.stop()
 
 # [DESIGN] Inject Custom CSS for Modern UI

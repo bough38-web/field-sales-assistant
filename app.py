@@ -1811,64 +1811,64 @@ if raw_df is not None:
                 st.error("관리자 사정으로 운영중단됨을 안내 드립니다.")
             else:
                 with st.container(border=False):
-                # Centered Form Layout
-                c_main = st.columns([0.2, 10, 0.2])
-                with c_main[1]:
-                    sel_br_for_mgr = st.selectbox("소속 지사 선택", ["전체"] + global_branch_opts, key="login_br_sel")
-                    
-                    if raw_df is not None:
-                        # [FIX] Standardize mgr_candidates to always have consistent columns
-                        if 'mgr_info_list' in locals() and mgr_info_list:
-                            mgr_candidates = pd.DataFrame(mgr_info_list)
-                            # Ensure columns are standardized if they came from mgr_info_list
-                            mgr_candidates.rename(columns={'name': 'SP담당', 'code': '영업구역 수정', 'branch': '관리지사'}, inplace=True)
-                        else:
-                            mgr_candidates = raw_df.copy()
+                    # Centered Form Layout
+                    c_main = st.columns([0.2, 10, 0.2])
+                    with c_main[1]:
+                        sel_br_for_mgr = st.selectbox("소속 지사 선택", ["전체"] + global_branch_opts, key="login_br_sel")
                         
-                        if sel_br_for_mgr != "전체":
-                            mgr_candidates = mgr_candidates[mgr_candidates['관리지사'] == sel_br_for_mgr]
-                        
-                        if '영업구역 수정' in mgr_candidates.columns:
-                            mgr_candidates['display'] = mgr_candidates.apply(lambda x: f"{mask_name(x['SP담당'])} ({x['영업구역 수정']})" if pd.notna(x['영업구역 수정']) and x['영업구역 수정'] else mask_name(x['SP담당']), axis=1)
-                        else:
-                            mgr_candidates['display'] = mgr_candidates['SP담당'].apply(mask_name)
-                        
-                        display_to_real_map = dict(zip(mgr_candidates['display'], mgr_candidates['SP담당']))
-                        mgr_list = sorted(mgr_candidates['display'].unique().tolist())
-                    else:
-                        mgr_list = []
-                        display_to_real_map = {}
-                    
-                    with st.form("login_manager_v3"):
-                        s_manager_display = st.selectbox("담당자 성함", mgr_list, key="mgr_login_sel")
-                        manager_pw = st.text_input("접속 패스워드", type="password", key="mgr_login_pw")
-                        if st.form_submit_button("담당자 시스템 접속 🚀", type="primary", use_container_width=True):
-                            p_name = display_to_real_map.get(s_manager_display)
+                        if raw_df is not None:
+                            # [FIX] Standardize mgr_candidates to always have consistent columns
+                            if 'mgr_info_list' in locals() and mgr_info_list:
+                                mgr_candidates = pd.DataFrame(mgr_info_list)
+                                # Ensure columns are standardized if they came from mgr_info_list
+                                mgr_candidates.rename(columns={'name': 'SP담당', 'code': '영업구역 수정', 'branch': '관리지사'}, inplace=True)
+                            else:
+                                mgr_candidates = raw_df.copy()
                             
-                            # Parse Code if present in display string for context
-                            p_code = None
-                            if s_manager_display and "(" in s_manager_display and ")" in s_manager_display:
-                                p_code = s_manager_display.split("(")[1].replace(")", "").strip()
+                            if sel_br_for_mgr != "전체":
+                                mgr_candidates = mgr_candidates[mgr_candidates['관리지사'] == sel_br_for_mgr]
+                            
+                            if '영업구역 수정' in mgr_candidates.columns:
+                                mgr_candidates['display'] = mgr_candidates.apply(lambda x: f"{mask_name(x['SP담당'])} ({x['영업구역 수정']})" if pd.notna(x['영업구역 수정']) and x['영업구역 수정'] else mask_name(x['SP담당']), axis=1)
+                            else:
+                                mgr_candidates['display'] = mgr_candidates['SP담당'].apply(mask_name)
+                            
+                            display_to_real_map = dict(zip(mgr_candidates['display'], mgr_candidates['SP담당']))
+                            mgr_list = sorted(mgr_candidates['display'].unique().tolist())
+                        else:
+                            mgr_list = []
+                            display_to_real_map = {}
+                        
+                        with st.form("login_manager_v3"):
+                            s_manager_display = st.selectbox("담당자 성함", mgr_list, key="mgr_login_sel")
+                            manager_pw = st.text_input("접속 패스워드", type="password", key="mgr_login_pw")
+                            if st.form_submit_button("담당자 시스템 접속 🚀", type="primary", use_container_width=True):
+                                p_name = display_to_real_map.get(s_manager_display)
                                 
-                            if p_name:
-                                if manager_pw == get_manager_password(p_name):
-                                    st.session_state.user_role = 'manager'
-                                    st.session_state.user_manager_name = p_name
-                                    st.session_state.user_manager_code = p_code
+                                # Parse Code if present in display string for context
+                                p_code = None
+                                if s_manager_display and "(" in s_manager_display and ")" in s_manager_display:
+                                    p_code = s_manager_display.split("(")[1].replace(")", "").strip()
                                     
-                                    # Pre-set filters for better UX
-                                    user_br_find = raw_df[raw_df['SP담당'] == p_name]['관리지사'].mode()
-                                    if not user_br_find.empty:
-                                        st.session_state.user_branch = user_br_find[0]
-                                        st.session_state.sb_branch = user_br_find[0]
-                                    st.session_state.sb_manager = p_name
-                                    
-                                    activity_logger.log_access('manager', p_name, 'login')
-                                    usage_logger.log_usage('manager', p_name, st.session_state.get('user_branch', ''), 'login', {'manager_code': p_code})
-                                    st.query_params.clear() # [FIX] Clear params
-                                    st.rerun()
-                                else: st.error("패스워드가 올바르지 않습니다.")
-                            else: st.error("담당자 정보를 찾을 수 없습니다.")
+                                if p_name:
+                                    if manager_pw == get_manager_password(p_name):
+                                        st.session_state.user_role = 'manager'
+                                        st.session_state.user_manager_name = p_name
+                                        st.session_state.user_manager_code = p_code
+                                        
+                                        # Pre-set filters for better UX
+                                        user_br_find = raw_df[raw_df['SP담당'] == p_name]['관리지사'].mode()
+                                        if not user_br_find.empty:
+                                            st.session_state.user_branch = user_br_find[0]
+                                            st.session_state.sb_branch = user_br_find[0]
+                                        st.session_state.sb_manager = p_name
+                                        
+                                        activity_logger.log_access('manager', p_name, 'login')
+                                        usage_logger.log_usage('manager', p_name, st.session_state.get('user_branch', ''), 'login', {'manager_code': p_code})
+                                        st.query_params.clear() # [FIX] Clear params
+                                        st.rerun()
+                                    else: st.error("패스워드가 올바르지 않습니다.")
+                                else: st.error("담당자 정보를 찾을 수 없습니다.")
 
         with tab_br:
             if is_maintenance:
@@ -1876,23 +1876,23 @@ if raw_df is not None:
                 st.error("관리자 사정으로 운영중단됨을 안내 드립니다.")
             else:
                 with st.container(border=False):
-                # Centered Form Layout
-                c_main = st.columns([0.2, 10, 0.2])
-                with c_main[1]:
-                    st.info("지사 산하 모든 담당자의 활동과 실적을 모니터링합니다.")
-                    with st.form("login_branch_v3"):
-                        s_branch = st.selectbox("지사 선택", global_branch_opts, key="br_login_sel")
-                        branch_pw = st.text_input("지사 공용 패스워드", type="password", key="br_login_pw")
-                        if st.form_submit_button("지사 통합 시스템 접속 🚀", type="primary", use_container_width=True):
-                            if branch_pw == BRANCH_PASSWORDS.get(s_branch, ""):
-                                st.session_state.user_role = 'branch'
-                                st.session_state.user_branch = s_branch
-                                st.session_state.sb_branch = s_branch # Pre-set filter
-                                activity_logger.log_access('branch', s_branch, 'login')
-                                usage_logger.log_usage('branch', s_branch, s_branch, 'login')
-                                st.query_params.clear() # [FIX] Clear params
-                                st.rerun()
-                            else: st.error("패스워드가 올바르지 않습니다.")
+                    # Centered Form Layout
+                    c_main = st.columns([0.2, 10, 0.2])
+                    with c_main[1]:
+                        st.info("지사 산하 모든 담당자의 활동과 실적을 모니터링합니다.")
+                        with st.form("login_branch_v3"):
+                            s_branch = st.selectbox("지사 선택", global_branch_opts, key="br_login_sel")
+                            branch_pw = st.text_input("지사 공용 패스워드", type="password", key="br_login_pw")
+                            if st.form_submit_button("지사 통합 시스템 접속 🚀", type="primary", use_container_width=True):
+                                if branch_pw == BRANCH_PASSWORDS.get(s_branch, ""):
+                                    st.session_state.user_role = 'branch'
+                                    st.session_state.user_branch = s_branch
+                                    st.session_state.sb_branch = s_branch # Pre-set filter
+                                    activity_logger.log_access('branch', s_branch, 'login')
+                                    usage_logger.log_usage('branch', s_branch, s_branch, 'login')
+                                    st.query_params.clear() # [FIX] Clear params
+                                    st.rerun()
+                                else: st.error("패스워드가 올바르지 않습니다.")
 
         with tab_adm:
             with st.container(border=False):

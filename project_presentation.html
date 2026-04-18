@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 포트폴리오: 영업기회 마스터 허브</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        .image-container {
+            position: relative;
+            background: #1e293b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .badge {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="py-12 px-6">
+
+    <!-- Header -->
+    <header class="max-w-5xl mx-auto text-center mb-20">
+        <div class="mb-4">
+            <span class="badge">모두의 아이디어 출품작</span>
+        </div>
+        <h1 class="text-4xl md:text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
+            영업기회 마스터 허브 <br>포트폴리오
+        </h1>
+        <p class="text-slate-400 text-lg max-w-2xl mx-auto">
+            공공데이터와 AI를 결합하여 영업 현장의 정보 불균형을 해소하고, <br>
+            자원 순환과 공공 안전까지 고려한 차세대 공간 정보 플랫폼입니다.
+        </p>
+    </header>
+
+    <main class="max-w-5xl mx-auto space-y-16">
+        
+        <!-- Section 1: Main Login -->
+        <section class="grid md:grid-cols-2 gap-10 items-center">
+            <div class="order-2 md:order-1">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-blue-400 font-bold text-xl">01</span>
+                    <h2 class="text-2xl font-bold">전문적인 UX/UI 설계</h2>
+                </div>
+                <p class="text-slate-400 mb-6">
+                    사용자의 첫인상을 결정짓는 메인 화면입니다. 깔끔하고 전문적인 디자인 인터페이스를 통해 현장 영업 사원들이 복잡한 데이터에 쉽게 접근할 수 있도록 설계되었습니다.
+                </p>
+                <ul class="space-y-2 text-sm text-slate-500">
+                    <li><i class="fas fa-check text-blue-500 mr-2"></i> 직관적인 역할 기반 로그인</li>
+                    <li><i class="fas fa-check text-blue-500 mr-2"></i> 모바일 최적화 반응형 레이아웃</li>
+                </ul>
+            </div>
+            <div class="order-1 md:order-2 glass-card">
+                <div class="image-container">
+                    <img src="assets/mobile_login.png" alt="Main Screen">
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Map & Route -->
+        <section class="grid md:grid-cols-2 gap-10 items-center">
+            <div class="glass-card">
+                <div class="image-container">
+                    <img src="assets/mobile_map.png" alt="Map View">
+                </div>
+            </div>
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-indigo-400 font-bold text-xl">02</span>
+                    <h2 class="text-2xl font-bold">지도 기반 시각화 및 동선 최적화</h2>
+                </div>
+                <p class="text-slate-400 mb-6">
+                    전국 190여 업종의 신규/폐업 공공데이터를 지도 위에 즉시 시각화합니다. ‘방문 동선 최적화’ 기능을 통해 불필요한 이동 시간을 획기적으로 단축하며 영업의 기동성을 극대화합니다.
+                </p>
+                <ul class="space-y-2 text-sm text-slate-500">
+                    <li><i class="fas fa-check text-indigo-500 mr-2"></i> 실시간 영업 기회 탐지 마커</li>
+                    <li><i class="fas fa-check text-indigo-500 mr-2"></i> 카카오 내비 연동 최적 경로 안내</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 3: Management -->
+        <section class="grid md:grid-cols-2 gap-10 items-center">
+            <div class="order-2 md:order-1">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-emerald-400 font-bold text-xl">03</span>
+                    <h2 class="text-2xl font-bold">관리자 그리드 대시보드</h2>
+                </div>
+                <p class="text-slate-400 mb-6">
+                    현장의 활동 데이터를 한눈에 파악할 수 있는 관리용 그리드입니다. 데이터 현행화 상태와 영업 사원의 성과를 실시간으로 모니터링하여 데이터 중심의 즉각적인 의사결정을 돕습니다.
+                </p>
+                <ul class="space-y-2 text-sm text-slate-500">
+                    <li><i class="fas fa-check text-emerald-500 mr-2"></i> 9.5만 건 이상의 데이터 마스터</li>
+                    <li><i class="fas fa-check text-emerald-500 mr-2"></i> 스마트 필터링 및 리포트 내보내기</li>
+                </ul>
+            </div>
+            <div class="order-1 md:order-2 glass-card">
+                <div class="image-container">
+                    <img src="assets/mobile_grid.png" alt="Grid View">
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Analytics -->
+        <section class="grid md:grid-cols-2 gap-10 items-center">
+            <div class="glass-card">
+                <div class="image-container">
+                    <img src="assets/mobile_charts.png" alt="Charts View">
+                </div>
+            </div>
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-amber-400 font-bold text-xl">04</span>
+                    <h2 class="text-2xl font-bold">데이터 분석 및 전략 통계</h2>
+                </div>
+                <p class="text-slate-400 mb-6">
+                    단순한 정보 제공을 넘어 고도화된 통계 분석을 제공합니다. 업종별 분포, 폐업 추이, 방문 성공률 등을 시각화하여 영업 전략을 정교하게 다듬을 수 있는 근거를 마련합니다.
+                </p>
+                <ul class="space-y-2 text-sm text-slate-500">
+                    <li><i class="fas fa-check text-amber-500 mr-2"></i> AI 스코어링 기반 우선순위 산출</li>
+                    <li><i class="fas fa-check text-amber-500 mr-2"></i> 지사별/담당자별 맞춤형 리포트</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 5: Ecosystem -->
+        <section class="bg-blue-600/10 border border-blue-500/20 rounded-[32px] p-8 md:p-12">
+            <div class="text-center mb-10">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <span class="text-blue-400 font-bold text-xl">05</span>
+                    <h2 class="text-3xl font-bold">거대 생태계: 기술 허브</h2>
+                </div>
+                <p class="text-slate-400 max-w-3xl mx-auto">
+                    문서화, 가치 분석, 아키텍처 다이어그램 등을 한곳에 모은 통합 랜딩 페이지입니다. 프로젝트의 규모감과 기술적 안정성을 동시에 증명하는 프로젝트의 사령탑입니다.
+                </p>
+            </div>
+            <div class="glass-card rounded-2xl">
+                <div class="image-container" style="background: transparent;">
+                    <img src="assets/uploaded_image_landing_1769046667006.png" alt="Ecosystem Hub" style="max-width: 90%;">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-5xl mx-auto mt-24 text-center border-t border-slate-800 pt-12 pb-20">
+        <p class="text-slate-500 text-sm mb-2">© 2026 Field Sales Assistant & Resource Circulation Project</p>
+        <p class="text-blue-500/60 text-xs font-mono">Engineered for Excellence by Antigravity AI</p>
+    </footer>
+
+</body>
+</html>

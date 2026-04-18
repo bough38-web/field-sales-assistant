@@ -586,9 +586,7 @@ def mask_name(name):
     name_str = str(name)
     if len(name_str) <= 1:
         return name_str
-    if len(name_str) == 2:
-        return name_str[0] + "*"
-    return name_str[0] + "*" * (len(name_str) - 2) + name_str[-1]
+    return name_str[0] + "*" * (len(name_str) - 1)
 
 # State Update Callbacks
 def update_branch_state(name):
@@ -1808,7 +1806,11 @@ if raw_df is not None:
         tab_mgr, tab_br, tab_adm = st.tabs(["👤 담당자", "🏢 지사", "👮 관리자"])
         
         with tab_mgr:
-            with st.container(border=False):
+            if is_maintenance:
+                st.warning("🚧 **시스템 운영 중단 안내**")
+                st.error("관리자 사정으로 운영중단됨을 안내 드립니다.")
+            else:
+                with st.container(border=False):
                 # Centered Form Layout
                 c_main = st.columns([0.2, 10, 0.2])
                 with c_main[1]:
@@ -1869,7 +1871,11 @@ if raw_df is not None:
                             else: st.error("담당자 정보를 찾을 수 없습니다.")
 
         with tab_br:
-            with st.container(border=False):
+            if is_maintenance:
+                st.warning("🚧 **시스템 운영 중단 안내**")
+                st.error("관리자 사정으로 운영중단됨을 안내 드립니다.")
+            else:
+                with st.container(border=False):
                 # Centered Form Layout
                 c_main = st.columns([0.2, 10, 0.2])
                 with c_main[1]:

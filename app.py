@@ -840,8 +840,8 @@ with st.sidebar:
                     zip_opts = [os.path.basename(f) for f in local_zips]
                     # [UX] Auto-select priority data files if available (Use full data to include pre-2026 closed businesses)
                     preferred_zips = [
-                        "LOCALDATA_APRIL_TOTAL_CONSOLIDATED.zip",
                         "LOCALDATA_2026_ONLY.zip", 
+                        "LOCALDATA_APRIL_TOTAL_CONSOLIDATED.zip",
                         "LOCALDATA_NOWMON_CSV-4.1~4.5.zip",
                         "LOCALDATA_NOWMON_CSV-3월.zip",
                         "LOCALDATA_NOWMON_CSV_3월.zip",
@@ -1358,17 +1358,26 @@ if raw_df is not None:
         if date_candidates:
             GLOBAL_MAX_DATE = max(date_candidates).normalize()
             
-    # [FIX] Hardcap Dashboard Data and Charts to April 30th, 2026 as per user request
+    # [FIX] Limit Dashboard Data strictly to April 2026 (4월만 적용)
+    request_min = pd.Timestamp("2026-04-01")
     request_cap = pd.Timestamp("2026-04-30")
     if GLOBAL_MAX_DATE > request_cap:
         GLOBAL_MAX_DATE = request_cap
     
-    # [FIX] Remove future/noise data (e.g. May) from statistics
+    # [FIX] Keep only April 2026 data
     if raw_df is not None and not raw_df.empty:
+        # 1. First cap all dates to April 30th
         date_cols = [c for c in ['인허가일자', '폐업일자', '최종수정시점'] if c in raw_df.columns]
         for col in date_cols:
-            # Keep only records on or before 4/5
             raw_df = raw_df[~(raw_df[col] > request_cap)]
+            
+        # 2. Keep ONLY records modified or authorized in April
+        mask = pd.Series(False, index=raw_df.index)
+        if '최종수정시점' in raw_df.columns:
+            mask = mask | (raw_df['최종수정시점'] >= request_min)
+        if '인허가일자' in raw_df.columns:
+            mask = mask | (raw_df['인허가일자'] >= request_min)
+        raw_df = raw_df[mask]
 
     if raw_df is not None and not raw_df.empty:
         current_branches_raw = [unicodedata.normalize('NFC', str(b)) for b in raw_df['관리지사'].unique() if pd.notna(b)]

@@ -840,12 +840,12 @@ with st.sidebar:
                     zip_opts = [os.path.basename(f) for f in local_zips]
                     # [UX] Auto-select priority data files if available (Use full data to include pre-2026 closed businesses)
                     preferred_zips = [
+                        "LOCALDATA_2026_ONLY.zip", 
                         "LOCALDATA_APRIL_TOTAL_CONSOLIDATED.zip",
                         "LOCALDATA_NOWMON_CSV-4.1~4.5.zip",
                         "LOCALDATA_NOWMON_CSV-3월.zip",
                         "LOCALDATA_NOWMON_CSV_3월.zip",
                         "LOCALDATA_NOWMON_CSV.zip", 
-                        "LOCALDATA_2026_ONLY.zip", 
                         "LOCALDATA_NOWMON_CSV_2월.zip", 
                         "LOCALDATA_YESTERDAY_CSV.zip"
                     ]

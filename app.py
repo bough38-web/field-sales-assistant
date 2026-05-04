@@ -81,9 +81,12 @@ if 'visit_active' not in st.session_state:
 if 'visit_data' not in st.session_state:
     st.session_state.visit_data = {}
 
-if is_maintenance and st.session_state.user_role != 'admin':
+if is_maintenance and st.session_state.user_role is not None and st.session_state.user_role != 'admin':
     st.warning("🚧 **시스템 운영 중단 안내**")
     st.error("관리자 사정으로 운영중단됨을 안내 드립니다.")
+    if st.button("로그아웃 (처음으로)"):
+        st.session_state.clear()
+        st.rerun()
     st.stop()
 
 # [DESIGN] Inject Custom CSS for Modern UI
@@ -837,6 +840,7 @@ with st.sidebar:
                     zip_opts = [os.path.basename(f) for f in local_zips]
                     # [UX] Auto-select priority data files if available (Use full data to include pre-2026 closed businesses)
                     preferred_zips = [
+                        "LOCALDATA_APRIL_TOTAL_CONSOLIDATED.zip",
                         "LOCALDATA_NOWMON_CSV-4.1~4.5.zip",
                         "LOCALDATA_NOWMON_CSV-3월.zip",
                         "LOCALDATA_NOWMON_CSV_3월.zip",
@@ -1354,8 +1358,8 @@ if raw_df is not None:
         if date_candidates:
             GLOBAL_MAX_DATE = max(date_candidates).normalize()
             
-    # [FIX] Hardcap Dashboard Data and Charts to April 5th, 2026 as per user request
-    request_cap = pd.Timestamp("2026-04-05")
+    # [FIX] Hardcap Dashboard Data and Charts to April 30th, 2026 as per user request
+    request_cap = pd.Timestamp("2026-04-30")
     if GLOBAL_MAX_DATE > request_cap:
         GLOBAL_MAX_DATE = request_cap
     
@@ -1403,7 +1407,7 @@ if raw_df is not None:
                     <div style='background-color: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 20px;'>
                         <p style='margin-bottom: 5px; font-size: 0.8rem; color: #666;'>📊 <b>시스템 정보</b></p>
                         <ul style='list-style-type: none; padding-left: 0; margin-bottom: 0; font-size: 0.75rem; color: #444;'>
-                            <li>데이터 상한: <b>2026-04-05</b> (고정)</li>
+                            <li>데이터 상한: <b>2026-04-30</b> (고정)</li>
                             <li>시스템 버전: <b>v2026.04.07.15:48</b></li>
                             <li>동기화 상태: <b>정상 (Active)</b></li>
                         </ul>

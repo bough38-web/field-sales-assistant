@@ -441,6 +441,7 @@ def render_kakao_map(map_df, kakao_key, use_heatmap=False, user_context={}):
                                     (item.close_date ? '<span style="color:#D32F2F; font-size:12px;">❌ 폐업일: ' + item.close_date + '</span>' : '') +
                                     '</div>' +
                                     '<div style="margin-top:10px; display:flex; gap:5px;">' +
+                                    '<a href="javascript:void(0);" onclick="triggerInterest(\\'' + item.title + '\\', \\'' + item.addr + '\\', ' + item.lat + ', ' + item.lon + ')" style="flex:1; background:#FF9800; color:white; text-decoration:none; padding:8px 0; border-radius:4px; text-align:center; font-size:12px; font-weight:bold;">⭐ 관심</a>' +
                                     '<a href="https://map.kakao.com/link/to/' + item.title + ',' + item.lat + ',' + item.lon + '" target="_blank" style="flex:1; background:#FEE500; color:black; text-decoration:none; padding:8px 0; border-radius:4px; text-align:center; font-size:12px; font-weight:bold;">🚗 길찾기</a>' +
                                     '</div>' +
                                     '</div>';
@@ -507,7 +508,8 @@ def render_kakao_map(map_df, kakao_key, use_heatmap=False, user_context={}):
                     html += '</table>';
                     
                     html += '<div style="display:flex; gap:10px; margin-top:20px;">';
-                    html += '<a href="https://map.kakao.com/link/to/' + item.title + ',' + item.lat + ',' + item.lon + '" target="_blank" class="navi-btn">🚗 길찾기</a>';
+                    html += '<a href="javascript:void(0);" onclick="triggerInterest(\\'' + item.title + '\\', \\'' + item.addr + '\\', ' + item.lat + ', ' + item.lon + ')" class="navi-btn" style="background-color:#FF9800; color:white; flex:1;">⭐ 관심 업체</a>';
+                    html += '<a href="https://map.kakao.com/link/to/' + item.title + ',' + item.lat + ',' + item.lon + '" target="_blank" class="navi-btn" style="flex:1;">🚗 길찾기</a>';
                     html += '</div>';
                     
                     document.getElementById('info-content').innerHTML = html;

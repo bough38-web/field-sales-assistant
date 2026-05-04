@@ -23,7 +23,7 @@ def normalize_str(s: Any) -> str:
     return unicodedata.normalize('NFC', str(s)).strip()
 
 def run_pre_calculation():
-    zip_path = 'data/LOCALDATA_NOWMON_CSV.zip'
+    zip_path = 'data/LOCALDATA_APRIL_TOTAL_CONSOLIDATED.zip'
     dist_path = 'data/영업구역별_주소현행화_최종_20260304.xlsx'
     output_path = 'data/processed_results.parquet'
 

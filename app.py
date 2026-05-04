@@ -840,8 +840,8 @@ with st.sidebar:
                     zip_opts = [os.path.basename(f) for f in local_zips]
                     # [UX] Auto-select priority data files if available (Use full data to include pre-2026 closed businesses)
                     preferred_zips = [
-                        "LOCALDATA_2026_ONLY.zip", 
                         "LOCALDATA_APRIL_TOTAL_CONSOLIDATED.zip",
+                        "LOCALDATA_2026_ONLY.zip", 
                         "LOCALDATA_NOWMON_CSV-4.1~4.5.zip",
                         "LOCALDATA_NOWMON_CSV-3월.zip",
                         "LOCALDATA_NOWMON_CSV_3월.zip",
@@ -853,9 +853,9 @@ with st.sidebar:
                     preferred_zips = [unicodedata.normalize('NFC', z) for z in preferred_zips]
                     zip_opts_norm = [unicodedata.normalize('NFC', z) for z in zip_opts]
                     
-                    # [UPDATE] Select BOTH top priority files if they exist to combine data
+                    # [UPDATE] Select ONLY the top priority file (April data only as requested)
                     default_zips = []
-                    for pz in preferred_zips[:3]: # [FIX] Expand to top 3 to ensure combining 3월 + Baseline
+                    for pz in preferred_zips[:1]: # [FIX] Only top 1
                         matching = [zip_opts[i] for i, z in enumerate(zip_opts_norm) if z == pz]
                         if matching:
                             default_zips.extend(matching)
